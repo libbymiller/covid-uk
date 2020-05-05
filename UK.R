@@ -7,7 +7,7 @@ library(stringr)
 
 # Set path
 # Set this path to the base directory of the repository.
-covid_uk_path = "~/Dropbox/COVID-UK"
+covid_uk_path = "."
 
 # covidm options
 cm_path = paste0(covid_uk_path, "/covidm/");
