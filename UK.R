@@ -7,12 +7,13 @@ library(stringr)
 
 # Set path
 # Set this path to the base directory of the repository.
-covid_uk_path = "."
+# NOTE: Run from repository
+covid_uk_path = getwd()
 
 # covidm options
-cm_path = paste0(covid_uk_path, "/covidm/");
+cm_path = file.path(covid_uk_path, "covidm");
 if (grepl(Sys.info()["user"], pattern = "^adamkuchars(ki)?$")) { cm_path = "~/Documents/GitHub/covid-uk/covidm/" }
-source(paste0(cm_path, "/R/covidm.R"))
+source(file.path(cm_path, "R", "covidm.R"))
 
 # build parameters for entire UK, for setting R0.
 parametersUK1 = cm_parameters_SEI3R(cm_uk_locations("UK", 0), 
