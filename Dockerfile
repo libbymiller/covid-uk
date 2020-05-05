@@ -12,6 +12,7 @@ RUN R -e "install.packages(\"qs\")"
 RUN R -e "install.packages(\"lubridate\")"
 RUN R -e "install.packages(\"nloptr\")"
 RUN R -e "install.packages(\"HDInterval\")"
+RUN R -e "install.packages(\"cowplot\")"
 RUN apt install libgsl-dev -y
 RUN R -e "install.packages(\"RcppGSL\")"
 RUN apt install libnlopt-dev -y
