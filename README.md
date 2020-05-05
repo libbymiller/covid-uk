@@ -42,6 +42,22 @@ Here, 1 is the number for the analysis you want to run (1, 2.1, 2.2, 3, 4, 5, or
 
 For 50 runs, each set takes about 6-16 hours on a current laptop.
 
+## Running on Docker
+
+The repository contains a Dockerfile which can be used to build an image:
+
+`docker build -t coviduk .`
+
+a container can then be created:
+
+`docker run --name coviduk -ti covid:latest`
+
+### Quick Run Command
+
+An alias has been created to quickly run the simulation:
+
+`run_coviduk <analysis-number> <n-stochastic-realisations>`
+
 ### Reference
 
 [Davies NG et al. The effect of non-pharmaceutical interventions on COVID-19 cases, deaths and demand for hospital services in the UK: a modelling study. CMMID COVID-19 working group pre-print, 2020.](https://cmmid.github.io/topics/covid19/control-measures/uk-scenario-modelling.html)
