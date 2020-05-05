@@ -50,7 +50,7 @@ The repository contains a Dockerfile which can be used to build an image:
 
 a container can then be created:
 
-`docker run --name coviduk -ti covid:latest`
+`docker run --name coviduk -ti coviduk:latest`
 
 ### Quick Run Command
 
