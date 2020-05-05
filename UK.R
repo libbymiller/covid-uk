@@ -12,7 +12,6 @@ covid_uk_path = getwd()
 
 # covidm options
 cm_path = file.path(covid_uk_path, "covidm");
-if (grepl(Sys.info()["user"], pattern = "^adamkuchars(ki)?$")) { cm_path = "~/Documents/GitHub/covid-uk/covidm/" }
 source(file.path(cm_path, "R", "covidm.R"))
 
 # build parameters for entire UK, for setting R0.
