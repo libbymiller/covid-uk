@@ -44,9 +44,9 @@ For 50 runs, each set takes about 6-16 hours on a current laptop.
 
 ## Testing After Development
 
-Included within the repository is a set of tests which are designed to be run from a development branch, they compare the results obtained with the current scripts to those obtained with running the original source code from the parent repository. It is recommended you run:
+Included within the repository is a set of tests which are designed to be run from a development branch, they compare the results obtained with the current scripts to those obtained with running the original source code from the parent repository. It is recommended you run within the root of this repository:
 
-`bash run_all.sh <no. stochastic realisations>`
+`bash run_all.sh`
 
 which will run the relevant R code followed by the Python nose tests.
 The tests require you to install the modules contained with the `tests/requirements.txt` file.
