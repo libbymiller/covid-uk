@@ -1,10 +1,29 @@
+##############################################################################
+#                                                                            #
+#                   COVID-UK QS to PANDAS DATAFRAME                          #
+#                                                                            #
+#   This script prepares the data collected from running:                    #
+#                                                                            #
+#   Rscript UK.R <case> 1                                                    #
+#                                                                            #
+#   on all branches/merge-requests under consideration towards testing.      #
+#                                                                            #
+#   NOTE: This script should be run from the repository root directory       #
+#                                                                            #
+#   @date       :   last modified 2020-05-07                                 #
+#   @authors    :   K. Zarebski,                                             #
+#                                                                            #
+##############################################################################
+
 import pandas as pd
 import argparse
 import pickle
 import os
+import glob
 import subprocess
 import logging
 from rpy2.robjects.packages import importr
+from git import Repo
 
 logging.basicConfig(level=logging.INFO)
 
@@ -12,12 +31,28 @@ qread = importr('qs').qread
 
 class QStoPandaPickle(object):
     '''Read in a .qs file and convert it to a Pandas Dataframe then pickle it'''
-    def __init__(self, in_file, output_dir):
-        in_file = os.path.abspath(in_file)
+    def __init__(self, in_dir, output_dir):
         self._logger = logging.getLogger('QStoPandaPickle')
-        _in_file_name = in_file.split('/')[-1] if '/' in in_file else in_file
-        self._logger.info("Processing File, output will be '{}'".format(os.path.join(output_dir, _in_file_name.replace('.qs', '.pckl'))))
+        self._in_dir = in_dir
         self._out_dir = output_dir
+        self._process_branches()
+
+
+    def _process_branches(self):
+        _file_list = glob.glob(os.path.join(self._in_dir, '*.qs'))
+
+        if not _file_list:
+            self._logger.error('No input files were found')
+            raise FileNotFoundError
+
+        for f in _file_list:
+            self._process_file(f)
+
+    def _process_file(self, in_file):
+        in_file = os.path.abspath(in_file)
+        _in_file_name = in_file.split('/')[-1] if '/' in in_file else in_file
+        self._logger.info("Processing File, output will be '{}'".format(
+            os.path.join(self._out_dir, _in_file_name.replace('.qs', '.pckl'))))
         self._input_file = self._qs2csv(in_file)
         self._dump_pd_dataframe()
 
@@ -40,14 +75,15 @@ class QStoPandaPickle(object):
         _temp.to_csvfile(_csv_name)
 
         if os.stat(_csv_name).st_size == 0:
-            self._logger.error("Failed to write data to file '{}', this file is empty".format(_csv_name))
+            self._logger.error("Failed to write data to file "+
+                "'{}', this file is empty".format(_csv_name))
             raise RuntimeError
 
         return _csv_name
 
     def _dump_pd_dataframe(self):
         _pickle_file = self._input_file.split('/')[-1] if '/' in self._input_file else self._input_file
-        _pickle_file = os.path.join(self._out_dir, _pickle_file.replace('csv', 'pckl'))
+        _pickle_file = os.path.join(self._out_dir, _pickle_file.replace('.csv', '.pckl'))
         self._logger.info('Creating Pandas DataFrame')
         _pandas_df = pd.read_csv(self._input_file)
         self._logger.info('Pickling result')
@@ -64,9 +100,10 @@ class QStoPandaPickle(object):
 
 if __name__ in "__main__":
     parser = argparse.ArgumentParser('PandifyRFrame')
-    parser.add_argument('file', help='Input R filename of type ".qs"')
-    parser.add_argument('--out-dir', help='Output directory', default=os.getcwd())
+    parser.add_argument('--in-dir', help='Input directory', default=os.getcwd())
+    parser.add_argument('--out-dir', help='Output directory', 
+            default=os.path.join(os.getcwd(), 'tests', 'test_data'))
 
     args = parser.parse_args()
 
-    QStoPandaPickle(args.file, args.out_dir)
+    QStoPandaPickle(args.in_dir, args.out_dir)
