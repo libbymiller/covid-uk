@@ -42,6 +42,15 @@ Here, 1 is the number for the analysis you want to run (1, 2.1, 2.2, 3, 4, 5, or
 
 For 50 runs, each set takes about 6-16 hours on a current laptop.
 
+## Testing After Development
+
+Included within the repository is a set of tests which are designed to be run from a development branch, they compare the results obtained with the current scripts to those obtained with running the original source code from the parent repository. It is recommended you run:
+
+`bash run_all.sh <no. stochastic realisations>`
+
+which will run the relevant R code followed by the Python nose tests.
+The tests require you to install the modules contained with the `tests/requirements.txt` file.
+
 ## Running on Docker
 
 **NOTE:** It is highly recommended you change the `git clone` statement within the Dockerfile to refer to your own fork of this repository!
@@ -54,11 +63,6 @@ a container can then be created:
 
 `docker run --name coviduk -ti coviduk:latest`
 
-### Quick Run Command
-
-An alias has been created to quickly run the simulation:
-
-`run_coviduk <analysis-number> <n-stochastic-realisations>`
 
 ### Reference
 

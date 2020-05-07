@@ -19,16 +19,19 @@
 #                                                                            #
 ##############################################################################
 
-import unittest     # Use Unit Test to automate tests
-import logging      # Custom loggers for tests
-import pandas       # Read in R dataframes into Pandas DataFrames
-import glob         # Read in dataframes from each branch output folder
-import os
-import pickle
-from git import Repo
-from collections import Counter
+import argparse         # Specify which branch is being tested
+import unittest         # Use Unit Test to automate tests
+import logging          # Custom loggers for tests
+import pandas           # Read in R dataframes into Pandas DataFrames
+import glob             # Read in dataframes from each branch output folder
+import os               # File Path Concatenation
+import pickle           # Open Pickled DataFrames
+from git import Repo    # Use current branch name for file name
+
 
 git_branch = Repo(os.getcwd()).active_branch
+
+from collections import Counter
 
 logging.basicConfig(level=logging.INFO)
 
@@ -39,9 +42,12 @@ def _get_df(file_addrs):
             frames[F.split('/')[-1].split('-')[1]] = pickle.load(f)
 
     return frames
-baseline_data = glob.glob(os.path.join(os.getcwd(), 'tests', 'test_data', '*master.pckl'))
+baseline_data = glob.glob(os.path.join(os.getcwd(), 'tests', 'test_data', '*baseline.pckl'))
+if not baseline_data:
+    print('Unable to find comparison data (should be in the form covid-uk/tests/test_data/<analysis-id>-<category>-baseline.pckl')
+    raise FileNotFoundError
 _df_master = _get_df(baseline_data)
-_df_dev = _get_df(i.replace('master', str(git_branch)) for i in baseline_data)
+_df_dev = _get_df(i.replace('baseline', str(git_branch)) for i in baseline_data)
 
 class TestCOVIDUK(unittest.TestCase):
     def testAllDataFramesPresent(self):
@@ -61,9 +67,6 @@ class TestCOVIDUK(unittest.TestCase):
     def testConsistentValues(self):
         assert list(_df_master['dynamics']['value'].values) == list(_df_dev['dynamics']['value'].values)
         
-
 if __name__ in "__main__":
-    if not git_branch == 'master' and not baseline_data:
-        print('Unable to find data for master branch')
-        raise FileNotFoundError
+
     unittest.main()
