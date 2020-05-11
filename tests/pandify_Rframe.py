@@ -10,7 +10,7 @@
 #                                                                            #
 #   NOTE: This script should be run from the repository root directory       #
 #                                                                            #
-#   @date       :   last modified 2020-05-07                                 #
+#   @date       :   last modified 2020-05-11                                 #
 #   @authors    :   K. Zarebski,                                             #
 #                                                                            #
 ##############################################################################
@@ -35,11 +35,14 @@ class QStoPandaPickle(object):
         self._logger = logging.getLogger('QStoPandaPickle')
         self._in_dir = in_dir
         self._out_dir = output_dir
-        self._process_branches()
+        self._process_directory()
 
 
-    def _process_branches(self):
-        _file_list = glob.glob(os.path.join(self._in_dir, '*.qs'))
+    def _process_directory(self):
+        '''Read in all .qs files from the selected input directory and convert'''
+        _search_str = os.path.join(self._in_dir, '*.qs')
+        self._logger.info('Searching for files in: {}'.format(_search_str))
+        _file_list = glob.glob(_search_str)
 
         if not _file_list:
             self._logger.error('No input files were found')
