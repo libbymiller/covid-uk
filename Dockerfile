@@ -19,11 +19,21 @@ RUN apt install libnlopt-dev -y
 RUN adduser coviduk
 RUN apt install git -y
 RUN apt install vim emacs -y
+RUN apt install python3-pip -y
 USER coviduk
 WORKDIR /home/coviduk
 RUN pwd
+# FIXME: Next two lines are temporary solution whilst testing in development
 RUN git clone https://github.com/kzscisoft/covid-uk.git
+WORKDIR /home/coviduk/covid-uk
+RUN git checkout testing-dev
+USER root
 WORKDIR covid-uk
+WORKDIR /home/coviduk/covid-uk
+RUN ls -ltr
+RUN pip3 install -r tests/requirements.txt
+USER coviduk
+WORKDIR /home/coviduk/covid-uk
 RUN echo "alias run_coviduk='cd $PWD; Rscript UK.R \$1 \$2; cd -'" > ~/.bashrc
 RUN cat ~/.bashrc
 ENTRYPOINT ["/bin/bash"]
