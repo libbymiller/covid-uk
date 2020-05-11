@@ -44,6 +44,8 @@ For 50 runs, each set takes about 6-16 hours on a current laptop.
 
 ## Running on Docker
 
+**NOTE:** It is highly recommended you change the `git clone` statement within the Dockerfile to refer to your own fork of this repository!
+
 The repository contains a Dockerfile which can be used to build an image:
 
 `docker build -t coviduk .`
