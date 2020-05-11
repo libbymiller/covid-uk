@@ -44,12 +44,14 @@ For 50 runs, each set takes about 6-16 hours on a current laptop.
 
 ## Testing After Development
 
+The R scripts require libaries to be installed (see the `Dockerfile` which contains a list of bash commands showing installation of these) and have been confirmed to run with Rscript `v4.0.0`.
+
 Included within the repository is a set of tests which are designed to be run from a development branch, they compare the results obtained with the current scripts to those obtained with running the original source code from the parent repository. It is recommended you run within the root of this repository:
 
 `bash run_all.sh`
 
 which will run the relevant R code followed by the Python nose tests.
-The tests require you to install the modules contained with the `tests/requirements.txt` file.
+The tests require you to install the modules contained within the `tests/requirements.txt` file.
 
 ## Running on Docker
 
