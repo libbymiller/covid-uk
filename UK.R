@@ -483,6 +483,6 @@ for (r in 1:n_runs) {
     }
   }
 }
-cm_save(totals, file.path(covid_uk_path, paste0(analysis, "-totals.qs"));
-cm_save(dynamics, file.path(covid_uk_path, paste0(analysis, "-dynamics.qs"));
+cm_save(totals, file.path(covid_uk_path, paste0(analysis, "-totals.qs")));
+cm_save(dynamics, file.path(covid_uk_path, paste0(analysis, "-dynamics.qs")));
 print(Sys.time())
