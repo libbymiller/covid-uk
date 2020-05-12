@@ -53,9 +53,7 @@ Included within the repository is a set of tests which are designed to be run fr
 which will run the relevant R code followed by the Python nose tests.
 The tests require you to install the modules contained within the `tests/requirements.txt` file.
 
-## Running on Docker
-
-**NOTE:** It is highly recommended you change the `git clone` statement within the Dockerfile to refer to your own fork of this repository!
+## Running on Docker (Recommended)
 
 The repository contains a Dockerfile which can be used to build an image:
 
