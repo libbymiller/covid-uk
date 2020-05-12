@@ -342,7 +342,7 @@ totals = data.table()
 print(Sys.time())
 set.seed(1234567);
 
-print(paste0(covid_uk_path, analysis, "-dynamics", ifelse(option.single > 0, option.single, ""), ".qs"))
+print(file.path(covid_uk_path, paste0(analysis, "-dynamics", ifelse(option.single > 0, option.single, ""), ".qs")))
 
 if (option.single < 0) {
     run_set = 1:n_runs;
