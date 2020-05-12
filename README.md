@@ -55,7 +55,7 @@ The tests require you to install the modules contained within the `tests/require
 
 ## Running on Docker (Recommended)
 
-The repository contains a Dockerfile which can be used to build an image:
+The repository contains a Dockerfile which can be used to build an image, from within the repository run:
 
 `docker build -t coviduk .`
 
