@@ -144,7 +144,8 @@ observer_lockdown = function(lockdown_trigger) function(time, dynamics)
 }
 
 # Load age-varying symptomatic rate
-#covid_scenario = qread(file.path(covid_uk_path, "data", "2-linelist_symp_fit_fIa0.5.qs"));
+covid_scenario = qread(file.path(covid_uk_path, "data", "2-linelist_symp_fit_fIa0.5.qs"));
+#covid_scenario2 = qread(paste0(covid_uk_path, "/data/2-linelist_both_fit_fIa0.5-rbzvi.qs"));
 
 # Identify London boroughs for early seeding, and regions of each country for time courses
 london = cm_structure_UK[match(str_sub(locations, 6), Name), Geography1 %like% "London"]
