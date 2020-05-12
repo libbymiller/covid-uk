@@ -6,7 +6,7 @@ echo "==== Adding '${CURRENT_BRANCH}' to filenames of output .qs files and movin
 rename .qs ${CURRENT_BRANCH}.qs *.qs
 mv *.qs data/
 echo "==== Creating directory 'tests/test_data/${CURRENT_BRANCH}', converting dataframes then moving output files to this location ===="
-mkdir tests/test_data/${CURRENT_BRANCH}
+mkdir -p tests/test_data/${CURRENT_BRANCH}
 python3 tests/pandify_Rframe.py --in-dir data/ --out-dir tests/test_data/${CURRENT_BRANCH}
 echo "==== Running software tests ===="
 nosetests . --nologcapture
