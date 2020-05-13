@@ -7,6 +7,15 @@
 # TODO
 #  - make sure seq_len and seq_along are used instead of 1:length() for 0-length things
 
+try_loc = function(file_loc)
+	{
+		tryCatch(source(file_loc),
+			 error = function(e){
+				 message("ERROR: Could not find files, please make sure you run this script from the repository root directory")
+				 e
+			})
+	}
+
 packageStartupMessage("Loading covidm.")
 
 # Required libraries
@@ -28,32 +37,32 @@ cm_option_ = function(name, default_value) {
     return (get0(name, ifnotfound = default_value))
 }
 
-cm_path_           = cm_option_("cm_path", "~/Dropbox/nCoV/covidm/")
+cm_path_           = cm_option_("cm_path", "covidm")
 cm_force_rebuild_  = cm_option_("cm_force_rebuild", F)
-cm_build_dir_      = cm_option_("cm_build_dir", paste0(cm_path_, "/build/"))
+cm_build_dir_      = cm_option_("cm_build_dir", file.path(cm_path_, "build"))
 cm_build_verbose_  = cm_option_("cm_build_verbose", T)
 
 # Attach R code
-source(paste0(cm_path_, "/R/covidm_misc.R"))
-source(paste0(cm_path_, "/R/covidm_run.R"))
-source(paste0(cm_path_, "/R/covidm_params.R"))
-source(paste0(cm_path_, "/R/covidm_interventions.R"))
-source(paste0(cm_path_, "/R/covidm_fit.R"))
-source(paste0(cm_path_, "/R/covidm_plot.R"))
+try_loc(file.path(cm_path_, "R", "covidm_misc.R"))
+try_loc(file.path(cm_path_, "R", "covidm_run.R"))
+try_loc(file.path(cm_path_, "R", "covidm_params.R"))
+try_loc(file.path(cm_path_, "R", "covidm_interventions.R"))
+try_loc(file.path(cm_path_, "R", "covidm_fit.R"))
+try_loc(file.path(cm_path_, "R", "covidm_plot.R"))
 
 # Build C++ code
 packageStartupMessage("Attaching C++ code...")
-sourceCpp(paste0(cm_path_, "/model_v1/corona.cpp"), 
+sourceCpp(file.path(cm_path_, "model_v1", "corona.cpp"), 
           rebuild  = cm_force_rebuild_,
           cacheDir = cm_build_dir_,
           verbose  = cm_build_verbose_)
-sourceCpp(paste0(cm_path_, "/fit_v1/fit.cpp"),
+sourceCpp(file.path(cm_path_, "fit_v1", "fit.cpp"),
           rebuild  = cm_force_rebuild_, 
           cacheDir = cm_build_dir_,
           verbose  = cm_build_verbose_)
 
 # Attach data
-cm_matrices     = readRDS(paste0(cm_path_, "/data/all_matrices.rds"));
-cm_populations  = readRDS(paste0(cm_path_, "/data/wpp2019_pop2020.rds"));
-cm_structure_UK = readRDS(paste0(cm_path_, "/data/structure_UK.rds"));
+cm_matrices     = readRDS(file.path(cm_path_, "data", "all_matrices.rds"));
+cm_populations  = readRDS(file.path(cm_path_, "data", "wpp2019_pop2020.rds"));
+cm_structure_UK = readRDS(file.path(cm_path_, "data", "structure_UK.rds"));
 
