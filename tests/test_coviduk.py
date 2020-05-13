@@ -27,16 +27,8 @@ import pandas           # Read in R dataframes into Pandas DataFrames
 import glob             # Read in dataframes from each branch output folder
 import os               # File Path Concatenation
 import pickle           # Open Pickled DataFrames
-from git import Repo    # Use current branch name for file name
-
-# Provide more information on Invalid Repository location
-from git.exc import InvalidGitRepositoryError
 
 from collections import Counter  # Count category entries as part of testing
-
-
-# Obtain name of current branch to use for labelling
-git_branch = Repo(os.getcwd()).active_branch
 
 # Set logging level to INFO
 logging.basicConfig(level=logging.DEBUG)
@@ -68,7 +60,7 @@ if not baseline_data:
 
 # Retrieve DataFrames from original source code run and those obtained from the current scripts
 _df_master = getDataFrames(baseline_data)
-_df_dev =  getDataFrames(i.replace('baseline', str(git_branch)) for i in baseline_data)
+_df_dev =  getDataFrames(i.replace('baseline', 'test') for i in baseline_data)
 
 class TestCOVIDUK(unittest.TestCase):
     def testAllDataFramesPresent(self):
