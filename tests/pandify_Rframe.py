@@ -23,7 +23,6 @@ import glob
 import subprocess
 import logging
 from rpy2.robjects.packages import importr
-from git import Repo
 
 logging.basicConfig(level=logging.INFO)
 
