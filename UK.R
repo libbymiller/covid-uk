@@ -15,9 +15,23 @@ if (argc == 3) {
     option.single = -1;
 }
 
-parameter_file = strsplit(grep('--parameters*', argv, value = TRUE), split = '=')[[1]][[2]]
+param_file_search = grep('--parameters*', argv, value = TRUE)
+covid_uk_search = grep('--covid-uk-path*', argv, value = TRUE)
 
-print(paste("Using parameters from: ",parameter_file))
+if(length(param_file_search) > 0)
+{
+	parameter_file = strsplit(param_file_search, split = '=')[[1]][[2]];
+} else {
+	parameter_file = './params/params.ini';
+}
+
+if(length(covid_uk_search) > 0)
+{
+	covid_uk_path = strsplit(covid_uk_search, split = '=')[[1]][[2]];
+} else {
+	covid_uk_path = getwd();
+}
+print(c(paste("COVID-UK Path: ", covid_uk_path), paste("Using parameters from: ",parameter_file)))
 
 config_params = read.ini(parameter_file)
 
@@ -26,7 +40,6 @@ n_runs = as.numeric(argv[2]);
 # Set path
 # Set this path to the base directory of the repository.
 # NOTE: Run from repository
-covid_uk_path = getwd()
 
 # covidm options
 cm_path = file.path(covid_uk_path, "covidm");
