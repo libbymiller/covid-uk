@@ -4,20 +4,25 @@
 
 library(rlang)
 library(stringr)
+library(ini)
 
 # Load requested settings from command line
-argv = commandArgs(trailingOnly = T);
+argv = commandArgs(trailingOnly = TRUE);
 argc = length(argv);
 if (argc == 3) {
     option.single = as.numeric(argv[argc-2]);
-} else if (argc != 2) {
-    stop("Must provide two arguments: analysis set and number of runs.");
 } else {
     option.single = -1;
 }
-analysis = as.numeric(argv[argc-1]);
-n_runs = as.numeric(argv[argc]);
 
+parameter_file = strsplit(grep('--parameters*', argv, value = TRUE), split = '=')[[1]][[2]]
+
+print(paste("Using parameters from: ",parameter_file))
+
+config_params = read.ini(parameter_file)
+
+analysis = as.numeric(argv[1]);
+n_runs = as.numeric(argv[2]);
 # Set path
 # Set this path to the base directory of the repository.
 # NOTE: Run from repository
@@ -29,19 +34,19 @@ source(file.path(cm_path, "R", "covidm.R"))
 
 # build parameters for entire UK, for setting R0.
 parametersUK1 = cm_parameters_SEI3R(cm_uk_locations("UK", 0), 
-                                    dE  = cm_delay_gamma(4.0, 4.0, t_max = 60, t_step = 0.25)$p,
-                                    dIp = cm_delay_gamma(1.5, 4.0, t_max = 60, t_step = 0.25)$p,
-                                    dIs = cm_delay_gamma(3.5, 4.0, t_max = 60, t_step = 0.25)$p,
-                                    dIa = cm_delay_gamma(5.0, 4.0, t_max = 60, t_step = 0.25)$p,
+                                    dE  = cm_delay_gamma(as.numeric(config_params$dE$mu), as.numeric(config_params$dE$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
+                                    dIp  = cm_delay_gamma(as.numeric(config_params$dP$mu), as.numeric(config_params$dP$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
+                                    dIs  = cm_delay_gamma(as.numeric(config_params$dC$mu), as.numeric(config_params$dC$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
+                                    dIa  = cm_delay_gamma(as.numeric(config_params$dS$mu), as.numeric(config_params$dS$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
                                     deterministic = F);
 
 # build parameters for regions of UK, down to the county level (level 3).
 locations = cm_uk_locations("UK", 3);
 parameters = cm_parameters_SEI3R(locations, date_start = "2020-01-29", date_end = "2021-12-31",
-                                 dE  = cm_delay_gamma(4.0, 4.0, t_max = 60, t_step = 0.25)$p, # 6.5 day serial interval.
-                                 dIp = cm_delay_gamma(1.5, 4.0, t_max = 60, t_step = 0.25)$p, # 1.5 days w/o symptoms
-                                 dIs = cm_delay_gamma(3.5, 4.0, t_max = 60, t_step = 0.25)$p, # 5 days total of infectiousness
-                                 dIa = cm_delay_gamma(5.0, 4.0, t_max = 60, t_step = 0.25)$p, # 5 days total of infectiousness here as well.
+                                 dE  = cm_delay_gamma(as.numeric(config_params$dE$mu), as.numeric(config_params$dE$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,  # 6.5 day serial interval.
+                                 dIp  = cm_delay_gamma(as.numeric(config_params$dP$mu), as.numeric(config_params$dP$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p, # 1.5 days w/o symptoms
+                                 dIs  = cm_delay_gamma(as.numeric(config_params$dC$mu), as.numeric(config_params$dC$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p, # 5 days total of infectiousness
+                                 dIa  = cm_delay_gamma(as.numeric(config_params$dS$mu), as.numeric(config_params$dS$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p, # 5 days total of infectiousness here as well.
                                  deterministic = F);
 
 # Split off the elderly (70+, age groups 15 and 16) so their contact matrices can be manipulated separately
