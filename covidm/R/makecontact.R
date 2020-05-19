@@ -5,6 +5,8 @@ library(wpp2019)
 library(countrycode)
 library(ggplot2)
 
+cm_path_           = cm_option_("cm_path", "covidm")
+
 # POPULATIONS
 data(pop)
 data(UNlocations)
@@ -595,4 +597,4 @@ for (reg in zimreg) {
     );
 }
 
-saveRDS(matrices, "~/Dropbox/nCoV/all_matrices.rds");
+saveRDS(matrices, file.path(cm_path_, "data", "all_matrices.rds"));
