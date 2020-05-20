@@ -15,6 +15,8 @@ if (argc == 3) {
     option.single = -1;
 }
 
+# List setup of files in one print statement
+
 param_file_search = grep('--parameters*', argv, value = TRUE)
 covid_uk_search = grep('--covid-uk-path*', argv, value = TRUE)
 
@@ -31,7 +33,8 @@ if(length(covid_uk_search) > 0)
 } else {
 	covid_uk_path = getwd();
 }
-print(c(paste("COVID-UK Path: ", covid_uk_path), paste("Using parameters from: ",parameter_file)))
+options_print_str = paste("COVID-UK Path: ", covid_uk_path)
+options_print_str = c(options_print_str,paste("Using parameters From:",parameter_file))
 
 config_params = read.ini(parameter_file)
 
@@ -94,7 +97,7 @@ for (j in seq_along(parameters$pop))
 
 # Health burden processes
 health_burden_process_data = file.path(covid_uk_path, "data", "health_burden_processes.csv")
-print(paste('Reading Health Burden Processes from: ', health_burden_process_data))
+options_print_str = c(options_print_str,paste('Reading Health Burden Processes From:', health_burden_process_data))
 probs = fread(file=health_burden_process_data)
 
 
@@ -154,8 +157,9 @@ observer_lockdown = function(lockdown_trigger) function(time, dynamics)
 }
 
 # Load age-varying symptomatic rate
-covid_scenario = qread(file.path(covid_uk_path, "data", "2-linelist_symp_fit_fIa0.5.qs"));
-#covid_scenario2 = qread(paste0(covid_uk_path, "/data/2-linelist_both_fit_fIa0.5-rbzvi.qs"));
+age_var_symptom_rates = file.path(covid_uk_path, "data", "2-linelist_symp_fit_fIa0.5.qs")
+options_print_str = c(options_print_str,paste("Loading Age-Varying Symptomatic Rate From:", age_var_symptom_rates))
+covid_scenario = qread(age_var_symptom_rates);
 
 # Identify London boroughs for early seeding, and regions of each country for time courses
 london = cm_structure_UK[match(str_sub(locations, 6), Name), Geography1 %like% "London"]
@@ -166,13 +170,6 @@ nireland = cm_structure_UK[match(str_sub(locations, 6), Name), Code %like% "^N"]
 westmid = cm_structure_UK[match(str_sub(locations, 6), Name), Name == "West Midlands (Met County)"]
 cumbria = cm_structure_UK[match(str_sub(locations, 6), Name), Name == "Cumbria"]
 
-save = function(run)
-{
-  # if (analysis == 3) {
-  #     filename = paste0("~/Dropbox/COVID-UK Storage/", run$dynamics$scenario[1], "-", run$dynamics$run[1], ".qs");
-  #     cm_save(run, filename);
-  # }
-}
 
 add_totals = function(run, totals)
 {
@@ -226,12 +223,18 @@ add_dynamics = function(run, dynamics, iv)
 # MAIN CODE #
 #############
 
+# Define school terms, base versus intervention (both same here)
+school_terms_base_file = file.path(covid_uk_path, "data", "school_terms_base.csv")
+options_print_str = c(options_print_str,paste("Reading School Terms Base Data From:", school_terms_base_file))
+schools_terms_base_df = read.csv(school_terms_base_file)
+
+school_close_b  = schools_terms_base_df[, 1]
+school_reopen_b = schools_terms_base_df[, 2]
+
 if (analysis == 1) {
-  # Define school terms, base versus intervention (both same here)
-  school_close_b =  c("2020-2-16", "2020-4-05", "2020-5-24", "2020-7-22", "2020-10-25", "2020-12-20", "2021-02-14", "2021-04-01", "2021-05-30", "2021-07-25");
-  school_reopen_b = c("2020-2-22", "2020-4-18", "2020-5-30", "2020-9-01", "2020-10-31", "2021-01-02", "2021-02-20", "2021-04-17", "2021-06-05", "2021-09-01");
-  school_close_i =  c("2020-2-16", "2020-4-05", "2020-5-24", "2020-7-22", "2020-10-25", "2020-12-20", "2021-02-14", "2021-04-01", "2021-05-30", "2021-07-25");
-  school_reopen_i = c("2020-2-22", "2020-4-18", "2020-5-30", "2020-9-01", "2020-10-31", "2021-01-02", "2021-02-20", "2021-04-17", "2021-06-05", "2021-09-01");
+  
+  school_close_i  = school_close_b
+  school_reopen_i = school_reopen_b
   
   # Define interventions to be used
   interventions = list(
@@ -248,16 +251,14 @@ if (analysis == 1) {
   option.lockdown = NA;
   option.intervention_shift = 0;
 } else if (analysis == 2.1) {
-  # Define school terms, base versus intervention (both same here)
-  school_close_b =  c("2020-2-16", "2020-4-05", "2020-5-24", "2020-7-22", "2020-10-25", "2020-12-20", "2021-02-14", "2021-04-01", "2021-05-30", "2021-07-25");
-  school_reopen_b = c("2020-2-22", "2020-4-18", "2020-5-30", "2020-9-01", "2020-10-31", "2021-01-02", "2021-02-20", "2021-04-17", "2021-06-05", "2021-09-01");
-  school_close_i =  c("2020-2-16", "2020-4-05", "2020-5-24", "2020-7-22", "2020-10-25", "2020-12-20", "2021-02-14", "2021-04-01", "2021-05-30", "2021-07-25");
-  school_reopen_i = c("2020-2-22", "2020-4-18", "2020-5-30", "2020-9-01", "2020-10-31", "2021-01-02", "2021-02-20", "2021-04-17", "2021-06-05", "2021-09-01");
   
   # Define interventions to be used
   interventions = list(
     `Combination`       = list(contact = c(1.0, 0.5, 0.0, 0.5,  1.0, 0.25, 0.0, 0.25,  0), fIs = rep(0.65, 16))
   );
+
+  school_close_i  = school_close_b
+  school_reopen_i = school_reopen_b
   
   # Set options
   option.trigger = "national";
@@ -265,11 +266,6 @@ if (analysis == 1) {
   option.lockdown = NA;
   option.intervention_shift = c(0, 14, 28, 56);
 } else if (analysis == 2.2) {
-  # Define school terms, base versus intervention (both same here)
-  school_close_b =  c("2020-2-16", "2020-4-05", "2020-5-24", "2020-7-22", "2020-10-25", "2020-12-20", "2021-02-14", "2021-04-01", "2021-05-30", "2021-07-25");
-  school_reopen_b = c("2020-2-22", "2020-4-18", "2020-5-30", "2020-9-01", "2020-10-31", "2021-01-02", "2021-02-20", "2021-04-17", "2021-06-05", "2021-09-01");
-  school_close_i =  c("2020-2-16", "2020-4-05", "2020-5-24", "2020-7-22", "2020-10-25", "2020-12-20", "2021-02-14", "2021-04-01", "2021-05-30", "2021-07-25");
-  school_reopen_i = c("2020-2-22", "2020-4-18", "2020-5-30", "2020-9-01", "2020-10-31", "2021-01-02", "2021-02-20", "2021-04-17", "2021-06-05", "2021-09-01");
   
   # Define interventions to be used
   interventions = list(
@@ -282,11 +278,12 @@ if (analysis == 1) {
   option.lockdown = NA;
   option.intervention_shift = c(0, 14, 28, 56);
 } else if (analysis == 3) {
-  # Define school terms, base versus intervention (schools close from 23 March)
-  school_close_b =  c("2020-2-16", "2020-4-05", "2020-5-24", "2020-7-22", "2020-10-25", "2020-12-20", "2021-02-14", "2021-04-01", "2021-05-30", "2021-07-25");
-  school_reopen_b = c("2020-2-22", "2020-4-18", "2020-5-30", "2020-9-01", "2020-10-31", "2021-01-02", "2021-02-20", "2021-04-17", "2021-06-05", "2021-09-01");
-  school_close_i =  c("2020-2-16", "2020-3-23",                           "2020-10-25", "2020-12-20", "2021-02-14", "2021-04-01", "2021-05-30", "2021-07-25");
-  school_reopen_i = c("2020-2-22",                           "2020-9-01", "2020-10-31", "2021-01-02", "2021-02-20", "2021-04-17", "2021-06-05", "2021-09-01");
+  # Read in school terms with interventions
+  school_terms_intervention_file = file.path(covid_uk_path, "data", "school_terms_intervention.csv")
+  options_print_str = c(options_print_str,paste("Reading School Terms Intervention Data From:", school_terms_intervention_file))
+  schools_terms_intervention_df = read.csv(school_terms_base_file)
+  school_close_i  = schools_terms_intervention_df[, 1]
+  school_reopen_i = schools_terms_intervention_df[, 2]
   
   # Define interventions to be used
   interventions = list(
@@ -299,11 +296,10 @@ if (analysis == 1) {
   option.lockdown = c(NA, 1000, 2000, 5000);
   option.intervention_shift = 0;
 } else if (analysis == 4) {
+  
   # Define school terms, base versus intervention (both same here)
-  school_close_b =  c("2020-2-16", "2020-4-05", "2020-5-24", "2020-7-22", "2020-10-25", "2020-12-20", "2021-02-14", "2021-04-01", "2021-05-30", "2021-07-25");
-  school_reopen_b = c("2020-2-22", "2020-4-18", "2020-5-30", "2020-9-01", "2020-10-31", "2021-01-02", "2021-02-20", "2021-04-17", "2021-06-05", "2021-09-01");
-  school_close_i =  c("2020-2-16", "2020-4-05", "2020-5-24", "2020-7-22", "2020-10-25", "2020-12-20", "2021-02-14", "2021-04-01", "2021-05-30", "2021-07-25");
-  school_reopen_i = c("2020-2-22", "2020-4-18", "2020-5-30", "2020-9-01", "2020-10-31", "2021-01-02", "2021-02-20", "2021-04-17", "2021-06-05", "2021-09-01");
+  school_close_i  = school_close_b
+  school_reopen_i = school_reopen_b
   
   # Define interventions to be used
   interventions = list(
@@ -321,11 +317,10 @@ if (analysis == 1) {
   option.intervention_shift = 0;
   parameters$time1 = "2020-07-20";
 } else if (analysis == 6) {
+
   # Define school terms, base versus intervention (both same here)
-  school_close_b =  c("2020-2-16", "2020-4-05", "2020-5-24", "2020-7-22", "2020-10-25", "2020-12-20", "2021-02-14", "2021-04-01", "2021-05-30", "2021-07-25");
-  school_reopen_b = c("2020-2-22", "2020-4-18", "2020-5-30", "2020-9-01", "2020-10-31", "2021-01-02", "2021-02-20", "2021-04-17", "2021-06-05", "2021-09-01");
-  school_close_i =  c("2020-2-16", "2020-4-05", "2020-5-24", "2020-7-22", "2020-10-25", "2020-12-20", "2021-02-14", "2021-04-01", "2021-05-30", "2021-07-25");
-  school_reopen_i = c("2020-2-22", "2020-4-18", "2020-5-30", "2020-9-01", "2020-10-31", "2021-01-02", "2021-02-20", "2021-04-17", "2021-06-05", "2021-09-01");
+  school_close_i  = school_close_b
+  school_reopen_i = school_reopen_b
   
   # Define interventions to be used
   interventions = list(
@@ -352,7 +347,9 @@ totals = data.table()
 print(Sys.time())
 set.seed(1234567);
 
-print(file.path(covid_uk_path, paste0(analysis, "-dynamics", ifelse(option.single > 0, option.single, ""), ".qs")))
+output_file_name = file.path(covid_uk_path, paste0(analysis, "-dynamics", ifelse(option.single > 0, option.single, ""), ".qs"))
+options_print_str = c(options_print_str,paste("Output File:", output_file_name))
+print(options_print_str)
 
 if (option.single < 0) {
     run_set = 1:n_runs;
