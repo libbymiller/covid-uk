@@ -108,10 +108,6 @@ parameters = cm_parameters_SEI3R(locations, date_start = "2020-01-29", date_end 
                                  dIa  = cm_delay_gamma(as.numeric(config_params$dIa$mu), as.numeric(config_params$dIa$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p, # 5 days total of infectiousness here as well.
                                  deterministic = toupper(config_settings$deterministic$isTrue) == "TRUE");
 
-print(parameters)
-print(options_print_str)
-exit()
-
 # Split off the elderly (70+, age groups 15 and 16) so their contact matrices can be manipulated separately
 parameters = cm_split_matrices_ex_in(parameters, 15);
 
