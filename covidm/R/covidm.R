@@ -62,7 +62,7 @@ sourceCpp(file.path(cm_path_, "fit_v1", "fit.cpp"),
           verbose  = cm_build_verbose_)
 
 # Attach data
-cm_matrices     = readRDS(file.path(cm_path_, "data", "all_matrices.rds"));
+#cm_matrices     = readRDS(file.path(cm_path_, "data", "all_matrices.rds"));
 cm_populations  = readRDS(file.path(cm_path_, "data", "wpp2019_pop2020.rds"));
 cm_structure_UK = readRDS(file.path(cm_path_, "data", "structure_UK.rds"));
 

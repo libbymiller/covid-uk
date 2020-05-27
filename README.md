@@ -42,6 +42,11 @@ Here, 1 is the number for the analysis you want to run (1, 2.1, 2.2, 3, 4, 5, or
 
 For 50 runs, each set takes about 6-16 hours on a current laptop.
 
+Additional arguments exist to specify the location of the parameters file (example found in `params/params.ini`) and the location of this repository (if running the script from elsewhere):
+```
+UK.R 1 50 --parameters=./params/params.ini --covid-uk-path=$PWD
+```
+
 ## Testing After Development
 
 The R scripts require libaries to be installed (see the `Dockerfile` which contains a list of bash commands showing installation of these) and have been confirmed to run with Rscript `v4.0.0`.

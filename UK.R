@@ -5,6 +5,7 @@
 library(rlang)
 library(stringr)
 library(ini)
+library(qs)
 
 # Load requested settings from command line
 argv = commandArgs(trailingOnly = TRUE);
@@ -18,14 +19,9 @@ if (argc == 3) {
 # List setup of files in one print statement
 
 param_file_search = grep('--parameters*', argv, value = TRUE)
+settings_file_search = grep('--settings*', argv, value = TRUE)
 covid_uk_search = grep('--covid-uk-path*', argv, value = TRUE)
-
-if(length(param_file_search) > 0)
-{
-	parameter_file = strsplit(param_file_search, split = '=')[[1]][[2]];
-} else {
-	parameter_file = './params/params.ini';
-}
+contact_matrices_file_search = grep('--contact-matrices*', argv, value = TRUE)
 
 if(length(covid_uk_search) > 0)
 {
@@ -33,39 +29,87 @@ if(length(covid_uk_search) > 0)
 } else {
 	covid_uk_path = getwd();
 }
+
+if(length(param_file_search) > 0)
+{
+	parameter_file = strsplit(param_file_search, split = '=')[[1]][[2]];
+} else {
+	parameter_file = file.path(covid_uk_path, 'configuration', 'parameters.ini');
+}
+
+if(length(settings_file_search) > 0)
+{
+	settings_file = strsplit(settings_file_search, split = '=')[[1]][[2]];
+} else {
+	settings_file = file.path(covid_uk_path, 'configuration', 'settings.ini');
+}
+
+if(length(contact_matrices_file_search) > 0)
+{
+	contact_matrices_file = strsplit(contact_matrices_file_search, split = '=')[[1]][[2]];
+} else {
+	contact_matrices_file = file.path(covid_uk_path, 'configuration', 'all_matrices.rds');
+}
+
 options_print_str = paste("COVID-UK Path: ", covid_uk_path)
-options_print_str = c(options_print_str,paste("Using parameters From:",parameter_file))
+options_print_str = c(options_print_str,paste("Using parameters From: ",parameter_file))
+options_print_str = c(options_print_str, paste("Using settings From: ",settings_file))
+options_print_str = c(options_print_str, paste("Reading Contact Matrices From: ", contact_matrices_file))
 
-config_params = read.ini(parameter_file)
-
-analysis = as.numeric(argv[1]);
-n_runs = as.numeric(argv[2]);
-# Set path
-# Set this path to the base directory of the repository.
-# NOTE: Run from repository
+config_params   = read.ini(parameter_file)
+config_settings = read.ini(settings_file)
+cm_matrices     = readRDS(contact_matrices_file);
 
 # covidm options
 cm_path = file.path(covid_uk_path, "covidm");
 source(file.path(cm_path, "R", "covidm.R"))
 
+
+analysis = as.numeric(argv[1]);
+n_runs = as.numeric(argv[2]);
+
+# Set path
+# Set this path to the base directory of the repository.
+# NOTE: Run from repository
+
 # build parameters for entire UK, for setting R0.
-parametersUK1 = cm_parameters_SEI3R(cm_uk_locations("UK", 0), 
-                                    dE  = cm_delay_gamma(as.numeric(config_params$dE$mu), as.numeric(config_params$dE$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
+
+uk_level0_key = cm_uk_locations("UK", 0)
+n_age_groups  = nrow(cm_matrices[[uk_level0_key]][[1]])
+
+parametersUK1 = cm_parameters_SEI3R(uk_level0_key, 
+				    fIp  = rep(as.numeric(config_params$fIp$factor), n_age_groups),
+				    fIa  = rep(as.numeric(config_params$fIa$factor), n_age_groups),
+				    fIs  = rep(as.numeric(config_params$fIs$factor), n_age_groups),
+				    u    = rep(as.numeric(config_params$u$factor), n_age_groups),
+				    y    = rep(as.numeric(config_params$y$factor), n_age_groups),
+				    tau  = rep(as.numeric(config_params$tau$factor), n_age_groups),
+				    rho  = rep(as.numeric(config_params$rho$factor), n_age_groups),
+                                    dE   = cm_delay_gamma(as.numeric(config_params$dE$mu), as.numeric(config_params$dE$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
                                     dIp  = cm_delay_gamma(as.numeric(config_params$dIp$mu), as.numeric(config_params$dIp$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
                                     dIs  = cm_delay_gamma(as.numeric(config_params$dIs$mu), as.numeric(config_params$dIs$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
                                     dIa  = cm_delay_gamma(as.numeric(config_params$dIa$mu), as.numeric(config_params$dIa$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
-                                    deterministic = F);
+                                    deterministic = toupper(config_settings$deterministic$isTrue) == "TRUE");
 
 # build parameters for regions of UK, down to the county level (level 3).
 locations = cm_uk_locations("UK", 3);
+n_age_groups  = nrow(cm_matrices[[locations]][[1]])
 parameters = cm_parameters_SEI3R(locations, date_start = "2020-01-29", date_end = "2021-12-31",
+				 fIp  = rep(as.numeric(config_params$fIp$factor), n_age_groups),
+				 fIa  = rep(as.numeric(config_params$fIa$factor), n_age_groups),
+				 fIs  = rep(as.numeric(config_params$fIs$factor), n_age_groups),
+				 u    = rep(as.numeric(config_params$u$factor), n_age_groups),
+				 y    = rep(as.numeric(config_params$y$factor), n_age_groups),
+				 tau  = rep(as.numeric(config_params$tau$factor), n_age_groups),
+				 rho  = rep(as.numeric(config_params$rho$factor), n_age_groups),
                                  dE  = cm_delay_gamma(as.numeric(config_params$dE$mu), as.numeric(config_params$dE$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,  # 6.5 day serial interval.
                                  dIp  = cm_delay_gamma(as.numeric(config_params$dIp$mu), as.numeric(config_params$dIp$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p, # 1.5 days w/o symptoms
                                  dIs  = cm_delay_gamma(as.numeric(config_params$dIs$mu), as.numeric(config_params$dIs$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p, # 5 days total of infectiousness
                                  dIa  = cm_delay_gamma(as.numeric(config_params$dIa$mu), as.numeric(config_params$dIa$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p, # 5 days total of infectiousness here as well.
-                                 deterministic = F);
+                                 deterministic = toupper(config_settings$deterministic$isTrue) == "TRUE");
 
-print(parametersUK1)
+print(parameters)
+print(options_print_str)
 exit()
 
 # Split off the elderly (70+, age groups 15 and 16) so their contact matrices can be manipulated separately
@@ -342,14 +386,14 @@ if (analysis == 1) {
 }
 
 # Pick R0s 
-set.seed(9876);
+set.seed(config_settings$seed$r0);
 R0s = rnorm(n_runs, mean = 2.675739, sd = 0.5719293)
 
 # Do runs
 dynamics = data.table()
 totals = data.table()
 print(Sys.time())
-set.seed(1234567);
+set.seed(config_settings$seed$run);
 
 output_file_name = file.path(covid_uk_path, paste0(analysis, "-dynamics", ifelse(option.single > 0, option.single, ""), ".qs"))
 options_print_str = c(options_print_str,paste("Output File:", output_file_name))
