@@ -93,7 +93,7 @@ parametersUK1 = cm_parameters_SEI3R(uk_level0_key,
 
 # build parameters for regions of UK, down to the county level (level 3).
 locations = cm_uk_locations("UK", 3);
-n_age_groups  = nrow(cm_matrices[[locations]][[1]])
+n_age_groups  = nrow(cm_matrices[locations][[1]][[1]])
 parameters = cm_parameters_SEI3R(locations, date_start = "2020-01-29", date_end = "2021-12-31",
 				 fIp  = rep(as.numeric(config_params$fIp$factor), n_age_groups),
 				 fIa  = rep(as.numeric(config_params$fIa$factor), n_age_groups),
