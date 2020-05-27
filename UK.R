@@ -472,7 +472,6 @@ for (r in run_set) {
   run$dynamics[, run := r];
   run$dynamics[, scenario := "Base"];
   run$dynamics[, R0 := R0s[r]];
-  save(run);
   totals = add_totals(run, totals);
   dynamics = add_dynamics(run, dynamics, iv);
   peak_t = run$dynamics[compartment == "cases", .(total_cases = sum(value)), by = t][, t[which.max(total_cases)]];
@@ -542,7 +541,6 @@ for (r in run_set) {
             run$dynamics[, run := r];
             run$dynamics[, scenario := paste0(names(interventions)[i], tag)];
             run$dynamics[, R0 := R0s[r]];
-            save(run);
             totals = add_totals(run, totals);
             dynamics = add_dynamics(run, dynamics, iv);
             
