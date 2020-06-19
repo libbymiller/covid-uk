@@ -53,7 +53,7 @@ The R scripts require libaries to be installed (see the `Dockerfile` which conta
 
 Included within the repository is a set of tests which are designed to be run from a development branch, they compare the results obtained with the current scripts to those obtained with running the original source code from the parent repository. It is recommended you run within the root of this repository:
 
-`bash run_all.sh`
+`./scripts/run_tests.sh`
 
 which will run the relevant R code followed by the Python nose tests.
 The tests require you to install the modules contained within the `tests/requirements.txt` file.
