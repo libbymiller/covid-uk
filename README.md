@@ -20,10 +20,25 @@ Finally, install nlopt: `brew install nlopt`
 
 ### Guide to files
 
-Main parameter setting and model run script is in `UK.R` – there is option to set local path at top. Output collation and plotting functions are in `UK-view.R`. Underlying model code is in `covidm` folder.
+Main parameter setting and model run is in `scripts/UK.R` however the model is using the new `scripts/run_model.sh` script. Output collation and plotting functions are in `UK-view.R`. Underlying model code is in `covidm` folder.
 
-To run `UK.R`, after editing the local path at the top of the script, invoke as follows from the command line:
-`Rscript UK.R 1 50`
+Some parameters are now set to be read from external INI files which are located in the `configuration` folder, these include distribution definitions and
+time steps.
+
+A full print out of the run options can be viewed by running:
+
+```
+./script/run_model.sh --help
+```
+
+and include the ability to the location of these parameter file, as well as other data, and dump the parameters after initialisation for testing.
+
+To run the model in it's simplest form simply run:
+
+```
+./scripts/run_model.sh 1 50
+```
+
 Here, 1 is the number for the analysis you want to run (1, 2.1, 2.2, 3, 4, 5, or 6). 50 is the number of stochastic realisations to run.
 
 1 - 12 week interventions
@@ -41,11 +56,6 @@ Here, 1 is the number for the analysis you want to run (1, 2.1, 2.2, 3, 4, 5, or
 6 - leisure and sports analyses
 
 For 50 runs, each set takes about 6-16 hours on a current laptop.
-
-Additional arguments exist to specify the location of the parameters file (example found in `params/params.ini`) and the location of this repository (if running the script from elsewhere):
-```
-UK.R 1 50 --parameters=./params/params.ini --covid-uk-path=$PWD
-```
 
 ## Testing After Development
 
