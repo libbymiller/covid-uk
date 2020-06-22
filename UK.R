@@ -18,10 +18,13 @@ if (argc == 3) {
 
 # List setup of files in one print statement
 
-param_file_search = grep('--parameters*', argv, value = TRUE)
-settings_file_search = grep('--settings*', argv, value = TRUE)
-covid_uk_search = grep('--covid-uk-path*', argv, value = TRUE)
-contact_matrices_file_search = grep('--contact-matrices*', argv, value = TRUE)
+param_file_search = grep('--parameters*', argv, value = TRUE)   # Find location of parameters file
+settings_file_search = grep('--settings*', argv, value = TRUE)  # Find location of settings file
+covid_uk_search = grep('--coviduk*', argv, value = TRUE)  # Point to location of repository (if not default)
+dump_params = grep('--dump', argv, value = FALSE)               # Dump parameters prior to run and exit (for testing)
+contact_matrices_file_search = grep('--contact-matrices*', argv, value = TRUE)  # Find location of contact matrix data
+
+dump_params = length(dump_params) > 0
 
 if(length(covid_uk_search) > 0)
 {
@@ -466,6 +469,14 @@ for (r in run_set) {
   iv = cm_iv_build(params)
   cm_iv_set(iv, school_close_b, school_reopen_b, contact = c(1, 1, 0, 1,  1, 1, 0, 1,  1), trace_school = 2);
   params = cm_iv_apply(params, iv);
+
+  if(dump_params)
+  {
+    output_file = file.path(covid_uk_path, "output", paste0("params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
+    dput(params, file=output_file)
+    message(paste0("Params saved to '", output_file,"' aborting"))
+    return(0)
+  }
   
   # 4c. Run model
   run = cm_simulate(params, 1, r);
