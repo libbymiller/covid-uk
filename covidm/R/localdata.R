@@ -6,7 +6,8 @@ local_data_files = list(
     uk_population = list(address = file.path('data', 'ukmidyearestimates20192020ladcodes.xls'),
                          sheet = "MYE1",
                          range = "A12:B31"
-    )
+    ),
+    health_burden_process_data = file.path('data', "health_burden_processes.csv")
 )
 
 local_data = function(covid_dir, location)
@@ -22,5 +23,8 @@ local_data = function(covid_dir, location)
     corr_pop = population[["...2"]][-c(17,18,19)]
     corr_pop[[16]] = population[["...2"]][16]+population[["...2"]][17]+population[["...2"]][18]+population[["...2"]][19]
 
-    return(list(contact_matrix=cm, population=corr_pop, labels=colnames(cm$home)))
+    # Health burden processes
+    probs = fread(file=local_data_files$health_burden_process_data)
+
+    return(list(contact_matrix=cm, population=corr_pop, labels=colnames(cm$home), health_burden_probabilities=probs))
 }

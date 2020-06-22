@@ -1,57 +1,55 @@
-'''
-cm_base_pop_SEI3R = function(n_groups)
-{
-    list(
-        dE  = cm_delay_gamma(4.0, 4.0, t_max = 60, t_step = 0.25)$p, # Derived from Backer et al Eurosurveillance
-        dIp = cm_delay_gamma(2.4, 4.0, t_max = 60, t_step = 0.25)$p, # Derived from Backer et al Eurosurveillance
-        dIa = cm_delay_gamma(7.0, 4.0, t_max = 60, t_step = 0.25)$p, # Assumed 7 days subclinical shedding
-        dIs = cm_delay_gamma(3.2, 3.7, t_max = 60, t_step = 0.25)$p, # Zhang et al 2020
-        dH = 1, # hospitalization ignored
-        dC = 1, # no case reporting delay
-        
-        size = rep(1000, n_groups),
-        matrices = list(base = diag(n_groups) * 0.5 + 0.5/n_groups),
-        contact = 1,
-        contact_mult = numeric(),
-        contact_lowerto = numeric(),
-        u = rep(0.08, n_groups),
-        y = rep(0.5, n_groups),
-        fIp = rep(1, n_groups),
-        fIs = rep(1, n_groups),
-        fIa = rep(0.5, n_groups),
-        rho = rep(1, n_groups),
-        tau = rep(1, n_groups),
-        
-        seed_times = 1,
-        dist_seed_ages = rep(1, n_groups),
-        
-        schedule = list(),
-        observer = NULL
-    )
-}
+#######################################################
+#               Expected Arguments                    #
+#                                                     #
+# Single Value Fixed Parameters:                      #
+#   time:                                             #
+#       max : Maximum time (in days)                  #
+#       step : Time interval (in days)                #
+#       start: start day                              #
+#       end: end day                                  #
+#   rho : ?                                           #
+#   tau : ?                                           #
+#   fIa : ?                                           #
+#   fIs : ?                                           #
+#   fIp : ?                                           #
+#   from_bin : bin at which we define the             #
+#              start of 'elderly' age state           #
+#                                                     #
+# Flags:                                              #
+#   deterministic : Determines age seeding            #
+#           (False: use seeding - age distribution)   #
+#                                                     #
+# Adjusted Parameters (modified during run):          #
+#   u_init : ?                                        #
+#   y_init : ?                                        #
+#                                                     #
+# Distribution Parameters:                            #
+#   dE : gamma(mu, shape)                             #
+#   dIp : gamma(mu, shape)                            #
+#   dIs : gamma(mu, shape)                            #
+#   dIa : gamma(mu, shape)                            #
+#                                                     #
+# Array Parameters:                                   #
+#   population : binned population data               #
+#                list(label=list(), count=list()) ?   #
+#   interventions :                                   #
+#       list(label=list(val, val, ...), ...)          #
+#       (seems to be of length 9, no idea why yet)    #
+#                                                     #
+# Matrix Parameters:                                  #
+#   contact_matrix for given region:                  #
+#       list(home, work, school, other)               #
+#                                                     #
+#                                                     #
+# Age binning will be inferred from the data being    #
+# passed into the model?                              #
+#                                                     #
+# Will it be safe to assume all arrays passed into    #
+# this model will have the same age-binning?          #
+#######################################################
 
-# Get default simulation parameters, SEI3R model
-cm_base_parameters_SEI3R = function(n_groups = 1, pop = cm_base_pop_SEI3R(n_groups))
-{
-    # If just a single population, rather than a list of populations, has been passed to this function, rectify that.
-    if (is.character(pop$type)) {
-        pop = list(pop);
-    }
-    
-    list(
-        time_step = 0.25,
-        date0 = "2020-01-01",
-        time0 = 0,
-        time1 = 365,
-        report_every = 4,
-        fast_multinomial = F,
-        deterministic = T,
-        pop = pop,
-        travel = diag(length(pop)),
-        processes = NULL
-    )
-}
-'''
+
+# Modified cm_split_matrices_ex_in to be for one population parameter set only
 
 cm_split_matrices_ex_in = function(ngroups, parameters, bounds)
 {
@@ -87,54 +85,43 @@ cm_split_matrices_ex_in = function(ngroups, parameters, bounds)
     return (parameters)
 }
 
-#######################################################
-#               Expected Arguments                    #
-#                                                     #
-# Single Value Fixed Parameters:                      #
-#   time:                                             #
-#       max : Maximum time (in days)                  #
-#       step : Time interval (in days)                #
-#   rho : ?                                           #
-#   tau : ?                                           #
-#   fIa : ?                                           #
-#   fIs : ?                                           #
-#   fIp : ?                                           #
-#                                                     #
-# Flags:                                              #
-#   deterministic : ?                                 #
-#                                                     #
-# Adjusted Parameters (modified during run):          #
-#   u_init : ?                                        #
-#   y_init : ?                                        #
-#                                                     #
-# Distribution Parameters:                            #
-#   dE : gamma(mu, shape)                             #
-#   dIp : gamma(mu, shape)                            #
-#   dIs : gamma(mu, shape)                            #
-#   dIa : gamma(mu, shape)                            #
-#                                                     #
-# Array Parameters:                                   #
-#   population : binned population data               #
-#                list(label=list(), count=list()) ?   #
-#   interventions :                                   #
-#       list(label=list(val, val, ...), ...)          #
-#       (seems to be of length 9, no idea why yet)    #
-#                                                     #
-# Matrix Parameters:                                  #
-#   contact_matrix for given region:                  #
-#       list(home, work, school, other)               #
-#                                                     #
-#                                                     #
-# Age binning will be inferred from the data being    #
-# passed into the model?                              #
-#                                                     #
-# Will it be safe to assume all arrays passed into    #
-# this model will have the same age-binning?          #
-#######################################################
-
-build_params_from_args = function(arguments, settings)
+build_child_elderly_matrix = function(analysis, population_parameters)
 {
-    # Construct Gamma Distributions using the 
+    # Create additional matrix for child-elderly contacts
+    # Recover home/other contact matrix
+
+    # FIXME: This is based on there being 4 additional bins when splitting the matrices
+    # need to generalise this and base it on 'from_bin' eventually
+
+    mat_ref = population_parameters$matrices[[1]] + population_parameters$matrices[[4]] + 
+        population_parameters$matrices[[5]] + population_parameters$matrices[[8]];
+    
+    gran = 5/7; # adjustment for weekdays only.
+    N = nrow(mat_ref);
+    popsize = population_parameters$size;
+    mat = matrix(0, ncol = N, nrow = N);
+    
+    # Add child-grandparent contacts: under 15s to 55+s
+    if(analysis == 4)
+    {
+        for (a in 1:3) {
+            dist = c(rep(0, 10 + a), mat_ref[a, (11 + a):N]);
+            dist = dist/sum(dist);
+            mat[a, ] = mat[a, ] + gran * dist;
+            mat[, a] = mat[, a] + (gran * dist) * (popsize[a] / popsize);
+        }
+    } 
+    # Add child-grandparent contact matrix to population
+    population_parameters$matrices$gran = mat;
+    population_parameters$contact = c(population_parameters$contact, 0);
+    }
+
+    return(population_parameters)
+}
+
+build_population_parameters = function(arguments, settings)
+{
+# Construct Gamma Distributions using the 
     # cm_delay_gamma function for dE, dIp, dIs, dIa
 
     fixed_params = list( 
@@ -225,9 +212,22 @@ build_params_from_args = function(arguments, settings)
         contact = rep(1, length(contact_matrix)),
         matrices = contact_matrix,
         group_names = group_names,
-        schedule = list(),
-        observer = NULL 
-    ) 
+        schedule = list(), # Set time steps for various parameter change events (e.g. scaling of contact matrices)
+        observer = NULL    # Series of callback functions used to trigger events based on variable values
+    )
+
+    return(population_parameter_set)
+}
+
+build_params_from_args = function(analysis, arguments, settings)
+{
+    population_parameter_set = build_population_parameters(arguments, settings)
+
+    # Split off the elderly so their contact matrices can be manipulated separately
+    population_parameter_set = cm_split_matrices_ex_in(population_parameter_set,
+                                                       as.numeric(arguments$elderly$from_bin))
+    
+    population_parameter_set = build_child_elderly_matrix(analysis, population_parameter_set)
 
     parameter_set = list(
         pop = population_parameter_set,
@@ -235,7 +235,7 @@ build_params_from_args = function(arguments, settings)
         time1 = as.numeric(arguments$time$end),
         report_every = as.numeric(settings$report$frequency),
         fast_multinomial = is_fast_multi,
-        deterministic = is_deterministic,
+        deterministic = is_deterministic, 
         travel = diag(length(population_parameter_set)),
         process = NULL
     )
