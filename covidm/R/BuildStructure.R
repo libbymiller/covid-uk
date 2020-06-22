@@ -1,5 +1,4 @@
-
-
+'''
 cm_base_pop_SEI3R = function(n_groups)
 {
     list(
@@ -52,6 +51,41 @@ cm_base_parameters_SEI3R = function(n_groups = 1, pop = cm_base_pop_SEI3R(n_grou
         processes = NULL
     )
 }
+'''
+
+cm_split_matrices_ex_in = function(ngroups, parameters, bounds)
+{
+    if(any(bounds < 1) | bounds > ngroups)
+    {
+        stop("Bounds must lie within [1, nrow(mat)] for splitting contact matrices.");
+    }
+
+    n_matrices_initial = length(parameters$matrices)
+    parameters$matrices = rep(parameters$matrices, length(bounds)+1)
+
+    for (b in seq_along(bounds))
+    {
+        lb = floor(bounds[b]);
+        fb = bounds[b] %% 1;
+        mask1 = matrix(1, nrow = ngroups, ncol = ngroups);
+        if (lb > 1) {
+            mask1[1:(lb - 1), 1:(lb - 1)] = 0;
+        }
+        mask1[lb, 1:lb] = 1 - fb;
+        mask1[1:lb, lb] = 1 - fb;
+        mask0 = 1 - mask1;
+        
+        for (m in seq_len(n_matrices_initial)) {
+            names(parameters$matrices)[m + b * nmat0] = paste0(names(parameters$matrices)[m + b * n_matrices_initial], b + 1);
+            parameters$matrices[[m + (b - 1) * nmat0]] = mask0 * parameters$matrices[[m + (b - 1) * n_matrices_initial]];
+            parameters$matrices[[m +       b * nmat0]] = mask1 * parameters$matrices[[m +       b * n_matrices_initial]];
+        }
+    }
+    parameters$contact = rep_len(parameters$contact, n_matrices_initial * (length(bounds) + 1));
+    }
+    
+    return (parameters)
+}
 
 #######################################################
 #               Expected Arguments                    #
@@ -87,7 +121,7 @@ cm_base_parameters_SEI3R = function(n_groups = 1, pop = cm_base_pop_SEI3R(n_grou
 #       (seems to be of length 9, no idea why yet)    #
 #                                                     #
 # Matrix Parameters:                                  #
-#   contact_matrix:                                   #
+#   contact_matrix for given region:                  #
 #       list(home, work, school, other)               #
 #                                                     #
 #                                                     #
@@ -163,9 +197,17 @@ build_params_from_args = function(arguments, settings)
     else {
        is_deterministic = toupper(settings$deterministic) == "TRUE"
     }
+    if(typeof(settings$fast_multinomial) == "logical")
+    {
+        is_fast_multi = settings$fast_multinomial
+    }
+    else {
+       is_fast_multi = toupper(settings$fast_multinomial) == "TRUE"
+    }
 
     # Organize parameters into form recognised by model
-    parameter_set = list(
+    population_parameter_set = list(
+        type = "SEI3R",
         dE = distribution_params$gamma$dE$p,
         dIp = distribution_params$gamma$dIp$p,
         dIa = distribution_params$gamma$Ia$p,
@@ -180,12 +222,23 @@ build_params_from_args = function(arguments, settings)
         fIa = rep(fixed_params$fIa, n_groups),
         fIp = rep(fixed_params$fIp, n_groups),
         size = size,
-        contact = contact_matrix,
+        contact = rep(1, length(contact_matrix)),
+        matrices = contact_matrix,
         group_names = group_names,
-        deterministic = is_deterministic,
         schedule = list(),
         observer = NULL 
-    )   
+    ) 
+
+    parameter_set = list(
+        pop = population_parameter_set,
+        time0 = as.numeric(arguments$time$start),
+        time1 = as.numeric(arguments$time$end),
+        report_every = as.numeric(settings$report$frequency),
+        fast_multinomial = is_fast_multi,
+        deterministic = is_deterministic,
+        travel = diag(length(population_parameter_set)),
+        process = NULL
+    )
 
     print(parameter_set)
 
