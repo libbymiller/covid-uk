@@ -53,6 +53,7 @@
 
 cm_split_matrices_ex_in = function(ngroups, parameters, bounds)
 {
+
     if(any(bounds < 1) | bounds > ngroups)
     {
         stop("Bounds must lie within [1, nrow(mat)] for splitting contact matrices.");
@@ -117,6 +118,71 @@ build_child_elderly_matrix = function(analysis, population_parameters)
     }
 
     return(population_parameters)
+}
+
+build_burden_processes = function(ngroups, arguments)
+{
+    process_probs = arguments$health_burden_probabilities
+
+    probabilities =  list(
+        icu_symptomatic     = reformat(process_probs[, Prob_symp_hospitalised*Prob_hospitalised_critical]),
+        non_icu_symptomatic = reformat(process_probs[, Prop_symp_hospitalised * (1 - Prop_hospitalised_critical)]),
+        deaths_icu          = reformat(process_probs[, Prob_critical_fatal]),
+        deaths_non_icu      = reformat(process_probs[, Prob_noncritical_fatal])
+    )
+
+    hfr = probs[, Prob_noncritical_fatal/Prob_symp_hospitalised]
+
+    gamma_Ip_Hosp_delay = cm_delay_gamma(mu = arguments$delay_Ip_to_hosp$mu, 
+                                    shape = arguments$delay_Ip_to_hosp$shape, 
+                                    t_max = arguments$time$max,
+                                    t_step = arguments$time$step)
+    
+    gamma_to_icu_delay = cm_delay_gamma(mu = arguments$delay_to_icu$mu,
+                                        shape = arguments$delay_to_icu$shape,
+                                        t_max = arguments$time$max,
+                                        t_step = arguments$time$steps)
+    
+    gamma_to_non_icu_delay = cm_delay_gamma(mu = arguments$delay_to_non_icu$mu,
+                                            shape = arguments$delay_to_non_icu$shape,
+                                            t_max = arguments$time$max,
+                                            t_step = arguments$time$steps)
+
+    gamma_Ip_Death_delay = cm_delay_gamma(mu = arguments$delay_Ip_to_death$mu, 
+                                          shape = arguments$delay_Ip_to_death$shape, 
+                                          t_max = arguments$time$max,
+                                          t_step = arguments$time$step)
+
+    delay_skip = cm_delay_skip(arguments$time$max, arguments$time$step)
+
+    burden_processes = list(
+        list(source = "Ip", type = "multinomial",
+             names = c("to_icu", "to_nonicu", "null"),
+             report = c("", "", ""),
+             prob = matrix(c(probabilities$icu_symptomatic,
+                             probabilities$non_icu_symptomatic,
+                             1 - $probabilities$icu_symptomatic - probabilities$non_icu_symptomatic), 
+                             nrow = 3, 
+                             ncol = ngroups, 
+                             byrow = TRUE),
+             delays = matrix(c(gamma_Ip_Hosp_delay$p, gamma_Ip_delay$p, 
+                               delay_skip$p), nrow = 3, byrow = TRUE)),
+        
+        list(source = "to_icu", type = "multinomial", names = "icu", report = "p",
+            prob = matrix(1, nrow = 1, ncol = ngroups, byrow = TRUE),
+            delays = matrix(gamma_to_icu_delay$p, nrow = 1, byrow = TRUE)),
+        
+        list(source = "to_nonicu", type = "multinomial", names = "nonicu", report = "p",
+            prob = matrix(1, nrow = 1, ncol = ngroups, byrow = TRUE),
+            delays = matrix(gamma_to_non_icu_delay$p, nrow = 1, byrow = TRUE)),
+        
+        list(source = "Ip", type = "multinomial", names = c("death", "null"), report = c("o", ""),
+            prob = matrix(c(probabilities$deaths_non_icu, 1 - $probabilities$deaths_non_icu), 
+                            nrow = 2, ncol = ngroups, byrow = TRUE),
+            delays = matrix(c(gamma_Ip_Death_delay$p, delay_skip$p), nrow = 2, byrow = TRUE))
+    )
+
+    return (burden_processes)
 }
 
 build_population_parameters = function(arguments, settings)
@@ -223,11 +289,15 @@ build_params_from_args = function(analysis, arguments, settings)
 {
     population_parameter_set = build_population_parameters(arguments, settings)
 
+    ngroups = length(population_parameter_set$group_names)
+
     # Split off the elderly so their contact matrices can be manipulated separately
-    population_parameter_set = cm_split_matrices_ex_in(population_parameter_set,
+    population_parameter_set = cm_split_matrices_ex_in(ngroups, population_parameter_set,
                                                        as.numeric(arguments$elderly$from_bin))
     
     population_parameter_set = build_child_elderly_matrix(analysis, population_parameter_set)
+
+    burden_processes = build_burden_processes(ngroups, arguments)
 
     parameter_set = list(
         pop = population_parameter_set,
@@ -237,10 +307,8 @@ build_params_from_args = function(analysis, arguments, settings)
         fast_multinomial = is_fast_multi,
         deterministic = is_deterministic, 
         travel = diag(length(population_parameter_set)),
-        process = NULL
+        processese = burden_processes
     )
-
-    print(parameter_set)
 
     return(parameter_set)
 

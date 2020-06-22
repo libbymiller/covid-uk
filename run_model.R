@@ -65,6 +65,7 @@ if(local)
 
   config_params   = read.ini(parameter_file)
   config_params$contact_matrix = data$contact_matrix
+  config_params$health_burden_probabilities = data$health_burden_probabilities
   config_params$population = list(count=data$population, label=data$labels)
   config_settings = read.ini(settings_file)
 
