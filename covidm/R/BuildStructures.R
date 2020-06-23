@@ -75,16 +75,17 @@ cm_split_matrices_ex_in = function(ngroups, parameters, bounds)
         mask0 = 1 - mask1;
         
         for (m in seq_len(n_matrices_initial)) {
-            names(parameters$matrices)[m + b * nmat0] = paste0(names(parameters$matrices)[m + b * n_matrices_initial], b + 1);
-            parameters$matrices[[m + (b - 1) * nmat0]] = mask0 * parameters$matrices[[m + (b - 1) * n_matrices_initial]];
-            parameters$matrices[[m +       b * nmat0]] = mask1 * parameters$matrices[[m +       b * n_matrices_initial]];
+            names(parameters$matrices)[m + b * n_matrices_initial] = paste0(names(parameters$matrices)[m + b * n_matrices_initial], b + 1);
+            parameters$matrices[[m + (b - 1) * n_matrices_initial]] = mask0 * parameters$matrices[[m + (b - 1) * n_matrices_initial]];
+            parameters$matrices[[m +       b * n_matrices_initial]] = mask1 * parameters$matrices[[m +       b * n_matrices_initial]];
         }
     }
     parameters$contact = rep_len(parameters$contact, n_matrices_initial * (length(bounds) + 1));
-    }
     
     return (parameters)
 }
+
+build_observer = function(lockdown_trigger) function(time, dynamics) {}
 
 build_child_elderly_matrix = function(analysis, population_parameters)
 {
@@ -115,9 +116,17 @@ build_child_elderly_matrix = function(analysis, population_parameters)
     # Add child-grandparent contact matrix to population
     population_parameters$matrices$gran = mat;
     population_parameters$contact = c(population_parameters$contact, 0);
-    }
 
     return(population_parameters)
+}
+
+# FIXME there are a lot of hard coded numbers here! What are they?
+# breaks at the moment as 'x' and 'w' are not same length in weighted.mean
+reformat = function(P)
+{
+  # 70-74,3388.488  75-79,2442.147  80-84,1736.567  85-89,1077.555  90-94,490.577  95-99,130.083  100+,15.834
+  x = c(P[1:7], weighted.mean(c(P[8], P[9]), c(3388.488 + 2442.147, 1736.567 + 1077.555 + 490.577 + 130.083 + 15.834)));
+  return (rep(x, each = 2))
 }
 
 build_burden_processes = function(ngroups, arguments)
@@ -125,35 +134,35 @@ build_burden_processes = function(ngroups, arguments)
     process_probs = arguments$health_burden_probabilities
 
     probabilities =  list(
-        icu_symptomatic     = reformat(process_probs[, Prob_symp_hospitalised*Prob_hospitalised_critical]),
-        non_icu_symptomatic = reformat(process_probs[, Prop_symp_hospitalised * (1 - Prop_hospitalised_critical)]),
-        deaths_icu          = reformat(process_probs[, Prob_critical_fatal]),
-        deaths_non_icu      = reformat(process_probs[, Prob_noncritical_fatal])
+        icu_symptomatic     = reformat(process_probs[, process_probs$Prop_symp_hospitalised*process_probs$Prop_hospitalised_critical]),
+        non_icu_symptomatic = reformat(process_probs[, process_probs$Prop_symp_hospitalised * (1 - process_probs$Prop_hospitalised_critical)]),
+        deaths_icu          = reformat(process_probs[, process_probs$Prop_critical_fatal]),
+        deaths_non_icu      = reformat(process_probs[, process_probs$Prop_noncritical_fatal])
     )
 
-    hfr = probs[, Prob_noncritical_fatal/Prob_symp_hospitalised]
+    hfr = process_probs[, process_probs$Prop_noncritical_fatal/process_probs$Prop_symp_hospitalised]
 
-    gamma_Ip_Hosp_delay = cm_delay_gamma(mu = arguments$delay_Ip_to_hosp$mu, 
-                                    shape = arguments$delay_Ip_to_hosp$shape, 
-                                    t_max = arguments$time$max,
-                                    t_step = arguments$time$step)
+    gamma_Ip_Hosp_delay = cm_delay_gamma(mu = as.numeric(arguments$delay_Ip_to_hosp$mu), 
+                                    shape = as.numeric(arguments$delay_Ip_to_hosp$shape), 
+                                    t_max = as.numeric(arguments$time$max),
+                                    t_step = as.numeric(arguments$time$step))
     
-    gamma_to_icu_delay = cm_delay_gamma(mu = arguments$delay_to_icu$mu,
-                                        shape = arguments$delay_to_icu$shape,
-                                        t_max = arguments$time$max,
-                                        t_step = arguments$time$steps)
+    gamma_to_icu_delay = cm_delay_gamma(mu = as.numeric(arguments$delay_to_icu$mu),
+                                        shape = as.numeric(arguments$delay_to_icu$shape),
+                                        t_max = as.numeric(arguments$time$max),
+                                        t_step = as.numeric(arguments$time$step))
     
-    gamma_to_non_icu_delay = cm_delay_gamma(mu = arguments$delay_to_non_icu$mu,
-                                            shape = arguments$delay_to_non_icu$shape,
-                                            t_max = arguments$time$max,
-                                            t_step = arguments$time$steps)
+    gamma_to_non_icu_delay = cm_delay_gamma(mu = as.numeric(arguments$delay_to_non_icu$mu),
+                                            shape = as.numeric(arguments$delay_to_non_icu$shape),
+                                            t_max = as.numeric(arguments$time$max),
+                                            t_step = as.numeric(arguments$time$step))
 
-    gamma_Ip_Death_delay = cm_delay_gamma(mu = arguments$delay_Ip_to_death$mu, 
-                                          shape = arguments$delay_Ip_to_death$shape, 
-                                          t_max = arguments$time$max,
-                                          t_step = arguments$time$step)
+    gamma_Ip_Death_delay = cm_delay_gamma(mu = as.numeric(arguments$delay_Ip_to_death$mu), 
+                                          shape = as.numeric(arguments$delay_Ip_to_death$shape), 
+                                          t_max = as.numeric(arguments$time$max),
+                                          t_step = as.numeric(arguments$time$step))
 
-    delay_skip = cm_delay_skip(arguments$time$max, arguments$time$step)
+    delay_skip = cm_delay_skip(as.numeric(arguments$time$max), as.numeric(arguments$time$step))
 
     burden_processes = list(
         list(source = "Ip", type = "multinomial",
@@ -161,11 +170,11 @@ build_burden_processes = function(ngroups, arguments)
              report = c("", "", ""),
              prob = matrix(c(probabilities$icu_symptomatic,
                              probabilities$non_icu_symptomatic,
-                             1 - $probabilities$icu_symptomatic - probabilities$non_icu_symptomatic), 
+                             1 - probabilities$icu_symptomatic - probabilities$non_icu_symptomatic), 
                              nrow = 3, 
                              ncol = ngroups, 
                              byrow = TRUE),
-             delays = matrix(c(gamma_Ip_Hosp_delay$p, gamma_Ip_delay$p, 
+             delays = matrix(c(gamma_Ip_Hosp_delay$p, gamma_Ip_Hosp_delay$p, 
                                delay_skip$p), nrow = 3, byrow = TRUE)),
         
         list(source = "to_icu", type = "multinomial", names = "icu", report = "p",
@@ -177,7 +186,7 @@ build_burden_processes = function(ngroups, arguments)
             delays = matrix(gamma_to_non_icu_delay$p, nrow = 1, byrow = TRUE)),
         
         list(source = "Ip", type = "multinomial", names = c("death", "null"), report = c("o", ""),
-            prob = matrix(c(probabilities$deaths_non_icu, 1 - $probabilities$deaths_non_icu), 
+            prob = matrix(c(probabilities$deaths_non_icu, 1 - probabilities$deaths_non_icu), 
                             nrow = 2, ncol = ngroups, byrow = TRUE),
             delays = matrix(c(gamma_Ip_Death_delay$p, delay_skip$p), nrow = 2, byrow = TRUE))
     )
@@ -242,21 +251,7 @@ build_population_parameters = function(arguments, settings)
     n_groups = length(arguments$population$label)
     size = arguments$population$count
     group_names = arguments$population$label
-    contact_matrix = arguments$contact_matrix
-    if(typeof(settings$deterministic) == "logical")
-    {
-        is_deterministic = settings$deterministic
-    }
-    else {
-       is_deterministic = toupper(settings$deterministic) == "TRUE"
-    }
-    if(typeof(settings$fast_multinomial) == "logical")
-    {
-        is_fast_multi = settings$fast_multinomial
-    }
-    else {
-       is_fast_multi = toupper(settings$fast_multinomial) == "TRUE"
-    }
+    contact_matrices = arguments$contact_matrices
 
     # Organize parameters into form recognised by model
     population_parameter_set = list(
@@ -275,8 +270,8 @@ build_population_parameters = function(arguments, settings)
         fIa = rep(fixed_params$fIa, n_groups),
         fIp = rep(fixed_params$fIp, n_groups),
         size = size,
-        contact = rep(1, length(contact_matrix)),
-        matrices = contact_matrix,
+        contact = rep(1, length(contact_matrices)),
+        matrices = contact_matrices,
         group_names = group_names,
         schedule = list(), # Set time steps for various parameter change events (e.g. scaling of contact matrices)
         observer = NULL    # Series of callback functions used to trigger events based on variable values
@@ -292,12 +287,29 @@ build_params_from_args = function(analysis, arguments, settings)
     ngroups = length(population_parameter_set$group_names)
 
     # Split off the elderly so their contact matrices can be manipulated separately
+    # this doubles the number of matrices in the categories: home, work, school, other
     population_parameter_set = cm_split_matrices_ex_in(ngroups, population_parameter_set,
                                                        as.numeric(arguments$elderly$from_bin))
     
     population_parameter_set = build_child_elderly_matrix(analysis, population_parameter_set)
 
     burden_processes = build_burden_processes(ngroups, arguments)
+
+    if(typeof(settings$fast_multinomial) == "logical")
+    {
+        is_fast_multi = settings$fast_multinomial
+    }
+    else {
+       is_fast_multi = toupper(settings$fast_multinomial) == "TRUE"
+    }
+
+    if(typeof(settings$deterministic) == "logical")
+    {
+        is_deterministic = settings$deterministic
+    }
+    else {
+       is_deterministic = toupper(settings$deterministic) == "TRUE"
+    }
 
     parameter_set = list(
         pop = population_parameter_set,
@@ -307,7 +319,7 @@ build_params_from_args = function(analysis, arguments, settings)
         fast_multinomial = is_fast_multi,
         deterministic = is_deterministic, 
         travel = diag(length(population_parameter_set)),
-        processese = burden_processes
+        processes = burden_processes
     )
 
     return(parameter_set)

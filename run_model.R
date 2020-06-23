@@ -6,6 +6,7 @@ library(rlang)
 library(stringr)
 library(ini)
 library(qs)
+library(data.table)
 
 # Load requested settings from command line
 argv = commandArgs(trailingOnly = TRUE);
@@ -32,47 +33,10 @@ if(length(covid_uk_search) > 0)
   covid_uk_path = getwd();
 }
 
-options_print_str = paste("COVID-UK Path: ", covid_uk_path)
-
 if(local)
 {
   source(file.path(covid_uk_path, "covidm", "R", "localdata.R"))
-  data = local_data(covid_uk_path, location="UK | Epping Forest")
-  param_file_search = grep('--parameters*', argv, value = TRUE)
-  settings_file_search = grep('--settings*', argv, value = TRUE)
-  contact_matrices_file_search = grep('--contact-matrices*', argv, value = TRUE)
-
-  if(length(param_file_search) > 0)
-  {
-    parameter_file = strsplit(param_file_search, split = '=')[[1]][[2]];
-  } else {
-    parameter_file = file.path(covid_uk_path, 'configuration', 'parameters.ini');
-  }
-
-  if(length(settings_file_search) > 0)
-  {
-    settings_file = strsplit(settings_file_search, split = '=')[[1]][[2]];
-  } else {
-    settings_file = file.path(covid_uk_path, 'configuration', 'settings.ini');
-  }
-
-  if(length(contact_matrices_file_search) > 0)
-  {
-    contact_matrices_file = strsplit(contact_matrices_file_search, split = '=')[[1]][[2]];
-  } else {
-    contact_matrices_file = file.path(covid_uk_path, 'configuration', 'all_matrices.rds');
-  }
-
-  config_params   = read.ini(parameter_file)
-  config_params$contact_matrix = data$contact_matrix
-  config_params$health_burden_probabilities = data$health_burden_probabilities
-  config_params$population = list(count=data$population, label=data$labels)
-  config_settings = read.ini(settings_file)
-
-  options_print_str = c(options_print_str,paste("Using parameters From: ",parameter_file))
-  options_print_str = c(options_print_str, paste("Using settings From: ",settings_file))
-  options_print_str = c(options_print_str, paste("Reading Contact Matrices From: ", contact_matrices_file))
-
+  configuration = local_data(covid_uk_path, location="UK | Epping Forest")
 }
 
 # covidm options
@@ -89,5 +53,7 @@ n_runs = as.numeric(argv[2]);
 
 # build parameters for entire UK, for setting R0.
 
-source(file.path(cm_path, "R", "BuildStructure.R"))
-parameters = build_params_from_args(config_params, config_settings)
+source(file.path(cm_path, "R", "BuildStructures.R"))
+
+parameters = build_params_from_args(analysis, configuration$parameters,
+                                    configuration$settings)
