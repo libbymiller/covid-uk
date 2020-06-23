@@ -6,6 +6,12 @@ output/
 
 misc/
 
+*.json
+*.swp
+*.xls
+
+.~lock*
+
 covidm/build/
 
 submission/
