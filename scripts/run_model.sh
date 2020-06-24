@@ -40,5 +40,4 @@ for i in "$@"; do
         RUNARGS = "${RUNARGS} $i"
     fi
 done
-exit 0
 $EXE_R_SCRIPT $1 $2 $RUNARGS
