@@ -57,3 +57,5 @@ source(file.path(cm_path, "R", "BuildStructures.R"))
 
 parameters = build_params_from_args(analysis, configuration$parameters,
                                     configuration$settings)
+
+print(parameters$pop)

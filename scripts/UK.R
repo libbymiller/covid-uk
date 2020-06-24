@@ -88,10 +88,10 @@ parametersUK1 = cm_parameters_SEI3R(uk_level0_key,
 				    y    = rep(as.numeric(config_params$y$factor), n_age_groups),
 				    tau  = rep(as.numeric(config_params$tau$factor), n_age_groups),
 				    rho  = rep(as.numeric(config_params$rho$factor), n_age_groups),
-                                    dE   = cm_delay_gamma(as.numeric(config_params$dE$mu), as.numeric(config_params$dE$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
-                                    dIp  = cm_delay_gamma(as.numeric(config_params$dIp$mu), as.numeric(config_params$dIp$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
-                                    dIs  = cm_delay_gamma(as.numeric(config_params$dIs$mu), as.numeric(config_params$dIs$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
-                                    dIa  = cm_delay_gamma(as.numeric(config_params$dIa$mu), as.numeric(config_params$dIa$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
+                                    dE   = cm_delay_gamma(as.numeric(config_params$dE$mu), as.numeric(config_params$dE$shape), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
+                                    dIp  = cm_delay_gamma(as.numeric(config_params$dIp$mu), as.numeric(config_params$dIp$shape), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
+                                    dIs  = cm_delay_gamma(as.numeric(config_params$dIs$mu), as.numeric(config_params$dIs$shape), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
+                                    dIa  = cm_delay_gamma(as.numeric(config_params$dIa$mu), as.numeric(config_params$dIa$shape), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
                                     deterministic = toupper(config_settings$deterministic$isTrue) == "TRUE");
 
 # build parameters for regions of UK, down to the county level (level 3).
@@ -105,10 +105,10 @@ parameters = cm_parameters_SEI3R(locations, date_start = "2020-01-29", date_end 
 				 y    = rep(as.numeric(config_params$y$factor), n_age_groups),
 				 tau  = rep(as.numeric(config_params$tau$factor), n_age_groups),
 				 rho  = rep(as.numeric(config_params$rho$factor), n_age_groups),
-                                 dE  = cm_delay_gamma(as.numeric(config_params$dE$mu), as.numeric(config_params$dE$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,  # 6.5 day serial interval.
-                                 dIp  = cm_delay_gamma(as.numeric(config_params$dIp$mu), as.numeric(config_params$dIp$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p, # 1.5 days w/o symptoms
-                                 dIs  = cm_delay_gamma(as.numeric(config_params$dIs$mu), as.numeric(config_params$dIs$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p, # 5 days total of infectiousness
-                                 dIa  = cm_delay_gamma(as.numeric(config_params$dIa$mu), as.numeric(config_params$dIa$k), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p, # 5 days total of infectiousness here as well.
+                                 dE  = cm_delay_gamma(as.numeric(config_params$dE$mu), as.numeric(config_params$dE$shape), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,  # 6.5 day serial interval.
+                                 dIp  = cm_delay_gamma(as.numeric(config_params$dIp$mu), as.numeric(config_params$dIp$shape), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p, # 1.5 days w/o symptoms
+                                 dIs  = cm_delay_gamma(as.numeric(config_params$dIs$mu), as.numeric(config_params$dIs$shape), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p, # 5 days total of infectiousness
+                                 dIa  = cm_delay_gamma(as.numeric(config_params$dIa$mu), as.numeric(config_params$dIa$shape), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p, # 5 days total of infectiousness here as well.
                                  deterministic = toupper(config_settings$deterministic$isTrue) == "TRUE");
 
 # Split off the elderly (70+, age groups 15 and 16) so their contact matrices can be manipulated separately
