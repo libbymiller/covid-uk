@@ -63,6 +63,8 @@ config_params   = read.ini(parameter_file)
 config_settings = read.ini(settings_file)
 cm_matrices     = readRDS(contact_matrices_file);
 
+set.seed(config_params$seed$value);
+
 # covidm options
 cm_path = file.path(covid_uk_path, "covidm");
 source(file.path(cm_path, "R", "covidm.R"))
@@ -93,6 +95,14 @@ parametersUK1 = cm_parameters_SEI3R(uk_level0_key,
                                     dIs  = cm_delay_gamma(as.numeric(config_params$dIs$mu), as.numeric(config_params$dIs$shape), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
                                     dIa  = cm_delay_gamma(as.numeric(config_params$dIa$mu), as.numeric(config_params$dIa$shape), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
                                     deterministic = toupper(config_settings$deterministic$isTrue) == "TRUE");
+
+if(dump_params)
+  {
+    output_file = file.path(covid_uk_path, "output", paste0("params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
+    dput(parametersUK1, file=output_file)
+    message(paste0("Params saved to '", output_file,"' aborting"))
+    return(0)
+  }
 
 # build parameters for regions of UK, down to the county level (level 3).
 locations = cm_uk_locations("UK", 3);
@@ -385,14 +395,12 @@ if (analysis == 1) {
 }
 
 # Pick R0s 
-set.seed(config_settings$seed$r0);
 R0s = rnorm(n_runs, mean = 2.675739, sd = 0.5719293)
 
 # Do runs
 dynamics = data.table()
 totals = data.table()
 print(Sys.time())
-set.seed(config_settings$seed$run);
 
 output_file_name = file.path(covid_uk_path, paste0(analysis, "-dynamics", ifelse(option.single > 0, option.single, ""), ".qs"))
 options_print_str = c(options_print_str,paste("Output File:", output_file_name))
@@ -402,7 +410,6 @@ if (option.single < 0) {
     run_set = 1:n_runs;
 } else {
     run_set = option.single;
-    set.seed(1234 + option.single);
 }
 
 for (r in run_set) {

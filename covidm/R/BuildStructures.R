@@ -48,6 +48,9 @@
 # this model will have the same age-binning?          #
 #######################################################
 
+#-------------- Import External Functions ------------#
+source(file.path(cm_path, "R", "Observers.R"))
+
 
 # Modified cm_split_matrices_ex_in to be for one population parameter set only
 
@@ -87,10 +90,10 @@ cm_split_matrices_ex_in = function(ngroups, parameters, bounds)
 
 build_observer = function(lockdown_trigger) function(time, dynamics) {}
 
-build_child_elderly_matrix = function(analysis, population_parameters)
+build_child_elderly_matrix = function(population_parameters, child_grandparent_contacts)
 {
     # Create additional matrix for child-elderly contacts
-    # Recover home/other contact matrix
+    # this matrix is labelled 'gran'
 
     # FIXME: This is based on there being 4 additional bins when splitting the matrices
     # need to generalise this and base it on 'from_bin' eventually
@@ -104,7 +107,7 @@ build_child_elderly_matrix = function(analysis, population_parameters)
     mat = matrix(0, ncol = N, nrow = N);
     
     # Add child-grandparent contacts: under 15s to 55+s
-    if(analysis == 4)
+    if(child_grandparent_contacts == TRUE)
     {
         for (a in 1:3) {
             dist = c(rep(0, 10 + a), mat_ref[a, (11 + a):N]);
@@ -113,8 +116,10 @@ build_child_elderly_matrix = function(analysis, population_parameters)
             mat[, a] = mat[, a] + (gran * dist) * (popsize[a] / popsize);
         }
     } 
-    # Add child-grandparent contact matrix to population
+    
+    # Add child-grandparent contact matrix to population 
     population_parameters$matrices$gran = mat;
+
     population_parameters$contact = c(population_parameters$contact, 0);
 
     return(population_parameters)
@@ -194,7 +199,7 @@ build_burden_processes = function(ngroups, arguments)
     return (burden_processes)
 }
 
-build_population_parameters = function(arguments, settings)
+build_population_parameters = function(arguments)
 {
 # Construct Gamma Distributions using the 
     # cm_delay_gamma function for dE, dIp, dIs, dIa
@@ -258,7 +263,7 @@ build_population_parameters = function(arguments, settings)
         type = "SEI3R",
         dE = distribution_params$gamma$dE$p,
         dIp = distribution_params$gamma$dIp$p,
-        dIa = distribution_params$gamma$Ia$p,
+        dIa = distribution_params$gamma$dIa$p,
         dIs = distribution_params$gamma$dIs$p,
         dH = fixed_params$dH,
         dC = fixed_params$dC,
@@ -270,19 +275,74 @@ build_population_parameters = function(arguments, settings)
         fIa = rep(fixed_params$fIa, n_groups),
         fIp = rep(fixed_params$fIp, n_groups),
         size = size,
+        seed_times = NULL,
+        dist_seed_ages = NULL,
         contact = rep(1, length(contact_matrices)),
         matrices = contact_matrices,
         group_names = group_names,
         schedule = list(), # Set time steps for various parameter change events (e.g. scaling of contact matrices)
         observer = NULL    # Series of callback functions used to trigger events based on variable values
     )
-
+    
     return(population_parameter_set)
 }
 
-build_params_from_args = function(analysis, arguments, settings)
+# Get regions for the UK.
+cm_uk_locations = function(structure, country, level) {
+    # Check country code
+    country = toupper(country);
+    if (country == "UK") { 
+        country = "EWSN";
+    }
+    if (!country %like% "^(UK|[EWSN]+)$") {
+        stop("country must be UK, or a combination of E, W, S, and/or N.");
+    }
+    
+    # Interpret level
+    level = as.integer(level);
+    if (level < 0 | level > 4) {
+        stop("level must be 0, 1, 2, 3, or 4");
+    }
+    
+    if (level == 0) {
+        if (country != "EWSN") {
+            stop("For level 0, country must be UK.");
+        }
+        return ("UK | UNITED KINGDOM");
+    } else if (level == 1) {
+        gE = "Country";
+        gW = "Country";
+        gS = "Country";
+        gN = "Country";
+    } else if (level == 2) {
+        gE = "Region";
+        gW = "Country";
+        gS = "Country";
+        gN = "Country";
+    } else if (level == 3) {
+        gE = c("Metropolitan County", "County", "Unitary Authority", "London Borough");
+        gW = "Unitary Authority";
+        gS = "Council Area";
+        gN = "Local Government District";
+    } else if (level == 4) {
+        gE = c("Metropolitan District", "Non-metropolitan District", "Unitary Authority", "London Borough");
+        gW = "Unitary Authority";
+        gS = "Council Area";
+        gN = "Local Government District";
+    }
+    
+    # Extract locations
+    locs = NULL;
+    if (country %like% "E") { locs = c(locs, structure[Code %like% "^E" & Geography1 %in% gE, Name]); }
+    if (country %like% "W") { locs = c(locs, structure[Code %like% "^W" & Geography1 %in% gW, Name]); }
+    if (country %like% "S") { locs = c(locs, structure[Code %like% "^S" & Geography1 %in% gS, Name]); }
+    if (country %like% "N") { locs = c(locs, structure[Code %like% "^N" & Geography1 %in% gN, Name]); }
+    return (paste0("UK | ", locs));
+}
+
+build_params_from_args = function(arguments)
 {
-    population_parameter_set = build_population_parameters(arguments, settings)
+    population_parameter_set = build_population_parameters(arguments)
 
     ngroups = length(population_parameter_set$group_names)
 
@@ -290,38 +350,63 @@ build_params_from_args = function(analysis, arguments, settings)
     # this doubles the number of matrices in the categories: home, work, school, other
     population_parameter_set = cm_split_matrices_ex_in(ngroups, population_parameter_set,
                                                        as.numeric(arguments$elderly$from_bin))
-    
-    population_parameter_set = build_child_elderly_matrix(analysis, population_parameter_set)
 
     burden_processes = build_burden_processes(ngroups, arguments)
 
-    if(typeof(settings$fast_multinomial) == "logical")
+    if(typeof(arguments$fast_multinomial$isTrue) == "logical")
     {
-        is_fast_multi = settings$fast_multinomial
+        is_fast_multi = arguments$fast_multinomial$isTrue
     }
     else {
-       is_fast_multi = toupper(settings$fast_multinomial) == "TRUE"
+       is_fast_multi = toupper(arguments$fast_multinomial$isTrue) == "TRUE"
     }
 
-    if(typeof(settings$deterministic) == "logical")
+    if(typeof(arguments$deterministic$isTrue) == "logical")
     {
-        is_deterministic = settings$deterministic
+        is_deterministic = arguments$deterministic$isTrue
     }
     else {
-       is_deterministic = toupper(settings$deterministic) == "TRUE"
+       is_deterministic = toupper(arguments$deterministic$isTrue) == "TRUE"
     }
+
+    if(typeof(arguments$child_grandparentcontacts$enabled) == "logical")
+    {
+        child_grandparent_contacts = arguments$child_grandparentcontacts$enabled
+    }
+    else {
+       child_grandparent_contacts = toupper(arguments$child_grandparentcontacts$enabled) == "TRUE"
+    }
+
+    sim_population_parameter_set = build_child_elderly_matrix(population_parameter_set, child_grandparent_contacts)
 
     parameter_set = list(
-        pop = population_parameter_set,
+        pop = sim_population_parameter_set,
         time0 = as.numeric(arguments$time$start),
         time1 = as.numeric(arguments$time$end),
-        report_every = as.numeric(settings$report$frequency),
+        report_every = as.numeric(arguments$report$frequency),
         fast_multinomial = is_fast_multi,
         deterministic = is_deterministic, 
-        travel = diag(length(population_parameter_set)),
+        travel = diag(length(sim_population_parameter_set)),
         processes = burden_processes
     )
 
-    return(parameter_set)
+    # Identify London boroughs for early seeding, and regions of each country for time courses
+
+    uk_pop = arguments$uk_structure
+
+    locations = cm_uk_locations(uk_pop, "UK", 3)
+    population_struct = list(
+        london = uk_pop[match(str_sub(locations, 6), Name), Geography1 %like% "London"],
+        england = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^E" & !(Geography1 %like% "London")],
+        wales = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^W"],
+        scotland = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^S"],
+        nireland = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^N"],
+        westmid = uk_pop[match(str_sub(locations, 6), Name), Name == "West Midlands (Met County)"],
+        cumbria = uk_pop[match(str_sub(locations, 6), Name), Name == "Cumbria"]
+    )
+
+    # Requires an unmodified version (analog to parametersUK1 in UK.R)
+
+    return(list(unmodified=population_parameter_set, parameters=parameter_set, uk_population_structure=population_struct))
 
 }

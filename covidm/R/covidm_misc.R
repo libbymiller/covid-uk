@@ -128,11 +128,14 @@ cm_case_distribution = function(z, date_simulation_start, date_measurement_start
 # Calculate R0 for a given population
 cm_calc_R0 = function(parameters, population) {
     po = parameters$pop[[population]];
+    print(parameters$time_step)
     dIp = sum(po$dIp * seq(0, by = parameters$time_step, length.out = length(po$dIp)));
     dIs = sum(po$dIs * seq(0, by = parameters$time_step, length.out = length(po$dIs)));
     dIa = sum(po$dIa * seq(0, by = parameters$time_step, length.out = length(po$dIa)));
     
     cm = Reduce('+', mapply(function(c, m) c * m, po$contact, po$matrices, SIMPLIFY = F));
+
+    stop()
 
     ngm = po$u * t(t(cm) * (
         po$y * (po$fIp * dIp + po$fIs * dIs) + 
