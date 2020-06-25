@@ -73,6 +73,9 @@ source(file.path(cm_path, "R", "covidm.R"))
 analysis = as.numeric(argv[1]);
 n_runs = as.numeric(argv[2]);
 
+analysis = 1
+n_runs = 1
+
 # Set path
 # Set this path to the base directory of the repository.
 # NOTE: Run from repository
@@ -241,6 +244,7 @@ add_dynamics = function(run, dynamics, iv)
   
   interv = data.table(scenario = run$dynamics$scenario[1], run = run$dynamics$run[1], t = unique(run$dynamics$t), 
                       compartment = "trace_school", region = "All", value = unlist(iv$trace_school));
+  
   if (!is.null(iv$trace_intervention)) {
     interv = rbind(interv,
                    data.table(scenario = run$dynamics$scenario[1], run = run$dynamics$run[1], t = unique(run$dynamics$t), 

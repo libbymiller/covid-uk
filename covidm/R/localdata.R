@@ -65,72 +65,81 @@ local_data = function(covid_dir)
     school_terms = read.csv(local_data_files$school_terms)
     config_params$school_terms = list(close = school_terms[, 1], reopen=school_terms[, 2])
 
+
     # Define interventions to be used
     int_par = read.ini(local_data_files$interventions_file)
 
     interventions = list(
         `School Closures`   = list(contact = c(as.numeric(int_par$school_closures$home), 
-                                               as.numeric(int_par$school_closures$work),
-                                               as.numeric(int_par$school_closures$schools),
-                                               as.numeric(int_par$school_closures$other),
-                                               as.numeric(int_par$school_closures$home_elderly),
-                                               as.numeric(int_par$school_closures$work_elderly),
-                                               as.numeric(int_par$school_closures$schools_elderly),
-                                               as.numeric(int_par$school_closures$other_elderly),
-                                               as.numeric(int_par$school_closures$child_elderly)),
+                                            as.numeric(int_par$school_closures$work),
+                                            as.numeric(int_par$school_closures$schools),
+                                            as.numeric(int_par$school_closures$other),
+                                            as.numeric(int_par$school_closures$home_elderly),
+                                            as.numeric(int_par$school_closures$work_elderly),
+                                            as.numeric(int_par$school_closures$schools_elderly),
+                                            as.numeric(int_par$school_closures$other_elderly),
+                                            as.numeric(int_par$school_closures$child_elderly)),
                                     fIs = rep(as.numeric(int_par$school_closures$fIs_perage), ngroups)
         ),
 
         `Social Distancing` = list(contact = c(as.numeric(int_par$social_distancing$home), 
-                                               as.numeric(int_par$social_distancing$work),
-                                               as.numeric(int_par$social_distancing$schools),
-                                               as.numeric(int_par$social_distancing$other),
-                                               as.numeric(int_par$social_distancing$home_elderly),
-                                               as.numeric(int_par$social_distancing$work_elderly),
-                                               as.numeric(int_par$social_distancing$schools_elderly),
-                                               as.numeric(int_par$social_distancing$other_elderly),
-                                               as.numeric(int_par$social_distancing$child_elderly)),
+                                            as.numeric(int_par$social_distancing$work),
+                                            as.numeric(int_par$social_distancing$schools),
+                                            as.numeric(int_par$social_distancing$other),
+                                            as.numeric(int_par$social_distancing$home_elderly),
+                                            as.numeric(int_par$social_distancing$work_elderly),
+                                            as.numeric(int_par$social_distancing$schools_elderly),
+                                            as.numeric(int_par$social_distancing$other_elderly),
+                                            as.numeric(int_par$social_distancing$child_elderly)),
                                     fIs = rep(as.numeric(int_par$social_distancing$fIs_perage), ngroups)
         ),
 
         `Elderly Shielding` = list(contact = c(as.numeric(int_par$elderly_shielding$home), 
-                                               as.numeric(int_par$elderly_shielding$work),
-                                               as.numeric(int_par$elderly_shielding$schools),
-                                               as.numeric(int_par$elderly_shielding$other),
-                                               as.numeric(int_par$elderly_shielding$home_elderly),
-                                               as.numeric(int_par$elderly_shielding$work_elderly),
-                                               as.numeric(int_par$elderly_shielding$schools_elderly),
-                                               as.numeric(int_par$elderly_shielding$other_elderly),
-                                               as.numeric(int_par$elderly_shielding$child_elderly)),
+                                            as.numeric(int_par$elderly_shielding$work),
+                                            as.numeric(int_par$elderly_shielding$schools),
+                                            as.numeric(int_par$elderly_shielding$other),
+                                            as.numeric(int_par$elderly_shielding$home_elderly),
+                                            as.numeric(int_par$elderly_shielding$work_elderly),
+                                            as.numeric(int_par$elderly_shielding$schools_elderly),
+                                            as.numeric(int_par$elderly_shielding$other_elderly),
+                                            as.numeric(int_par$elderly_shielding$child_elderly)),
                                     fIs = rep(as.numeric(int_par$elderly_shielding$fIs_perage), ngroups)
         ),
 
         `Self-Isolation`    = list(contact = c(as.numeric(int_par$self_isolation$home), 
-                                               as.numeric(int_par$self_isolation$work),
-                                               as.numeric(int_par$self_isolation$schools),
-                                               as.numeric(int_par$self_isolation$other),
-                                               as.numeric(int_par$self_isolation$home_elderly),
-                                               as.numeric(int_par$self_isolation$work_elderly),
-                                               as.numeric(int_par$self_isolation$schools_elderly),
-                                               as.numeric(int_par$self_isolation$other_elderly),
-                                               as.numeric(int_par$self_isolation$child_elderly)),
+                                            as.numeric(int_par$self_isolation$work),
+                                            as.numeric(int_par$self_isolation$schools),
+                                            as.numeric(int_par$self_isolation$other),
+                                            as.numeric(int_par$self_isolation$home_elderly),
+                                            as.numeric(int_par$self_isolation$work_elderly),
+                                            as.numeric(int_par$self_isolation$schools_elderly),
+                                            as.numeric(int_par$self_isolation$other_elderly),
+                                            as.numeric(int_par$self_isolation$child_elderly)),
                                     fIs = rep(as.numeric(int_par$self_isolation$fIs_perage), ngroups)
         ),
                                     
         `Combination`       = list(contact = c(as.numeric(int_par$combination$home), 
-                                               as.numeric(int_par$combination$work),
-                                               as.numeric(int_par$combination$schools),
-                                               as.numeric(int_par$combination$other),
-                                               as.numeric(int_par$combination$home_elderly),
-                                               as.numeric(int_par$combination$work_elderly),
-                                               as.numeric(int_par$combination$schools_elderly),
-                                               as.numeric(int_par$combination$other_elderly),
-                                               as.numeric(int_par$combination$child_elderly)),
+                                            as.numeric(int_par$combination$work),
+                                            as.numeric(int_par$combination$schools),
+                                            as.numeric(int_par$combination$other),
+                                            as.numeric(int_par$combination$home_elderly),
+                                            as.numeric(int_par$combination$work_elderly),
+                                            as.numeric(int_par$combination$schools_elderly),
+                                            as.numeric(int_par$combination$other_elderly),
+                                            as.numeric(int_par$combination$child_elderly)),
                                     fIs = rep(as.numeric(int_par$combination$fIs_perage), ngroups)
         )
     )
 
-    config_params$intervention = interventions[[config_params$intervention$type]]
+    if(config_params$run_mode$mode != "R0 Analysis")
+    {
+        config_params$intervention = interventions[[int_par$run$intervention]]
+        config_params$intervention_name = int_par$run$intervention
+    }
+    else
+    {
+        config_params$intervention = interventions
+    }
 
     return(list(params=config_params, output_str=options_print_str))
 }

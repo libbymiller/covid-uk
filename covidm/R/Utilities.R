@@ -25,6 +25,7 @@ add_dynamics = function(run, dynamics, iv)
   
   interv = data.table(scenario = run$dynamics$scenario[1], run = run$dynamics$run[1], t = unique(run$dynamics$t), 
                       compartment = "trace_school", region = "All", value = unlist(iv$trace_school));
+  
   if (!is.null(iv$trace_intervention)) {
     interv = rbind(interv,
                    data.table(scenario = run$dynamics$scenario[1], run = run$dynamics$run[1], t = unique(run$dynamics$t), 
@@ -42,7 +43,6 @@ add_dynamics = function(run, dynamics, iv)
     names(csvlines) = c("scenario", "run", "t", "compartment", "region", "value");
     csvlines = unique(csvlines);
   }
-
   # time courses
   return (rbind(dynamics,
                 run$dynamics[population %in% locations[westmid],  .(region = "West Midlands",    value = sum(value)), by = .(scenario, run, t, compartment)],

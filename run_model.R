@@ -71,7 +71,6 @@ if(local)
 
 source(try_loc(file.path(cm_path, "R", "BuildStructures.R")))
 source(try_loc(file.path(cm_path, "R", "Simulate.R")))
-source(try_loc("covidm/build/sourceCpp-x86_64-pc-linux-gnu-1.0.4.6/sourcecpp_5d441d22b081/corona.cpp.R"))
 
 options_print_str = c(options_print_str, configuration$output_str)
 
@@ -79,6 +78,7 @@ set.seed(as.numeric(configuration$params$seed$value))
 
 model_structures = build_params_from_args(configuration$params)
 parameters = model_structures$parameters
+options_print_str = c(options_print_str, "\n\tMode : ", configuration$params$run_mode$mode)
 
 R0s = rnorm(n_runs, mean = as.numeric(configuration$params$r0_distribution$mean),
             sd = as.numeric(configuration$params$r0_distribution$sd))[[1]]
@@ -109,9 +109,12 @@ for (r in 1:n_runs)
   message(paste0("\n==== Running Realisation: ", r, "/", n_runs, " ===="))
   R0 = R0s[r]
 
-  run_simulation(r, R0, configuration$params, model_structures, dump_params)
+  if(run_simulation(r, R0, configuration$params, model_structures, dynamics, totals, dump_params) == 0)
+  {
+    break;
+  }
 }
 
-cm_save(totals, file.path(covid_uk_path, paste0(analysis, "-totals.qs")));
-cm_save(dynamics, file.path(covid_uk_path, paste0(analysis, "-dynamics.qs")));
+cm_save(totals, file.path(covid_uk_path, paste0("run-", sub(" ", "-", configuration$params$run_mode$mode),"-", r, "-totals.qs")));
+cm_save(dynamics, file.path(covid_uk_path, paste0("run-", sub(" ", "-", configuration$params$run_mode$mode), "-", r, "-dynamics.qs")));
 print(Sys.time())

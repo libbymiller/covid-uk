@@ -2,7 +2,7 @@ library(lubridate)
 
 school_iv_set_contact_matrix = c(1, 1, 0, 1,  1, 1, 0, 1,  1)
 
-run_simulation = function(r, R0, arguments, model_structs, dump=FALSE)
+run_simulation = function(r, R0, arguments, model_structs, dyn, tots, dump=FALSE)
 {  
   parameters = model_structs$parameters
   core_param = model_structs$unmodified
@@ -40,61 +40,82 @@ run_simulation = function(r, R0, arguments, model_structs, dump=FALSE)
   }
   cat(paste("\tDone.\n"))
 
-  # CALCULATE IMPACT ON R0
-  cat(paste("[Calculating impact on R0]:\n"))
-  iweights = rep(0, length(params$pop));
-  iR0s = rep(0, length(params$pop));
-
-  for (j in seq_along(params$pop))
+  if(arguments$run_mode$mode == "R0 Analysis")
   {
-    for (k in seq_along(arguments$intervention))
+    # CALCULATE IMPACT ON R0
+    cat(paste("[Calculating impact on R0]:\n"))
+    for (i in seq_along(arguments$intervention))
     {
-      params$pop[[j]][[names(arguments$intervention)[k]]] = arguments$intervention[[k]];
+      iR0s = rep(0, length(params$pop));
+      iweights = rep(0, length(params$pop));
+      for (j in seq_along(params$pop))
+      {
+        for (k in seq_along(arguments$intervention[[i]]))
+        {
+          params$pop[[j]][[names(arguments$intervention[[i]])[k]]] = arguments$intervention[[i]][[k]];
+        }
+        iR0s[j] = cm_calc_R0(params, j);
+        iweights[j] = sum(params$pop[[j]]$size);
+      }
+      
+      weighted_R0 = weighted.mean(iR0s, iweights);
+      dynamics = rbind(dynamics, data.table(run = r, scenario = names(arguments$intervention)[i], R0 = weighted_R0));
+  
     }
-    iR0s[j] = cm_calc_R0(params, j);
-    iweights[j] = sum(params$pop[[j]]$size);
+
+    cat(paste("\tDone.\n"))
+    cat(paste("[Calculating R0 Weighted Mean and Initial Dynamics]: "))
+    weighted_R0 = weighted.mean(iR0s, iweights);
+    dyn = rbind(dyn, data.table(run = r, scenario = names(arguments$intervention), R0 = weighted_R0));
+    cat(paste("\n\tWeighted Mean : ", weighted_R0, "\n"))
+
+    return(0)
   }
 
-  cat(paste("\tDone.\n"))
-  cat(paste("[Calculating R0 Weighted Mean and Initial Dynamics]: "))
-  weighted_R0 = weighted.mean(iR0s, iweights);
-  dynamics = rbind(dynamics, data.table(run = r, scenario = names(arguments$intervention), R0 = weighted_R0));
-  cat(paste("\n\tWeighted Mean : ", weighted_R0, "\n"))
-
- 
-  
   # 4b. Set school terms
+  cat(paste("[Setting School Terms]:\n"))
   iv = cm_iv_build(params)
   cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = school_iv_set_contact_matrix, trace_school = 2);
   params = cm_iv_apply(params, iv);
+  cat(paste("\tDone.\n"))
 
   if(dump)
   {
     output_file = file.path(covid_uk_path, "output", paste0("mod-params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
     dput(parameters, file=output_file)
-    message(paste0("Params saved to '", output_file,"' aborting"))
+    message(paste0("[Test Mode Abort]:\n\tParams saved to '", output_file,"'.\n"))
     return(0)
   }
 
   # 4c. Run model
+  cat(paste("[Running Non-Lockdown Simulation]:\n"))
   run = cm_simulate(params, 1, r);
   run$dynamics[, run := r];
   run$dynamics[, scenario := "Base"];
   run$dynamics[, R0 := R0s[r]];
-  totals = add_totals(run, totals);
-  dynamics = add_dynamics(run, dynamics, iv);
+  cat("\tCombining Totals: ")
+  tots = add_totals(run, tots);
+  cat("\tDone\n\tCombining Dynamics: ")
+  print(c(length(run), length(dyn), length(iv)))
+  dyn = add_dynamics(run, dyn, iv);
+  cat("\tDone\n\tDetermining Peak: ")
   peak_t = run$dynamics[compartment == "cases", .(total_cases = sum(value)), by = t][, t[which.max(total_cases)]];
   peak_t_bypop = run$dynamics[compartment == "cases", .(total_cases = sum(value)), by = .(t, population)][, t[which.max(total_cases)], by = population]$V1;
-  
+  cat("\tDone.\n")
   rm(run)
   gc()
 
-
+  cat(paste("[Retrieving Lockdown Measures]:\n"))
+  cat(paste("\tIntervention: ", arguments$intervention_name, "\n"))
   intervention = arguments$intervention
+  cat(paste("\tDuration: ", as.numeric(arguments$lockdown_trigger$duration), "days\n"))
   duration = as.numeric(arguments$lockdown_trigger$duration)
-  trigger = as.numeric(arguments$lockdown_trigger$trigger)
+  cat(paste("\tTrigger: ", arguments$lockdown_trigger$trigger, "\n"))
+  trigger = arguments$lockdown_trigger$trigger
+  cat(paste("\tShift: ", as.numeric(arguments$lockdown_trigger$intervention_shift), "days\n"))
   intervention_shift = as.numeric(arguments$lockdown_trigger$intervention_shift)
   lockdown = ifelse(as.numeric(arguments$lockdown_trigger$icu_bed_usage) != -1, as.numeric(arguments$lockdown_trigger$icu_bed_usage), NA)
+  cat(paste("\tICU Bed Usage Trigger: ", lockdown, "\n"))
             
   # 5a. Make parameters and adjust R0
   params = duplicate(parameters);
@@ -121,8 +142,8 @@ run_simulation = function(r, R0, arguments, model_structs, dump=FALSE)
       ymd_start = ymd(params$date0) + intervention_start[pi];
       ymd_end = ymd_start + duration - 1;
       iv = cm_iv_build(params)
-      cm_iv_set(iv, school_close_i, school_reopen_i, contact = school_iv_set_contact_matrix, trace_school = 2);
-      cm_iv_set(iv, ymd_start, ymd_end, intervention);
+      cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = school_iv_set_contact_matrix, trace_school = 2);
+      cm_iv_set(iv, ymd_start, ymd_end, arguments$intervention);
       cm_iv_set(iv, ymd_start, ymd_end, trace_intervention = 2);
       params = cm_iv_apply(params, iv, pi);
     }
@@ -131,8 +152,8 @@ run_simulation = function(r, R0, arguments, model_structs, dump=FALSE)
     ymd_start = ymd(params$date0) + intervention_start;
     ymd_end = ymd_start + duration - 1;
     iv = cm_iv_build(params)
-    cm_iv_set(iv, school_close_i, school_reopen_i, contact = school_iv_set_contact_matrix, trace_school = 2);
-    cm_iv_set(iv, ymd_start, ymd_end, interventions);
+    cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = school_iv_set_contact_matrix, trace_school = 2);
+    cm_iv_set(iv, ymd_start, ymd_end, arguments$intervention);
     cm_iv_set(iv, ymd_start, ymd_end, trace_intervention = 2);
     params = cm_iv_apply(params, iv);
   }
@@ -145,9 +166,11 @@ run_simulation = function(r, R0, arguments, model_structs, dump=FALSE)
   run$dynamics[, run := r];
   run$dynamics[, scenario := paste0("", tag)];
   run$dynamics[, R0 := R0s[r]];
-  totals = add_totals(run, totals);
-  dynamics = add_dynamics(run, dynamics, iv);
+  tots = add_totals(run, tot);
+  dyn = add_dynamics(run, dy, iv);
 
   rm(run)
-  gc()  
+  gc()
+
+  return(1)
 }

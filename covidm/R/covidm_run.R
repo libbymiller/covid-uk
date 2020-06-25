@@ -90,10 +90,12 @@ cm_annotate_dynamics = function(dynamics, parameters)
 # TODO -- in progress... interface likely to change.
 cm_simulate = function(parameters, n = 1, model_seed = 0)
 {
+    cat(paste("\tRunning Backend: Please Wait\n"))
     results = cm_backend_simulate(cm_translate_parameters(parameters), n, model_seed);
+    cat(paste("\tDone.\n","\tPackaging Dynamics and Annotating: Please Wait\n"))
     dyn = cm_package_dynamics(results$dynamics);
     dyn = cm_annotate_dynamics(dyn, parameters);
-
+    cat(paste("\tDone.\n\tRetrieving Data: Please Wait\n"))
     run = list(
         base_parameters = parameters,
         dynamics = dyn,
@@ -105,6 +107,7 @@ cm_simulate = function(parameters, n = 1, model_seed = 0)
             model_version = 1 # likewise
         )
     );
+    cat("\tDone.\n")
     
     class(run) = c("cm.run", "list");
     
