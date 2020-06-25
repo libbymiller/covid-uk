@@ -350,11 +350,6 @@ build_params_from_args = function(arguments)
 
     ngroups = length(population_parameter_sets[[1]]$group_names)
 
-    # Split off the elderly so their contact matrices can be manipulated separately
-    # this doubles the number of matrices in the categories: home, work, school, other
-    population_set = cm_split_matrices_ex_in(population_parameter_sets,
-                                                       as.numeric(arguments$elderly$from_bin))
-
     burden_processes = build_burden_processes(ngroups, arguments)
 
     if(typeof(arguments$fast_multinomial$isTrue) == "logical")
@@ -381,20 +376,25 @@ build_params_from_args = function(arguments)
        child_grandparent_contacts = toupper(arguments$child_grandparentcontacts$enabled) == "TRUE"
     }
 
-    sim_population_parameter_set = build_child_elderly_matrix(population_set, child_grandparent_contacts)
-
     parameter_set = list(
-        pop = sim_population_parameter_set,
+        pop = population_parameter_sets,
         date0 = arguments$time$start_date,
         time0 = as.numeric(arguments$time$start),
         time1 = as.numeric(arguments$time$end),
         report_every = as.numeric(arguments$report$frequency),
         fast_multinomial = is_fast_multi,
         deterministic = is_deterministic, 
-        travel = diag(length(sim_population_parameter_set)),
+        travel = diag(length(population_parameter_sets)),
         processes = burden_processes,
         time_step = as.numeric(arguments$time$step)
     )
+
+    # Split off the elderly so their contact matrices can be manipulated separately
+    # this doubles the number of matrices in the categories: home, work, school, other
+    population_set = cm_split_matrices_ex_in(parameter_set,
+                                                       as.numeric(arguments$elderly$from_bin))
+
+    population_parameter_set = build_child_elderly_matrix(population_set, child_grandparent_contacts)
 
     uk_main_params = build_population_for_region(arguments, locations$uk_label)
 
@@ -413,6 +413,6 @@ build_params_from_args = function(arguments)
 
     # Requires an unmodified version (analog to parametersUK1 in UK.R)
 
-    return(list(unmodified=unmodified_set, parameters=parameter_set, uk_population_structure=locations))
+    return(list(unmodified=unmodified_set, parameters=population_parameter_set, uk_population_structure=locations))
 
 }

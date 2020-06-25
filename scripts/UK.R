@@ -123,7 +123,6 @@ parameters = cm_parameters_SEI3R(locations, date_start = "2020-01-29", date_end 
 # Split off the elderly (70+, age groups 15 and 16) so their contact matrices can be manipulated separately
 parameters = cm_split_matrices_ex_in(parameters, 15);
 
-
 # Create additional matrix for child-elderly contacts
 for (j in seq_along(parameters$pop))
 {
@@ -466,6 +465,7 @@ for (r in run_set) {
       
       weighted_R0 = weighted.mean(iR0s, iweights);
       dynamics = rbind(dynamics, data.table(run = r, scenario = names(interventions)[i], R0 = weighted_R0));
+  
     }
     
     next;
@@ -485,8 +485,6 @@ for (r in run_set) {
   }
   
   # 4c. Run model
-  print(length(params$pop))
-  stop()
   run = cm_simulate(params, 1, r);
   run$dynamics[, run := r];
   run$dynamics[, scenario := "Base"];

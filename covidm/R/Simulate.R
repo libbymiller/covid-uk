@@ -7,27 +7,30 @@ run_simulation = function(r, R0, arguments, model_structs, dump=FALSE)
   parameters = model_structs$parameters
   core_param = model_structs$unmodified
 
-  cat(paste0(r, ": R0 = ", R0, "\n"));
+  cat(paste0("[Values]:\n\tR0 : ", R0, "\n"));
 
   # 1. Pick age-varying symptomatic rate
   covid_scenario = arguments$age_var_symptom_rates
-
+  cat(paste("[Calculating R0 Adjustment]:\n"))
   covy = unname(unlist(covid_scenario[sample.int(nrow(covid_scenario), 1), f_00:f_70]));
   covy = rep(covy, each = 2);
+  cat(paste("\tAdjusted y param : ", core_param$pop[[1]]$y, " -> ", covy, "\n"))
 
   # 2. Calculate R0 adjustment needed
   core_param$pop[[1]]$y = covy;
   u_adj = R0 / cm_calc_R0(core_param, 1);
+  cat(paste("\tAdjusted u param : ", u_adj, "\n"))
 
   # 3. Pick seeding times
+  cat(paste("[Selecting Seeding Times]:\n"))
   seed_start = ifelse(uk_pop_struct$london, sample(0:6, length(uk_pop_struct$london), replace = TRUE), 
                               sample(0:20, length(uk_pop_struct$london), replace = TRUE));
-
-  
+  cat(paste("\tDone.\n"))  
 
   # 4. Do base model
   
   # 4a. Set parameters
+  cat(paste("[Duplicating and Setting Parameters]:\n"))
   params = duplicate(parameters);
   for (j in seq_along(params$pop)) {
     params$pop[[j]]$u = params$pop[[j]]$u * u_adj;
@@ -35,22 +38,30 @@ run_simulation = function(r, R0, arguments, model_structs, dump=FALSE)
     params$pop[[j]]$seed_times = rep(seed_start[j] + 0:27, each = 2);
     params$pop[[j]]$dist_seed_ages = cm_age_coefficients(as.numeric(arguments$seed$min_age), as.numeric(arguments$seed$max_age), 5 * 0:16);
   }
+  cat(paste("\tDone.\n"))
 
   # CALCULATE IMPACT ON R0
+  cat(paste("[Calculating impact on R0]:\n"))
   iweights = rep(0, length(params$pop));
   iR0s = rep(0, length(params$pop));
+
   for (j in seq_along(params$pop))
   {
     for (k in seq_along(arguments$intervention))
     {
-      params$pop[[names(arguments$intervention)[k]]] = arguments$intervention[[k]];
+      params$pop[[j]][[names(arguments$intervention)[k]]] = arguments$intervention[[k]];
     }
     iR0s[j] = cm_calc_R0(params, j);
     iweights[j] = sum(params$pop[[j]]$size);
   }
-      
+
+  cat(paste("\tDone.\n"))
+  cat(paste("[Calculating R0 Weighted Mean and Initial Dynamics]: "))
   weighted_R0 = weighted.mean(iR0s, iweights);
-  dynamics = rbind(dynamics, data.table(run = 1, scenario = names(arguments$intervention), R0 = weighted_R0));
+  dynamics = rbind(dynamics, data.table(run = r, scenario = names(arguments$intervention), R0 = weighted_R0));
+  cat(paste("\n\tWeighted Mean : ", weighted_R0, "\n"))
+
+ 
   
   # 4b. Set school terms
   iv = cm_iv_build(params)
@@ -66,7 +77,6 @@ run_simulation = function(r, R0, arguments, model_structs, dump=FALSE)
   }
 
   # 4c. Run model
-  print(length(params$pop))
   run = cm_simulate(params, 1, r);
   run$dynamics[, run := r];
   run$dynamics[, scenario := "Base"];

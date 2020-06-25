@@ -21,12 +21,11 @@ local_data_files = list(
 
 local_data = function(covid_dir)
 {
-    options_print_str = c(paste("COVID-UK Path: ", covid_dir))
-    options_print_str = c(options_print_str, paste("Using parameters From: ", local_data_files$parameter_file))
-    options_print_str = c(options_print_str, paste("Using settings From: ", local_data_files$settings_file))
-    options_print_str = c(options_print_str, paste("Reading Contact Matrices From: ", local_data_files$contact_matrices_file))
-    options_print_str = c(options_print_str, paste("Loading Age-Varying Symptomatic Rate From:", local_data_files$age_var_symptom_rates))
-    options_print_str = c(options_print_str, paste("Reading School Terms Base Data From:", local_data_files$school_terms_base_file))
+    options_print_str = c(paste("\tCOVID-UK Path : ", covid_dir))
+    options_print_str = c(options_print_str, paste("\n\tParameter File : ", local_data_files$parameter_file))
+    options_print_str = c(options_print_str, paste("\n\tMatrices File : ", local_data_files$contact_matrices_file))
+    options_print_str = c(options_print_str, paste("\n\tAge-Varying Symptomatic Rates File : ", local_data_files$age_var_symptom_rates))
+    options_print_str = c(options_print_str, paste("\n\tSchool Terms Data File : ", local_data_files$school_terms))
 
     config_params   = read.ini(file.path(covid_dir, local_data_files$parameter_file))
 

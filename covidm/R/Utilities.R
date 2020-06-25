@@ -2,7 +2,8 @@ try_loc = function(file_loc)
 	{
 		tryCatch(source(file_loc),
 			 error = function(e){
-				 message("ERROR: Could not find files, please make sure you run this script from the repository root directory")
+				 cat(paste("[ERROR] : \n\tCould not load file '.", file_loc, "'\n\n\tPlease fix any script issues",
+            "and make sure you run this script from the repository root directory.\n\n"))
 				 e
 			})
 

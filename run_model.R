@@ -55,9 +55,10 @@ if(rebuild)
   message("Rebuilding C++ Libraries")
   rebuild_cpp_libraries(cm_path)
 }
-
+options_print_str = "[Configuration]:\n"
 if(local)
 {
+  options_print_str = c(options_print_str, "\tSource : Local\n")
   source(try_loc(file.path(covid_uk_path, "covidm", "R", "localdata.R")))
   configuration = local_data(covid_uk_path)
 }
@@ -72,7 +73,7 @@ source(try_loc(file.path(cm_path, "R", "BuildStructures.R")))
 source(try_loc(file.path(cm_path, "R", "Simulate.R")))
 source(try_loc("covidm/build/sourceCpp-x86_64-pc-linux-gnu-1.0.4.6/sourcecpp_5d441d22b081/corona.cpp.R"))
 
-options_print_str = configuration$output_str
+options_print_str = c(options_print_str, configuration$output_str)
 
 set.seed(as.numeric(configuration$params$seed$value))
 
@@ -86,7 +87,7 @@ dynamics = data.table()
 totals = data.table()
 
 output_file_name = file.path(covid_uk_path, "dynamics.qs")
-options_print_str = c(options_print_str, paste("Output File:", output_file_name))
+options_print_str = c(options_print_str, paste("\n\tOutput File:", output_file_name, "\n"))
 
 # Have to unpack these variables else Rcpp breaks (they are needed globally)
 # FIXME: Would be good to have this global import external
@@ -101,10 +102,11 @@ westmid = uk_pop_struct$westmid
 cumbria  = uk_pop_struct$cumbria
 
 # Run the Model
-print(options_print_str)
+cat(options_print_str)
 
 for (r in 1:n_runs) 
 {
+  message(paste0("\n==== Running Realisation: ", r, "/", n_runs, " ===="))
   R0 = R0s[r]
 
   run_simulation(r, R0, configuration$params, model_structures, dump_params)
