@@ -2,11 +2,12 @@ library(lubridate)
 
 school_iv_set_contact_matrix = c(1, 1, 0, 1,  1, 1, 0, 1,  1)
 
-pre_simulation_setup = function(R0, arguments, model_structs)
-{
+run_simulation = function(r, R0, arguments, model_structs, dump=FALSE)
+{  
   parameters = model_structs$parameters
   core_param = model_structs$unmodified
-  uk_pop_struct = model_structs
+
+  cat(paste0(r, ": R0 = ", R0, "\n"));
 
   # 1. Pick age-varying symptomatic rate
   covid_scenario = arguments$age_var_symptom_rates
@@ -15,33 +16,40 @@ pre_simulation_setup = function(R0, arguments, model_structs)
   covy = rep(covy, each = 2);
 
   # 2. Calculate R0 adjustment needed
-  core_param$y = covy;
-  u_adj = R0 / cm_calc_R0(as.numeric(arguments$time$step), core_param);
+  core_param$pop[[1]]$y = covy;
+  u_adj = R0 / cm_calc_R0(core_param, 1);
 
   # 3. Pick seeding times
   seed_start = ifelse(uk_pop_struct$london, sample(0:6, length(uk_pop_struct$london), replace = TRUE), 
                               sample(0:20, length(uk_pop_struct$london), replace = TRUE));
 
   
+
   # 4. Do base model
   
   # 4a. Set parameters
   params = duplicate(parameters);
-  params$pop$u = params$pop$u * u_adj;
-  params$pop$y = covy;
-  params$pop$seed_times = rep(seed_start + 0:27, each = 2);
-  params$pop$dist_seed_ages = cm_age_coefficients(as.numeric(arguments$seed$min_age), 
-                                                         as.numeric(arguments$seed$max_age), 5 * 0:16);  
+  for (j in seq_along(params$pop)) {
+    params$pop[[j]]$u = params$pop[[j]]$u * u_adj;
+    params$pop[[j]]$y = covy;
+    params$pop[[j]]$seed_times = rep(seed_start[j] + 0:27, each = 2);
+    params$pop[[j]]$dist_seed_ages = cm_age_coefficients(as.numeric(arguments$seed$min_age), as.numeric(arguments$seed$max_age), 5 * 0:16);
+  }
+
   # CALCULATE IMPACT ON R0
   iweights = rep(0, length(params$pop));
-  for (k in seq_along(arguments$intervention))
+  iR0s = rep(0, length(params$pop));
+  for (j in seq_along(params$pop))
   {
-    params$pop[[names(arguments$intervention)[k]]] = arguments$intervention[[k]];
+    for (k in seq_along(arguments$intervention))
+    {
+      params$pop[[names(arguments$intervention)[k]]] = arguments$intervention[[k]];
+    }
+    iR0s[j] = cm_calc_R0(params, j);
+    iweights[j] = sum(params$pop[[j]]$size);
   }
-  R0s = cm_calc_R0(as.numeric(arguments$time$step), params$pop);
-  weights = sum(params$pop$size);
       
-  weighted_R0 = weighted.mean(R0s, weights);
+  weighted_R0 = weighted.mean(iR0s, iweights);
   dynamics = rbind(dynamics, data.table(run = 1, scenario = names(arguments$intervention), R0 = weighted_R0));
   
   # 4b. Set school terms
@@ -49,17 +57,20 @@ pre_simulation_setup = function(R0, arguments, model_structs)
   cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = school_iv_set_contact_matrix, trace_school = 2);
   params = cm_iv_apply(params, iv);
 
-  return(params)
-}
+  if(dump)
+  {
+    output_file = file.path(covid_uk_path, "output", paste0("mod-params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
+    dput(parameters, file=output_file)
+    message(paste0("Params saved to '", output_file,"' aborting"))
+    return(0)
+  }
 
-run_simulation = function(R0, arguments, params)
-{
-  
   # 4c. Run model
-  run = cm_simulate(params);
-  run$dynamics[, run := 1];
+  print(length(params$pop))
+  run = cm_simulate(params, 1, r);
+  run$dynamics[, run := r];
   run$dynamics[, scenario := "Base"];
-  run$dynamics[, R0 := R0];
+  run$dynamics[, R0 := R0s[r]];
   totals = add_totals(run, totals);
   dynamics = add_dynamics(run, dynamics, iv);
   peak_t = run$dynamics[compartment == "cases", .(total_cases = sum(value)), by = t][, t[which.max(total_cases)]];
@@ -67,28 +78,27 @@ run_simulation = function(R0, arguments, params)
   
   rm(run)
   gc()
-  
-  # 5. Run interventions
-  i = arguments$intervention
+
+
+  intervention = arguments$intervention
   duration = as.numeric(arguments$lockdown_trigger$duration)
   trigger = as.numeric(arguments$lockdown_trigger$trigger)
   intervention_shift = as.numeric(arguments$lockdown_trigger$intervention_shift)
   lockdown = ifelse(as.numeric(arguments$lockdown_trigger$icu_bed_usage) != -1, as.numeric(arguments$lockdown_trigger$icu_bed_usage), NA)
-  cat(paste0(names(interventions)[i], "...\n"))
-
+            
   # 5a. Make parameters and adjust R0
   params = duplicate(parameters);
   for (j in seq_along(params$pop)) {
     params$pop[[j]]$u = params$pop[[j]]$u * u_adj;
     params$pop[[j]]$y = covy;
     if (!is.na(lockdown)) {
-    params$pop[[j]]$observer = observer_lockdown(lockdown);
+      params$pop[[j]]$observer = observer_lockdown(lockdown);
     }
   }
             
   # 5b. Set interventions
   if (trigger == "national") {
-      intervention_start = peak_t - duration / 2 + intervention_shift;
+    intervention_start = peak_t - duration / 2 + intervention_shift;
   } else if (trigger == "local") {
     intervention_start = peak_t_bypop - duration / 2 + intervention_shift;
   } else {
@@ -98,40 +108,36 @@ run_simulation = function(R0, arguments, params)
   if (trigger == "local") {
     # Trigger interventions to one population at a time.
     for (pi in seq_along(params$pop)) {
-    ymd_start = ymd(params$date0) + intervention_start[pi];
-    ymd_end = ymd_start + duration - 1;
-    iv = cm_iv_build(params)
-    cm_iv_set(iv, school_close_i, school_reopen_i, contact = school_iv_set_contact_matrix, trace_school = 2);
-    cm_iv_set(iv, ymd_start, ymd_end, interventions[[i]]);
-    cm_iv_set(iv, ymd_start, ymd_end, trace_intervention = 2);
-    params = cm_iv_apply(params, iv, pi);
+      ymd_start = ymd(params$date0) + intervention_start[pi];
+      ymd_end = ymd_start + duration - 1;
+      iv = cm_iv_build(params)
+      cm_iv_set(iv, school_close_i, school_reopen_i, contact = school_iv_set_contact_matrix, trace_school = 2);
+      cm_iv_set(iv, ymd_start, ymd_end, intervention);
+      cm_iv_set(iv, ymd_start, ymd_end, trace_intervention = 2);
+      params = cm_iv_apply(params, iv, pi);
     }
   } else {
-    # Trigger interventions all at once.
+  # Trigger interventions all at once.
     ymd_start = ymd(params$date0) + intervention_start;
     ymd_end = ymd_start + duration - 1;
     iv = cm_iv_build(params)
     cm_iv_set(iv, school_close_i, school_reopen_i, contact = school_iv_set_contact_matrix, trace_school = 2);
-    cm_iv_set(iv, ymd_start, ymd_end, interventions[[i]]);
+    cm_iv_set(iv, ymd_start, ymd_end, interventions);
     cm_iv_set(iv, ymd_start, ymd_end, trace_intervention = 2);
     params = cm_iv_apply(params, iv);
   }
-
+  
   # 5c. Run model
-  run = cm_simulate(params);
+  run = cm_simulate(params, 1, r);
 
   tag = ifelse(lockdown >= 0, lockdown, "variable");
 
   run$dynamics[, run := r];
-  run$dynamics[, scenario := paste0(names(interventions)[i], tag)];
+  run$dynamics[, scenario := paste0("", tag)];
   run$dynamics[, R0 := R0s[r]];
   totals = add_totals(run, totals);
   dynamics = add_dynamics(run, dynamics, iv);
 
   rm(run)
-  gc()
-  cm_save(totals, file.path(covid_uk_path, paste0(analysis, "-totals", ifelse(option.single > 0, option.single, ""), ".qs")));
-  cm_save(dynamics, file.path(covid_uk_path, paste0(analysis, "-dynamics", ifelse(option.single > 0, option.single, ""), ".qs")));
-  print(Sys.time())
-  
+  gc()  
 }

@@ -51,7 +51,7 @@ if(length(contact_matrices_file_search) > 0)
 {
 	contact_matrices_file = strsplit(contact_matrices_file_search, split = '=')[[1]][[2]];
 } else {
-	contact_matrices_file = file.path(covid_uk_path, 'configuration', 'all_matrices.rds');
+	contact_matrices_file = file.path(covid_uk_path, 'data', 'all_matrices.rds');
 }
 
 options_print_str = paste("COVID-UK Path: ", covid_uk_path)
@@ -98,10 +98,9 @@ parametersUK1 = cm_parameters_SEI3R(uk_level0_key,
 
 if(dump_params)
   {
-    output_file = file.path(covid_uk_path, "output", paste0("params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
+    output_file = file.path(covid_uk_path, "output", paste0("initial-params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
     dput(parametersUK1, file=output_file)
-    message(paste0("Params saved to '", output_file,"' aborting"))
-    return(0)
+    message(paste0("Initial Params saved to '", output_file))
   }
 
 # build parameters for regions of UK, down to the county level (level 3).
@@ -486,6 +485,8 @@ for (r in run_set) {
   }
   
   # 4c. Run model
+  print(length(params$pop))
+  stop()
   run = cm_simulate(params, 1, r);
   run$dynamics[, run := r];
   run$dynamics[, scenario := "Base"];

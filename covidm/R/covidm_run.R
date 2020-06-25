@@ -62,7 +62,7 @@ cm_unduplicate_names = function(names)
 # Annotate returned dynamics with more informative names for population and group columns.
 cm_annotate_dynamics = function(dynamics, parameters)
 {
-    pnames = list()
+    pnames = rep("", length(parameters$pop))
     for (p in 1:length(parameters$pop)) {
         pnames[[p]] = parameters$pop[[p]]$name;
         if (is.null(pnames[[p]])) {

@@ -51,59 +51,20 @@
 #-------------- Import External Functions ------------#
 source(file.path(cm_path, "R", "Observers.R"))
 
-
-# Modified cm_split_matrices_ex_in to be for one population parameter set only
-
-cm_split_matrices_ex_in = function(ngroups, parameters, bounds)
-{
-
-    if(any(bounds < 1) | bounds > ngroups)
-    {
-        stop("Bounds must lie within [1, nrow(mat)] for splitting contact matrices.");
-    }
-
-    n_matrices_initial = length(parameters$matrices)
-    parameters$matrices = rep(parameters$matrices, length(bounds)+1)
-
-    for (b in seq_along(bounds))
-    {
-        lb = floor(bounds[b]);
-        fb = bounds[b] %% 1;
-        mask1 = matrix(1, nrow = ngroups, ncol = ngroups);
-        if (lb > 1) {
-            mask1[1:(lb - 1), 1:(lb - 1)] = 0;
-        }
-        mask1[lb, 1:lb] = 1 - fb;
-        mask1[1:lb, lb] = 1 - fb;
-        mask0 = 1 - mask1;
-        
-        for (m in seq_len(n_matrices_initial)) {
-            names(parameters$matrices)[m + b * n_matrices_initial] = paste0(names(parameters$matrices)[m + b * n_matrices_initial], b + 1);
-            parameters$matrices[[m + (b - 1) * n_matrices_initial]] = mask0 * parameters$matrices[[m + (b - 1) * n_matrices_initial]];
-            parameters$matrices[[m +       b * n_matrices_initial]] = mask1 * parameters$matrices[[m +       b * n_matrices_initial]];
-        }
-    }
-    parameters$contact = rep_len(parameters$contact, n_matrices_initial * (length(bounds) + 1));
-    
-    return (parameters)
-}
-
 build_observer = function(lockdown_trigger) function(time, dynamics) {}
 
 build_child_elderly_matrix = function(population_parameters, child_grandparent_contacts)
 {
     # Create additional matrix for child-elderly contacts
-    # this matrix is labelled 'gran'
-
-    # FIXME: This is based on there being 4 additional bins when splitting the matrices
-    # need to generalise this and base it on 'from_bin' eventually
-
-    mat_ref = population_parameters$matrices[[1]] + population_parameters$matrices[[4]] + 
-        population_parameters$matrices[[5]] + population_parameters$matrices[[8]];
+    for (j in seq_along(population_parameters$pop))
+    {
+    # Recover home/other contact matrix
+    mat_ref = population_parameters$pop[[j]]$matrices[[1]] + population_parameters$pop[[j]]$matrices[[4]] + 
+        population_parameters$pop[[j]]$matrices[[5]] + population_parameters$pop[[j]]$matrices[[8]];
     
     gran = 5/7; # adjustment for weekdays only.
     N = nrow(mat_ref);
-    popsize = population_parameters$size;
+    popsize = population_parameters$pop[[j]]$size;
     mat = matrix(0, ncol = N, nrow = N);
     
     # Add child-grandparent contacts: under 15s to 55+s
@@ -116,11 +77,10 @@ build_child_elderly_matrix = function(population_parameters, child_grandparent_c
             mat[, a] = mat[, a] + (gran * dist) * (popsize[a] / popsize);
         }
     } 
-    
-    # Add child-grandparent contact matrix to population 
-    population_parameters$matrices$gran = mat;
-
-    population_parameters$contact = c(population_parameters$contact, 0);
+    # Add child-grandparent contact matrix to population
+    population_parameters$pop[[j]]$matrices$gran = mat;
+    population_parameters$pop[[j]]$contact = c(population_parameters$pop[[j]]$contact, 0);
+    }
 
     return(population_parameters)
 }
@@ -199,7 +159,7 @@ build_burden_processes = function(ngroups, arguments)
     return (burden_processes)
 }
 
-build_population_parameters = function(arguments)
+build_population_for_region = function(arguments, location)
 {
 # Construct Gamma Distributions using the 
     # cm_delay_gamma function for dE, dIp, dIs, dIa
@@ -256,10 +216,11 @@ build_population_parameters = function(arguments)
     n_groups = length(arguments$population$label)
     size = arguments$population$count
     group_names = arguments$population$label
-    contact_matrices = arguments$contact_matrices
+    contact_matrices = arguments$contact_matrices[[location]]
 
     # Organize parameters into form recognised by model
     population_parameter_set = list(
+        name = location,
         type = "SEI3R",
         dE = distribution_params$gamma$dE$p,
         dIp = distribution_params$gamma$dIp$p,
@@ -285,6 +246,17 @@ build_population_parameters = function(arguments)
     )
     
     return(population_parameter_set)
+}
+
+build_population_parameters = function(arguments, locations)
+{
+    all_region_params = list()
+    for(region in locations)
+    {
+        all_region_params[[region]] = build_population_for_region(arguments, region)
+    }
+
+    return(all_region_params)
 }
 
 # Get regions for the UK.
@@ -340,15 +312,47 @@ cm_uk_locations = function(structure, country, level) {
     return (paste0("UK | ", locs));
 }
 
+get_location_labels = function(arguments)
+{
+    # Identify London boroughs for early seeding, and regions of each country for time courses
+
+    uk_pop = arguments$uk_structure
+
+    locations = cm_uk_locations(uk_pop, "UK", 3)
+    uk_main = cm_uk_locations(uk_pop, "UK", 0)
+    population_struct = list(
+        location_labels = locations,
+        uk_label = uk_main,
+        london = uk_pop[match(str_sub(locations, 6), Name), Geography1 %like% "London"],
+        england = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^E" & !(Geography1 %like% "London")],
+        wales = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^W"],
+        scotland = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^S"],
+        nireland = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^N"],
+        westmid = uk_pop[match(str_sub(locations, 6), Name), Name == "West Midlands (Met County)"],
+        cumbria = uk_pop[match(str_sub(locations, 6), Name), Name == "Cumbria"]
+    )
+
+    return(population_struct)
+}
+
 build_params_from_args = function(arguments)
 {
-    population_parameter_set = build_population_parameters(arguments)
+    locations = get_location_labels(arguments)
 
-    ngroups = length(population_parameter_set$group_names)
+    population_parameter_sets = build_population_parameters(arguments, locations$location_labels)
+
+    if(dump_params)
+    {
+        output_file = file.path(covid_uk_path, "output", paste0("mod-initial-params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
+        dput(population_parameter_sets, file=output_file)
+        message(paste0("Initial Params saved to '", output_file))
+    }
+
+    ngroups = length(population_parameter_sets[[1]]$group_names)
 
     # Split off the elderly so their contact matrices can be manipulated separately
     # this doubles the number of matrices in the categories: home, work, school, other
-    population_parameter_set = cm_split_matrices_ex_in(ngroups, population_parameter_set,
+    population_set = cm_split_matrices_ex_in(population_parameter_sets,
                                                        as.numeric(arguments$elderly$from_bin))
 
     burden_processes = build_burden_processes(ngroups, arguments)
@@ -377,36 +381,38 @@ build_params_from_args = function(arguments)
        child_grandparent_contacts = toupper(arguments$child_grandparentcontacts$enabled) == "TRUE"
     }
 
-    sim_population_parameter_set = build_child_elderly_matrix(population_parameter_set, child_grandparent_contacts)
+    sim_population_parameter_set = build_child_elderly_matrix(population_set, child_grandparent_contacts)
 
     parameter_set = list(
         pop = sim_population_parameter_set,
+        date0 = arguments$time$start_date,
         time0 = as.numeric(arguments$time$start),
         time1 = as.numeric(arguments$time$end),
         report_every = as.numeric(arguments$report$frequency),
         fast_multinomial = is_fast_multi,
         deterministic = is_deterministic, 
         travel = diag(length(sim_population_parameter_set)),
-        processes = burden_processes
+        processes = burden_processes,
+        time_step = as.numeric(arguments$time$step)
     )
 
-    # Identify London boroughs for early seeding, and regions of each country for time courses
+    uk_main_params = build_population_for_region(arguments, locations$uk_label)
 
-    uk_pop = arguments$uk_structure
-
-    locations = cm_uk_locations(uk_pop, "UK", 3)
-    population_struct = list(
-        london = uk_pop[match(str_sub(locations, 6), Name), Geography1 %like% "London"],
-        england = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^E" & !(Geography1 %like% "London")],
-        wales = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^W"],
-        scotland = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^S"],
-        nireland = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^N"],
-        westmid = uk_pop[match(str_sub(locations, 6), Name), Name == "West Midlands (Met County)"],
-        cumbria = uk_pop[match(str_sub(locations, 6), Name), Name == "Cumbria"]
+    unmodified_set = list(
+        pop = list(uk_main_params),
+        date0 = arguments$time$start_date,
+        time0 = as.numeric(arguments$time$start),
+        time1 = as.numeric(arguments$time$end),
+        report_every = as.numeric(arguments$report$frequency),
+        fast_multinomial = is_fast_multi,
+        deterministic = is_deterministic, 
+        travel = diag(length(uk_main_params)),
+        processes = burden_processes,
+        time_step = as.numeric(arguments$time$step)
     )
 
     # Requires an unmodified version (analog to parametersUK1 in UK.R)
 
-    return(list(unmodified=population_parameter_set, parameters=parameter_set, uk_population_structure=population_struct))
+    return(list(unmodified=unmodified_set, parameters=parameter_set, uk_population_structure=locations))
 
 }
