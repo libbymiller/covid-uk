@@ -30,8 +30,6 @@ dump_params = length(dump_params) > 0
 rebuild = length(rebuild) > 0
 
 n_runs = as.numeric(argv[1]);
-n_runs = 1
-local = TRUE
 
 if(is.na(n_runs))
 {
