@@ -1,0 +1,37 @@
+name: LSHTM Model
+
+on: [ push ]
+
+jobs:
+  build:
+    name : Ubuntu Linux R
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Requirements
+        run: |
+             sudo apt install apt-transport-https software-properties-common
+      - name: Install R
+        run: |
+             sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+             sudo add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/'
+             sudo apt update
+             sudo apt install r-base
+      - name: Install Required Libraries
+        env: 
+              DEBIAN_FRONTEND: noninteractive
+        run: |
+              sudo R -e "install.packages(\"rlang\")"
+              sudo R -e "install.packages(\"stringr\")"
+              sudo R -e "install.packages(\"data.table\")"
+              sudo R -e "install.packages(\"ggplot2\")"
+              sudo R -e "install.packages(\"qs\")"
+              sudo R -e "install.packages(\"lubridate\")"
+              sudo R -e "install.packages(\"nloptr\")"
+              sudo R -e "install.packages(\"HDInterval\")"
+              sudo R -e "install.packages(\"cowplot\")"
+              sudo R -e "install.packages(\"testit\")"
+      - name: Run Model Locally in Dump Mode
+        run: Rscript run_model.R --local --dump
+      - name: Test Outputs
+        run: Rscript test/regression/test_params.R 

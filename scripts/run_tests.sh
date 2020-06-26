@@ -21,7 +21,7 @@ if [ $RUNTESTS ]; then
     mv *.qs data/
     echo "==== Creating directory 'tests/test_data/test', converting dataframes then moving output files to this location ===="
     mkdir -p tests/test_data/test
-    python3 tests/pandify_Rframe.py --in-dir data/ --out-dir tests/test_data/test
+    python3 tests/utilties/pandify_Rframe.py --in-dir data/ --out-dir tests/test_data/test
     echo "==== Running software tests ===="
     nosetests . --nologcapture
 
