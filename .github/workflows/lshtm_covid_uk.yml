@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: r-lib/actions/setup-r@master
       - name: Install Requirements
         run: |
              sudo apt install apt-transport-https software-properties-common
@@ -21,17 +22,18 @@ jobs:
         env: 
               DEBIAN_FRONTEND: noninteractive
         run: |
-              sudo R -e "install.packages(\"rlang\")"
-              sudo R -e "install.packages(\"stringr\")"
-              sudo R -e "install.packages(\"data.table\")"
-              sudo R -e "install.packages(\"ggplot2\")"
-              sudo R -e "install.packages(\"qs\")"
-              sudo R -e "install.packages(\"lubridate\")"
-              sudo R -e "install.packages(\"nloptr\")"
-              sudo R -e "install.packages(\"HDInterval\")"
-              sudo R -e "install.packages(\"cowplot\")"
-              sudo R -e "install.packages(\"testit\")"
-              sudo R -e "install.packages(\"readxl\")"
+              install.packages("rlang")
+              install.packages("stringr")
+              install.packages("data.table")
+              install.packages("ggplot2")
+              install.packages("qs")
+              install.packages("lubridate")
+              install.packages("nloptr")
+              install.packages("HDInterval")
+              install.packages("cowplot")
+              install.packages("testit")
+              install.packages("readxl")
+        shell: Rscript {0}
       - name: Run Model Locally in Dump Mode
         run: Rscript run_model.R --local --dump
       - name: Test Outputs
