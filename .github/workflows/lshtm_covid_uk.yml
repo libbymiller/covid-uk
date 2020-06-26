@@ -35,6 +35,6 @@ jobs:
               install.packages("readxl")
         shell: Rscript {0}
       - name: Run Model Locally in Dump Mode
-        run: Rscript run_model.R --local --dump
+        run: Rscript run_model.R 1 --local --dump
       - name: Test Outputs
         run: Rscript test/regression/test_params.R 
