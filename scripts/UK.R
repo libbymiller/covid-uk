@@ -63,7 +63,7 @@ config_params   = read.ini(parameter_file)
 config_settings = read.ini(settings_file)
 cm_matrices     = readRDS(contact_matrices_file);
 
-set.seed(config_params$seed$value);
+set.seed(as.numeric(config_params$seed$value));
 
 # covidm options
 cm_path = file.path(covid_uk_path, "covidm");
@@ -98,13 +98,6 @@ parametersUK1 = cm_parameters_SEI3R(uk_level0_key,
                                     dIs  = cm_delay_gamma(as.numeric(config_params$dIs$mu), as.numeric(config_params$dIs$shape), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
                                     dIa  = cm_delay_gamma(as.numeric(config_params$dIa$mu), as.numeric(config_params$dIa$shape), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p,
                                     deterministic = toupper(config_settings$deterministic$isTrue) == "TRUE");
-
-if(dump_params)
-  {
-    output_file = file.path(covid_uk_path, "output", paste0("initial-params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
-    dput(parametersUK1, file=output_file)
-    message(paste0("Initial Params saved to '", output_file))
-  }
 
 # build parameters for regions of UK, down to the county level (level 3).
 locations = cm_uk_locations("UK", 3);
@@ -479,11 +472,12 @@ for (r in run_set) {
   iv = cm_iv_build(params)
   cm_iv_set(iv, school_close_b, school_reopen_b, contact = c(1, 1, 0, 1,  1, 1, 0, 1,  1), trace_school = 2);
   params = cm_iv_apply(params, iv);
+    browser()
 
   if(dump_params)
   {
-    output_file = file.path(covid_uk_path, "output", paste0("params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
-    dput(params, file=output_file)
+    output_file = file.path(covid_uk_path, "output", paste0("params-", gsub(" ", "_", gsub(":","",Sys.time())), ".pars"))
+    dput(params$pop[[1]], file=output_file)
     message(paste0("Params saved to '", output_file,"' aborting"))
     return(0)
   }

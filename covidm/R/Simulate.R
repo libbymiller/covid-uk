@@ -82,7 +82,7 @@ run_simulation = function(r, R0, arguments, model_structs, dyn, tots, dump=FALSE
   if(dump)
   {
     output_file = file.path(covid_uk_path, "output", paste0("mod-params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
-    dput(parameters, file=output_file)
+    dput(parameters$pop[[1]], file=output_file)
     message(paste0("[Test Mode Abort]:\n\tParams saved to '", output_file,"'.\n"))
     return(0)
   }
@@ -96,7 +96,6 @@ run_simulation = function(r, R0, arguments, model_structs, dyn, tots, dump=FALSE
   cat("\tCombining Totals: ")
   tots = add_totals(run, tots);
   cat("\tDone\n\tCombining Dynamics: ")
-  print(c(length(run), length(dyn), length(iv)))
   dyn = add_dynamics(run, dyn, iv);
   cat("\tDone\n\tDetermining Peak: ")
   peak_t = run$dynamics[compartment == "cases", .(total_cases = sum(value)), by = t][, t[which.max(total_cases)]];

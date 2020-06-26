@@ -30,6 +30,8 @@ dump_params = length(dump_params) > 0
 rebuild = length(rebuild) > 0
 
 n_runs = as.numeric(argv[1]);
+n_runs = 1
+local = TRUE
 
 if(is.na(n_runs))
 {
@@ -75,6 +77,8 @@ source(try_loc(file.path(cm_path, "R", "Simulate.R")))
 options_print_str = c(options_print_str, configuration$output_str)
 
 set.seed(as.numeric(configuration$params$seed$value))
+
+options_print_str = c(options_print_str, "\n\tSeed : ", as.numeric(configuration$params$seed$value))
 
 model_structures = build_params_from_args(configuration$params)
 parameters = model_structures$parameters

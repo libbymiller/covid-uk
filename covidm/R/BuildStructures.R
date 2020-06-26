@@ -220,7 +220,6 @@ build_population_for_region = function(arguments, location)
 
     # Organize parameters into form recognised by model
     population_parameter_set = list(
-        name = location,
         type = "SEI3R",
         dE = distribution_params$gamma$dE$p,
         dIp = distribution_params$gamma$dIp$p,
@@ -228,21 +227,24 @@ build_population_for_region = function(arguments, location)
         dIs = distribution_params$gamma$dIs$p,
         dH = fixed_params$dH,
         dC = fixed_params$dC,
-        rho = rep(fixed_params$rho, n_groups),
-        tau = rep(fixed_params$tau, n_groups),
+        size = size,
+        matrices = contact_matrices,
+        contact = rep(1, length(contact_matrices)),
+        contact_mult = numeric(0),
+        contact_lowerto = numeric(0),
         u = rep(adjusted_params$u, n_groups),
         y = rep(adjusted_params$y, n_groups),
+        fIp = rep(fixed_params$fIp, n_groups),
         fIs = rep(fixed_params$fIs, n_groups),
         fIa = rep(fixed_params$fIa, n_groups),
-        fIp = rep(fixed_params$fIp, n_groups),
-        size = size,
+        rho = rep(fixed_params$rho, n_groups),
+        tau = rep(fixed_params$tau, n_groups),  
         seed_times = NULL,
         dist_seed_ages = NULL,
-        contact = rep(1, length(contact_matrices)),
-        matrices = contact_matrices,
-        group_names = group_names,
         schedule = list(), # Set time steps for various parameter change events (e.g. scaling of contact matrices)
-        observer = NULL    # Series of callback functions used to trigger events based on variable values
+        observer = NULL,    # Series of callback functions used to trigger events based on variable values
+        name = location,
+        group_names = group_names
     )
     
     return(population_parameter_set)
