@@ -10,10 +10,11 @@ local_data_files = list(
     interventions_file = file.path('configuration', 'interventions.ini'),
     contact_matrices_file = file.path('data', 'all_matrices.rds'),
     age_var_symptom_rates = file.path("data", "2-linelist_symp_fit_fIa0.5.qs"),
-    uk_population = list(address = file.path('data', 'ukmidyearestimates20192020ladcodes.xls'),
-                         sheet = "MYE1",
-                         range = "A12:B31"
-    ),
+    uk_population = file.path("data", "wpp2019_pop2020.rds"),
+    #uk_population = list(address = file.path('data', 'ukmidyearestimates20192020ladcodes.xls'),
+    #                     sheet = "MYE1",
+    #                     range = "A12:B31"
+    #),
     uk_structure = file.path("data", "structure_UK.rds"),
     health_burden_process_data = file.path('data', "health_burden_processes.csv"),
     school_terms = file.path("data", "school_terms_base.csv")
@@ -32,24 +33,26 @@ local_data = function(covid_dir)
     # Read contact matrices
     config_params$contact_matrices = readRDS(file.path(covid_dir, local_data_files$contact_matrices_file))
 
-    population = read_xls(file.path(covid_dir, local_data_files$uk_population$address), 
-                          sheet=local_data_files$uk_population$sheet, range=local_data_files$uk_population$range)
+    #population = read_xls(file.path(covid_dir, local_data_files$uk_population$address), 
+    #                      sheet=local_data_files$uk_population$sheet, range=local_data_files$uk_population$range)
 
     # Convert age bins to match contact matrices, i.e. 75+ is last bin not 100+
-    corr_pop = population[["...2"]][-c(17,18,19)]
-    corr_pop[[16]] = population[["...2"]][16]+population[["...2"]][17]+population[["...2"]][18]+population[["...2"]][19]
+    #corr_pop = population[["...2"]][-c(17,18,19)]
+    #corr_pop[[16]] = population[["...2"]][16]+population[["...2"]][17]+population[["...2"]][18]+population[["...2"]][19]
 
     # FIXME: So happens contact matrix 2 has the correct labels for the names of the columns
     # this very likely will not be the case every time!
-    config_params$population = list(count=corr_pop, label=colnames(config_params$contact_matrices[[2]]$home))
+    #config_params$population = list(count=corr_pop, label=colnames(config_params$contact_matrices[[2]]$home))
+    config_params$population = readRDS(file.path(covid_dir, local_data_files$uk_population))
 
-    ngroups = length(config_params$population$label)
+    #ngroups = length(config_params$population$label)
+    ngroups = 16
 
-    if(ngroups != 16)
-    {
-        
-        stop("Resizing of local data failed")
-    }
+    #if(ngroups != 16)
+    #{
+    #    
+    #    stop("Resizing of local data failed")
+    #}
 
     # Load Age Varying Symptomatic Rates from Prior Analysis
     config_params$age_var_symptom_rates = qread(local_data_files$age_var_symptom_rates)

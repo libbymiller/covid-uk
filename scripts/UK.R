@@ -116,6 +116,13 @@ parameters = cm_parameters_SEI3R(locations, date_start = "2020-01-29", date_end 
                                  dIa  = cm_delay_gamma(as.numeric(config_params$dIa$mu), as.numeric(config_params$dIa$shape), t_max = as.numeric(config_params$time$max), t_step = as.numeric(config_params$time$step))$p, # 5 days total of infectiousness here as well.
                                  deterministic = toupper(config_settings$deterministic$isTrue) == "TRUE");
 
+if(dump_params)
+{
+  output_file = file.path(covid_uk_path, "output", paste0("params-stage1-", gsub(" ", "_", gsub(":","",Sys.time())), ".pars"))
+    dput(parameters$pop, file=output_file)
+    message(paste0("Params saved to '", output_file,"' aborting"))
+}
+
 # Split off the elderly (70+, age groups 15 and 16) so their contact matrices can be manipulated separately
 parameters = cm_split_matrices_ex_in(parameters, 15);
 
@@ -476,8 +483,8 @@ for (r in run_set) {
 
   if(dump_params)
   {
-    output_file = file.path(covid_uk_path, "output", paste0("params-", gsub(" ", "_", gsub(":","",Sys.time())), ".pars"))
-    dput(params$pop[[1]], file=output_file)
+    output_file = file.path(covid_uk_path, "output", paste0("params-stage2-", gsub(" ", "_", gsub(":","",Sys.time())), ".pars"))
+    dput(params$pop, file=output_file)
     message(paste0("Params saved to '", output_file,"' aborting"))
     return(0)
   }

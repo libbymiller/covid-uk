@@ -213,8 +213,10 @@ build_population_for_region = function(arguments, location)
         )
     )
 
-    n_groups = length(arguments$population$label)
-    size = arguments$population$count
+    #n_groups = length(arguments$population$label)
+    #FIXME Hardcoded
+    n_groups = 16
+    #size = arguments$population$count
     group_names = arguments$population$label
     contact_matrices = arguments$contact_matrices[[location]]
 
@@ -227,7 +229,8 @@ build_population_for_region = function(arguments, location)
         dIs = distribution_params$gamma$dIs$p,
         dH = fixed_params$dH,
         dC = fixed_params$dC,
-        size = size,
+        #size = size,
+        size = NULL,
         matrices = contact_matrices,
         contact = rep(1, length(contact_matrices)),
         contact_mult = numeric(0),
@@ -239,12 +242,13 @@ build_population_for_region = function(arguments, location)
         fIa = rep(fixed_params$fIa, n_groups),
         rho = rep(fixed_params$rho, n_groups),
         tau = rep(fixed_params$tau, n_groups),  
-        seed_times = NULL,
-        dist_seed_ages = NULL,
+        seed_times = 1,
+        dist_seed_ages = rep(1, n_groups),
         schedule = list(), # Set time steps for various parameter change events (e.g. scaling of contact matrices)
         observer = NULL,    # Series of callback functions used to trigger events based on variable values
         name = location,
-        group_names = group_names
+        #group_names = group_names
+        group_names = colnames(contact_matrices[[1]])
     )
     
     return(population_parameter_set)
@@ -252,10 +256,17 @@ build_population_for_region = function(arguments, location)
 
 build_population_parameters = function(arguments, locations)
 {
+    #FIXME: Need to remove these hard coded age group bin limits
+    #n_groups = length(arguments$population$label)
+    n_groups = 16
     all_region_params = list()
     for(region in locations)
     {
-        all_region_params[[region]] = build_population_for_region(arguments, region)
+        demographics = cm_get_demographics(region, n_groups);
+        size = demographics[, round((f + m) * 1000)];
+        pars = build_population_for_region(arguments, region)
+        pars$size = size
+        all_region_params[[region]] = pars
     }
 
     return(all_region_params)

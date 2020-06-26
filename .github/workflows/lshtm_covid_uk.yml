@@ -31,6 +31,7 @@ jobs:
               sudo R -e "install.packages(\"HDInterval\")"
               sudo R -e "install.packages(\"cowplot\")"
               sudo R -e "install.packages(\"testit\")"
+              sudo R -e "install.packages(\"readxl\")"
       - name: Run Model Locally in Dump Mode
         run: Rscript run_model.R --local --dump
       - name: Test Outputs
