@@ -81,12 +81,23 @@ for(region in 1:length(base_params2$pop))
     message(paste("Testing Region: ", base_params2$pop[[region]]$name))
     for(col in names(base_params2$pop[[region]]))
     {
-        # These variables are set later on and so do not need to be compatible
-        if(col %in% c("contact_mult", "contact_lowerto", "schedule", "observer"))
+        # Only check variables that should have changed
+        if(col %in% c("contact_mult", "contact_lowerto", "observer"))
         {
             next;
         }
 
+        if(col == "schedule")
+        {
+            message(paste("Testing variable: ", col, "\n"))
+            for(subcol in names(base_params2$pop[[region]][[col]][[1]]))
+            {
+                message(paste("\tTesting member: ", subcol, "\n"))
+                assert(paste("FAILED\n"), base_params2$pop[[region]][[col]][[1]][[subcol]] ==  new_params2$pop[[region]][[col]][[1]][[subcol]])
+                message("\tPASS\n")      
+            }
+            next;
+        }
         # Check names of matrices
         if(col == "matrices")
         {
