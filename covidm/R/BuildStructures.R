@@ -2,6 +2,13 @@
 #               Expected Arguments                    #
 #                                                     #
 # Single Value Fixed Parameters:                      #
+#   run_mode : "R0 Analysis" for the short simulation #
+#              on how an intervention affects R0 else #
+#              run normal model mode                  #
+#   from_bin : bin number which marks the lower age   #
+#              bound for someone being defined as     #
+#              elderly (default 15 for 16 bin with    #
+#              last bin as 75+)                       #
 #   time:                                             #
 #       max : Maximum time (in days)                  #
 #       step : Time interval (in days)                #
@@ -14,6 +21,20 @@
 #   fIp : ?                                           #
 #   from_bin : bin at which we define the             #
 #              start of 'elderly' age state           #
+#   lockdown_trigger:                                 #
+#       trigger : "national"/"local" COVID trigger    #
+#       duration : duration of lockdown in days       #
+#       icu_bed_usage : occupancy of ICU bed usage    #
+#                       to trigger lockdown (option)  #
+#       intervention_shift : lockdown trigger based   #
+#                            on shift from peak       #
+#                                                     #
+#    rates: (school term, lockdown)                   #
+#           home, work, schools, other, home_elderly  #
+#        work_elderly, schools_elderly, other_elderly #
+#                                                     #
+#    seed:                                            #
+#           value, min_age, max_age                   #
 #                                                     #
 # Flags:                                              #
 #   deterministic : Determines age seeding            #
@@ -28,6 +49,15 @@
 #   dIp : gamma(mu, shape)                            #
 #   dIs : gamma(mu, shape)                            #
 #   dIa : gamma(mu, shape)                            #
+#   delay_Ip_to_hosp : gamma(mu, shape) delay between #
+#                      becoming infectious and being  #
+#                      admitted to hospital           #
+#   delay_to_icu : gamma(mu, shape) delay between     #
+#                  hospital admission and ICU         #
+#   delay_to_non_icu : gamma(mu, shape) delay between #
+#                      hospital admission and non-ICU #
+#   delay_Ip_to_death : gamma(mu, shape) delay between#
+#                       infection and death           #
 #                                                     #
 # Array Parameters:                                   #
 #   population : binned population data               #
@@ -325,28 +355,6 @@ cm_uk_locations = function(structure, country, level) {
     return (paste0("UK | ", locs));
 }
 
-get_location_labels = function(arguments)
-{
-    # Identify London boroughs for early seeding, and regions of each country for time courses
-
-    uk_pop = arguments$uk_structure
-
-    locations = cm_uk_locations(uk_pop, "UK", 3)
-    uk_main = cm_uk_locations(uk_pop, "UK", 0)
-    population_struct = list(
-        location_labels = locations,
-        uk_label = uk_main,
-        london = uk_pop[match(str_sub(locations, 6), Name), Geography1 %like% "London"],
-        england = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^E" & !(Geography1 %like% "London")],
-        wales = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^W"],
-        scotland = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^S"],
-        nireland = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^N"],
-        westmid = uk_pop[match(str_sub(locations, 6), Name), Name == "West Midlands (Met County)"],
-        cumbria = uk_pop[match(str_sub(locations, 6), Name), Name == "Cumbria"]
-    )
-
-    return(population_struct)
-}
 
 build_params_from_args = function(arguments)
 {
@@ -423,6 +431,20 @@ build_params_from_args = function(arguments)
         processes = burden_processes,
         time_step = as.numeric(arguments$time$step)
     )
+
+    # Have to unpack these variables else Rcpp breaks (they are needed globally)
+    # Define using the model structure the various region variables
+    list2env(list(
+        locations = locations$locations,
+        london = locations$london,
+        england = locations$england,
+        wales = locations$wales,
+        scotland = locations$scotland,
+        nireland = locations$nireland,
+        westmid = locations$westmid,
+        cumbria  = locations$cumbria),
+        env=parent.frame())
+    list2env(list(loc_length = length(locations$london)), env=parent.frame())
 
     # Requires an unmodified version (analog to parametersUK1 in UK.R)
 

@@ -3,6 +3,7 @@ library(readxl)
 library(ini)
 library(rlang)
 library(stringr)
+library(tidyverse)
 
 local_data_files = list(
     parameter_file = file.path('configuration', 'parameters.ini'),
@@ -19,6 +20,29 @@ local_data_files = list(
     health_burden_process_data = file.path('data', "health_burden_processes.csv"),
     school_terms = file.path("data", "school_terms_base.csv")
 )
+
+get_location_labels = function(arguments)
+{
+    # Identify London boroughs for early seeding, and regions of each country for time courses
+
+    uk_pop = arguments$uk_structure
+
+    locations = cm_uk_locations(uk_pop, "UK", 3)
+    uk_main = cm_uk_locations(uk_pop, "UK", 0)
+    population_struct = list(
+        location_labels = locations,
+        uk_label = uk_main,
+        london = uk_pop[match(str_sub(locations, 6), Name), Geography1 %like% "London"],
+        england = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^E" & !(Geography1 %like% "London")],
+        wales = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^W"],
+        scotland = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^S"],
+        nireland = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^N"],
+        westmid = uk_pop[match(str_sub(locations, 6), Name), Name == "West Midlands (Met County)"],
+        cumbria = uk_pop[match(str_sub(locations, 6), Name), Name == "Cumbria"]
+    )
+
+    return(population_struct)
+}
 
 local_data = function(covid_dir)
 {
@@ -45,14 +69,12 @@ local_data = function(covid_dir)
     #config_params$population = list(count=corr_pop, label=colnames(config_params$contact_matrices[[2]]$home))
     config_params$population = readRDS(file.path(covid_dir, local_data_files$uk_population))
 
-    #ngroups = length(config_params$population$label)
-    ngroups = 16
+    # Get number of bins from dividing the minimum highest bin (i.e. labelled "X+") across all UK regions
+    # and dividing by 5 years
+    ngroups_from_pop_dat = config_params$population %>% .[.$name %like% "UK", ] %>% .[.$age %like% "\\+", ]
+    ngroups_from_pop_dat = min(as.numeric(sub("\\+", "", ngroups_from_pop_dat$age)))/5
 
-    #if(ngroups != 16)
-    #{
-    #    
-    #    stop("Resizing of local data failed")
-    #}
+    ngroups = 16
 
     # Load Age Varying Symptomatic Rates from Prior Analysis
     config_params$age_var_symptom_rates = qread(local_data_files$age_var_symptom_rates)
@@ -136,8 +158,8 @@ local_data = function(covid_dir)
 
     if(config_params$run_mode$mode != "R0 Analysis")
     {
-        config_params$intervention = interventions[[int_par$run$intervention]]
-        config_params$intervention_name = int_par$run$intervention
+        config_params$intervention = interventions[[config_params$intervention_preset$name]]
+        options_print_str = c(options_print_str, paste("\n\tInterventions Preset: ", config_params$intervention_preset$name))
     }
     else
     {
@@ -145,4 +167,10 @@ local_data = function(covid_dir)
     }
 
     return(list(params=config_params, output_str=options_print_str))
+}
+
+assemble_sizes = function()
+{
+    demographics = cm_get_demographics(region, n_groups);
+    size = demographics[, round((f + m) * 1000)];
 }

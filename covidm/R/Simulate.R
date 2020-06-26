@@ -1,8 +1,8 @@
 library(lubridate)
+library(testit)
 
 school_iv_set_contact_matrix = c(1, 1, 0, 1,  1, 1, 0, 1,  1)
-
-run_simulation = function(r, R0, arguments, model_structs, dyn, tots, dump=FALSE)
+run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dump=FALSE)
 {  
   parameters = model_structs$parameters
   core_param = model_structs$unmodified
@@ -22,10 +22,13 @@ run_simulation = function(r, R0, arguments, model_structs, dyn, tots, dump=FALSE
   cat(paste("\tu correction factor : ", u_adj, "\n"))
 
   # 3. Pick seeding times
-  cat(paste("[Selecting Seeding Times]:\n"))
-  seed_start = ifelse(uk_pop_struct$london, sample(0:6, length(uk_pop_struct$london), replace = TRUE), 
-                              sample(0:20, length(uk_pop_struct$london), replace = TRUE));
-  cat(paste("\tDone.\n"))  
+  cat(paste("[Selecting Seeding Times]:\n\t[ "))
+  seed_start = sample(eval(parse(text=arguments$seed$seeding_start_range, loc_length)), replace=TRUE)
+  for(i in seed_start)
+  {
+    cat(paste(i, " "))
+  }
+  cat(paste("]\n"))
 
   # 4. Do base model
   
@@ -57,17 +60,12 @@ run_simulation = function(r, R0, arguments, model_structs, dyn, tots, dump=FALSE
         iR0s[j] = cm_calc_R0(params, j);
         iweights[j] = sum(params$pop[[j]]$size);
       }
-      
+      cat(paste("\tDone.\n"))
+      cat(paste("[Calculating R0 Weighted Mean and Initial Dynamics]: "))
       weighted_R0 = weighted.mean(iR0s, iweights);
       dynamics = rbind(dynamics, data.table(run = r, scenario = names(arguments$intervention)[i], R0 = weighted_R0));
-  
+      cat(paste("\n\tWeighted Mean : ", weighted_R0, "\n"))
     }
-
-    cat(paste("\tDone.\n"))
-    cat(paste("[Calculating R0 Weighted Mean and Initial Dynamics]: "))
-    weighted_R0 = weighted.mean(iR0s, iweights);
-    dyn = rbind(dyn, data.table(run = r, scenario = names(arguments$intervention), R0 = weighted_R0));
-    cat(paste("\n\tWeighted Mean : ", weighted_R0, "\n"))
 
     return(0)
   }
@@ -82,9 +80,9 @@ run_simulation = function(r, R0, arguments, model_structs, dyn, tots, dump=FALSE
   if(dump)
   {
     output_file = file.path(covid_uk_path, "output", paste0("mod-all-params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
-    dput(parameters, file=output_file)
+    dput(params, file=output_file)
     message(paste0("[Test Mode Abort]:\n\tParams saved to '", output_file,"'.\n"))
-    return(0)
+    return(list(run_code=0))
   }
 
   # 4c. Run model
@@ -94,9 +92,11 @@ run_simulation = function(r, R0, arguments, model_structs, dyn, tots, dump=FALSE
   run$dynamics[, scenario := "Base"];
   run$dynamics[, R0 := R0s[r]];
   cat("\tCombining Totals: ")
-  tots = add_totals(run, tots);
+  totals = add_totals(run, totals);
   cat("\tDone\n\tCombining Dynamics: ")
-  dyn = add_dynamics(run, dyn, iv);
+  dynamics = add_dynamics(run, dynamics, iv);
+  assert("ERROR: Post-Simulation Dynamics Table Empty", length(dynamics) > 0)
+  assert("ERROR: Post-Simulation Totals Table Empty", length(totals) > 0) 
   cat("\tDone\n\tDetermining Peak: ")
   peak_t = run$dynamics[compartment == "cases", .(total_cases = sum(value)), by = t][, t[which.max(total_cases)]];
   peak_t_bypop = run$dynamics[compartment == "cases", .(total_cases = sum(value)), by = .(t, population)][, t[which.max(total_cases)], by = population]$V1;
@@ -105,9 +105,9 @@ run_simulation = function(r, R0, arguments, model_structs, dyn, tots, dump=FALSE
   gc()
 
   cat(paste("[Retrieving Lockdown Measures]:\n"))
-  cat(paste("\tIntervention: ", arguments$intervention_name, "\n"))
+  cat(paste("\tReading Interventions: "))
   intervention = arguments$intervention
-  cat(paste("\tDuration: ", as.numeric(arguments$lockdown_trigger$duration), "days\n"))
+  cat(paste("Done.\n\tDuration: ", as.numeric(arguments$lockdown_trigger$duration), "days\n"))
   duration = as.numeric(arguments$lockdown_trigger$duration)
   cat(paste("\tTrigger: ", arguments$lockdown_trigger$trigger, "\n"))
   trigger = arguments$lockdown_trigger$trigger
@@ -165,11 +165,12 @@ run_simulation = function(r, R0, arguments, model_structs, dyn, tots, dump=FALSE
   run$dynamics[, run := r];
   run$dynamics[, scenario := paste0("", tag)];
   run$dynamics[, R0 := R0s[r]];
-  tots = add_totals(run, tots);
-  dyn = add_dynamics(run, dyn, iv);
-
+  totals = add_totals(run, totals);
+  dynamics = add_dynamics(run, dynamics, iv);
+  assert("ERROR: Post-Simulation Dynamics Table Empty", length(dynamics) > 0)
+  assert("ERROR: Post-Simulation Totals Table Empty", length(totals) > 0) 
   rm(run)
   gc()
 
-  return(1)
+  return(list(run_code=1, dynamics=dynamics, totals=totals))
 }

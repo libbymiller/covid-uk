@@ -83,23 +83,13 @@ options_print_str = c(options_print_str, "\n\tMode : ", configuration$params$run
 R0s = rnorm(n_runs, mean = as.numeric(configuration$params$r0_distribution$mean),
             sd = as.numeric(configuration$params$r0_distribution$sd))[[1]]
 
-dynamics = data.table()
-totals = data.table()
+observables = list(
+  dynamics = data.table(),
+  totals = data.table()
+  )
 
 output_file_name = file.path(covid_uk_path, "dynamics.qs")
 options_print_str = c(options_print_str, paste("\n\tOutput File:", output_file_name, "\n"))
-
-# Have to unpack these variables else Rcpp breaks (they are needed globally)
-# FIXME: Would be good to have this global import external
-uk_pop_struct = model_structures$uk_population_structure
-locations = uk_pop_struct$locations
-london = uk_pop_struct$london
-england = uk_pop_struct$england
-wales = uk_pop_struct$wales
-scotland = uk_pop_struct$scotland
-nireland = uk_pop_struct$nireland
-westmid = uk_pop_struct$westmid
-cumbria  = uk_pop_struct$cumbria
 
 # Run the Model
 cat(options_print_str)
@@ -109,12 +99,19 @@ for (r in 1:n_runs)
   message(paste0("\n==== Running Realisation: ", r, "/", n_runs, " ===="))
   R0 = R0s[r]
 
-  if(run_simulation(r, R0, configuration$params, model_structures, dynamics, totals, dump_params) == 0)
+  # Ensure dynamics and totals get updated
+  run_result = run_simulation(r, R0, configuration$params, model_structures, 
+                              observables$dynamics, observables$totals, dump_params)
+  observables$dynamics = run_result$dynamics
+  observables$totals = run_result$totals
+  assert("Failed to retrieve Dynamics from Run", length(observables$dynamics) > 0)
+  assert("Failed to retrieve Totals from Run", length(observables$totals) > 0)
+  if(run_result$run_code == 0)
   {
     break;
   }
 }
 
-cm_save(totals, file.path(covid_uk_path, paste0("run-", sub(" ", "-", configuration$params$run_mode$mode),"-", r, "-totals.qs")));
-cm_save(dynamics, file.path(covid_uk_path, paste0("run-", sub(" ", "-", configuration$params$run_mode$mode), "-", r, "-dynamics.qs")));
+cm_save(observables$totals, file.path(covid_uk_path, paste0("run-", sub(" ", "-", configuration$params$run_mode$mode),"-", r, "-totals.qs")));
+cm_save(observables$dynamics, file.path(covid_uk_path, paste0("run-", sub(" ", "-", configuration$params$run_mode$mode), "-", r, "-dynamics.qs")));
 print(Sys.time())

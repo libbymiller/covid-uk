@@ -2,6 +2,12 @@
 
 Stochastic age-structured model of SARS-nCoV-2 transmission for UK scenario projections.
 
+# Removed Features
+
+As this is important I have put this at the top of the README, the following features have been removed possibly pending future review:
+
+* **Varying the seeding time depending on whether the select region is a London borough.** The main issue with this is the method use assumes the data form is absolute (i.e. you want to run on every UK region simultaneously, when in the SCRC case we are initially only running on Scottish data).
+
 ## Quick start guide
 
 ### Installing dependencies for Mac OS
