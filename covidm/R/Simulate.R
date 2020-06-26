@@ -19,7 +19,7 @@ run_simulation = function(r, R0, arguments, model_structs, dyn, tots, dump=FALSE
   # 2. Calculate R0 adjustment needed
   core_param$pop[[1]]$y = covy;
   u_adj = R0 / cm_calc_R0(core_param, 1);
-  cat(paste("\tAdjusted u param : ", u_adj, "\n"))
+  cat(paste("\tu correction factor : ", u_adj, "\n"))
 
   # 3. Pick seeding times
   cat(paste("[Selecting Seeding Times]:\n"))
@@ -81,7 +81,7 @@ run_simulation = function(r, R0, arguments, model_structs, dyn, tots, dump=FALSE
 
   if(dump)
   {
-    output_file = file.path(covid_uk_path, "output", paste0("mod-params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
+    output_file = file.path(covid_uk_path, "output", paste0("mod-all-params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
     dput(parameters, file=output_file)
     message(paste0("[Test Mode Abort]:\n\tParams saved to '", output_file,"'.\n"))
     return(0)
@@ -165,8 +165,8 @@ run_simulation = function(r, R0, arguments, model_structs, dyn, tots, dump=FALSE
   run$dynamics[, run := r];
   run$dynamics[, scenario := paste0("", tag)];
   run$dynamics[, R0 := R0s[r]];
-  tots = add_totals(run, tot);
-  dyn = add_dynamics(run, dy, iv);
+  tots = add_totals(run, tots);
+  dyn = add_dynamics(run, dyn, iv);
 
   rm(run)
   gc()

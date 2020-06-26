@@ -434,6 +434,8 @@ for (r in run_set) {
   params = duplicate(parameters);
   for (j in seq_along(params$pop)) {
     params$pop[[j]]$u = params$pop[[j]]$u * u_adj;
+    print(params$pop[[j]]$u)
+    stop()
     params$pop[[j]]$y = covy;
     params$pop[[j]]$seed_times = rep(seed_start[j] + 0:27, each = 2);
     params$pop[[j]]$dist_seed_ages = cm_age_coefficients(25, 50, 5 * 0:16);
@@ -479,12 +481,11 @@ for (r in run_set) {
   iv = cm_iv_build(params)
   cm_iv_set(iv, school_close_b, school_reopen_b, contact = c(1, 1, 0, 1,  1, 1, 0, 1,  1), trace_school = 2);
   params = cm_iv_apply(params, iv);
-    browser()
 
   if(dump_params)
   {
     output_file = file.path(covid_uk_path, "output", paste0("params-stage2-", gsub(" ", "_", gsub(":","",Sys.time())), ".pars"))
-    dput(params$pop, file=output_file)
+    dput(params, file=output_file)
     message(paste0("Params saved to '", output_file,"' aborting"))
     return(0)
   }

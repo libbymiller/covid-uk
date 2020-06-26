@@ -37,7 +37,6 @@ if(is.na(n_runs))
 {
   stop("Invalid argument for number of runs")
 }
-
 covid_uk_search = grep('--covid-uk-path*', argv, value = TRUE)
 if(length(covid_uk_search) > 0)
 {
@@ -45,13 +44,12 @@ if(length(covid_uk_search) > 0)
 } else {
   covid_uk_path = getwd();
 }
-
 # covidm options
 cm_path = file.path(covid_uk_path, "covidm");
 
+
 source(file.path(cm_path, "R", "covidm.R"))
 source(file.path(cm_path, "R", "Utilities.R"))
-
 if(rebuild)
 {
   message("Rebuilding C++ Libraries")
