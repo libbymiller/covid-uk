@@ -125,7 +125,7 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
     params$pop[[j]]$u = params$pop[[j]]$u * u_adj;
     params$pop[[j]]$y = covy;
     if (!is.na(lockdown)) {
-      params$pop[[j]]$observer = observer_lockdown(lockdown);
+      params$pop[[j]]$observer = observer_lockdown(arguments, c(lockdown));
     }
   }
             
