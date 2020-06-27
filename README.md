@@ -24,6 +24,36 @@ echo FLIBS=-L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin18/8.2.0 -L/usr/loca
 
 Finally, install nlopt: `brew install nlopt`
 
+## SCRC Implementation
+
+The SCRC implementation of the LSHTM model is designed to read data and parameters from external sources as opposed to using the included/built in parameters included within the original. Ultimately the wrapper will allow the model to be run either locally using these existing files, or by connecting to an external API which will provide the values.
+
+### Model Run
+
+To run the model using this method use the new `run_model.R` script included. The script takes a single required argument which is the number of stochastic realisations. To run locally (currently the only option available):
+
+```
+Rscript run_model.R <n-realisations> --local
+```
+this will produce outputs in the `output` folder. The model will read parameters locally from the `configuration/parameters.ini` file and from the sources contained within the `data` folder.
+
+### Testing
+
+As the model itself (present as the RCpp function `cm_backend_simulate`) has not been altered testing is only needed on the form of the parameters being fed into the model matching those present during the run of the original form. Contained within the `testing/regression` folder is a script `test_params.R` which compares the parameters. In order to perform the test you will firstly need to run the model in "dump" mode which will stop execution prior to simulation and dump the parameters to the output folder, only one realisation needs to be run:
+
+```
+Rscript run_model.R 1 --local --dump
+```
+then run:
+
+```
+Rscript tests/regression/test_params.R
+```
+
+the script will compare the latest dumps with the files contained within the `tests/test_data/baseline` folder.
+
+## Original Implementation
+
 ### Guide to files
 
 Main parameter setting and model run is in `scripts/UK.R` however the model is using the new `scripts/run_model.sh` script. Output collation and plotting functions are in `UK-view.R`. Underlying model code is in `covidm` folder.
