@@ -58,19 +58,9 @@ local_data = function(covid_dir)
 
     # Read contact matrices
     config_params$contact_matrices = readRDS(file.path(covid_dir, local_data_files$contact_matrices_file))
+    
+    n_groups_cm = config_params$contact_matrices %>% .[names(.) %like% "UK"] %>% .[[1]] %>% .$other %>% colnames %>% length
 
-    config_params$contact_matrices %>% .[names(.) %like% "UK"] 
-
-    #population = read_xls(file.path(covid_dir, local_data_files$uk_population$address), 
-    #                      sheet=local_data_files$uk_population$sheet, range=local_data_files$uk_population$range)
-
-    # Convert age bins to match contact matrices, i.e. 75+ is last bin not 100+
-    #corr_pop = population[["...2"]][-c(17,18,19)]
-    #corr_pop[[16]] = population[["...2"]][16]+population[["...2"]][17]+population[["...2"]][18]+population[["...2"]][19]
-
-    # FIXME: So happens contact matrix 2 has the correct labels for the names of the columns
-    # this very likely will not be the case every time!
-    #config_params$population = list(count=corr_pop, label=colnames(config_params$contact_matrices[[2]]$home))
     config_params$population = readRDS(file.path(covid_dir, local_data_files$uk_population))
 
     # Get number of bins from dividing the minimum highest bin (i.e. labelled "X+") across all UK regions
@@ -78,7 +68,7 @@ local_data = function(covid_dir)
     ngroups_from_pop_dat = config_params$population %>% .[.$name %like% "UK", ] %>% .[.$age %like% "\\+", ]
     ngroups_from_pop_dat = min(as.numeric(sub("\\+", "", ngroups_from_pop_dat$age)))/5
 
-    ngroups = 16
+    config_params$ngroups = min(ngroups_from_pop_dat, n_groups_cm)
 
     # Load Age Varying Symptomatic Rates from Prior Analysis
     config_params$age_var_symptom_rates = qread(local_data_files$age_var_symptom_rates)
@@ -108,7 +98,7 @@ local_data = function(covid_dir)
                                             as.numeric(int_par$school_closures$schools_elderly),
                                             as.numeric(int_par$school_closures$other_elderly),
                                             as.numeric(int_par$school_closures$child_elderly)),
-                                    fIs = rep(as.numeric(int_par$school_closures$fIs_perage), ngroups)
+                                    fIs = rep(as.numeric(int_par$school_closures$fIs_perage), config_params$ngroups)
         ),
 
         `Social Distancing` = list(contact = c(as.numeric(int_par$social_distancing$home), 
@@ -120,7 +110,7 @@ local_data = function(covid_dir)
                                             as.numeric(int_par$social_distancing$schools_elderly),
                                             as.numeric(int_par$social_distancing$other_elderly),
                                             as.numeric(int_par$social_distancing$child_elderly)),
-                                    fIs = rep(as.numeric(int_par$social_distancing$fIs_perage), ngroups)
+                                    fIs = rep(as.numeric(int_par$social_distancing$fIs_perage), config_params$ngroups)
         ),
 
         `Elderly Shielding` = list(contact = c(as.numeric(int_par$elderly_shielding$home), 
@@ -132,7 +122,7 @@ local_data = function(covid_dir)
                                             as.numeric(int_par$elderly_shielding$schools_elderly),
                                             as.numeric(int_par$elderly_shielding$other_elderly),
                                             as.numeric(int_par$elderly_shielding$child_elderly)),
-                                    fIs = rep(as.numeric(int_par$elderly_shielding$fIs_perage), ngroups)
+                                    fIs = rep(as.numeric(int_par$elderly_shielding$fIs_perage), config_params$ngroups)
         ),
 
         `Self-Isolation`    = list(contact = c(as.numeric(int_par$self_isolation$home), 
@@ -144,7 +134,7 @@ local_data = function(covid_dir)
                                             as.numeric(int_par$self_isolation$schools_elderly),
                                             as.numeric(int_par$self_isolation$other_elderly),
                                             as.numeric(int_par$self_isolation$child_elderly)),
-                                    fIs = rep(as.numeric(int_par$self_isolation$fIs_perage), ngroups)
+                                    fIs = rep(as.numeric(int_par$self_isolation$fIs_perage), config_params$ngroups)
         ),
                                     
         `Combination`       = list(contact = c(as.numeric(int_par$combination$home), 
@@ -156,7 +146,7 @@ local_data = function(covid_dir)
                                             as.numeric(int_par$combination$schools_elderly),
                                             as.numeric(int_par$combination$other_elderly),
                                             as.numeric(int_par$combination$child_elderly)),
-                                    fIs = rep(as.numeric(int_par$combination$fIs_perage), ngroups)
+                                    fIs = rep(as.numeric(int_par$combination$fIs_perage), config_params$ngroups)
         )
     )
 
@@ -171,10 +161,4 @@ local_data = function(covid_dir)
     }
 
     return(list(params=config_params, output_str=options_print_str))
-}
-
-assemble_sizes = function()
-{
-    demographics = cm_get_demographics(region, n_groups);
-    size = demographics[, round((f + m) * 1000)];
 }

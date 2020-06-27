@@ -120,7 +120,7 @@ reformat = function(P)
   return (rep(x, each = 2))
 }
 
-build_burden_processes = function(ngroups, arguments)
+build_burden_processes = function(arguments)
 {
     process_probs = arguments$health_burden_probabilities
 
@@ -163,22 +163,22 @@ build_burden_processes = function(ngroups, arguments)
                              probabilities$non_icu_symptomatic,
                              1 - probabilities$icu_symptomatic - probabilities$non_icu_symptomatic), 
                              nrow = 3, 
-                             ncol = ngroups, 
+                             ncol = arguments$ngroups, 
                              byrow = TRUE),
              delays = matrix(c(gamma_Ip_Hosp_delay$p, gamma_Ip_Hosp_delay$p, 
                                delay_skip$p), nrow = 3, byrow = TRUE)),
         
         list(source = "to_icu", type = "multinomial", names = "icu", report = "p",
-            prob = matrix(1, nrow = 1, ncol = ngroups, byrow = TRUE),
+            prob = matrix(1, nrow = 1, ncol = arguments$ngroups, byrow = TRUE),
             delays = matrix(gamma_to_icu_delay$p, nrow = 1, byrow = TRUE)),
         
         list(source = "to_nonicu", type = "multinomial", names = "nonicu", report = "p",
-            prob = matrix(1, nrow = 1, ncol = ngroups, byrow = TRUE),
+            prob = matrix(1, nrow = 1, ncol = arguments$ngroups, byrow = TRUE),
             delays = matrix(gamma_to_non_icu_delay$p, nrow = 1, byrow = TRUE)),
         
         list(source = "Ip", type = "multinomial", names = c("death", "null"), report = c("o", ""),
             prob = matrix(c(probabilities$deaths_non_icu, 1 - probabilities$deaths_non_icu), 
-                            nrow = 2, ncol = ngroups, byrow = TRUE),
+                            nrow = 2, ncol = arguments$ngroups, byrow = TRUE),
             delays = matrix(c(gamma_Ip_Death_delay$p, delay_skip$p), nrow = 2, byrow = TRUE))
     )
 
@@ -239,9 +239,6 @@ build_population_for_region = function(arguments, location)
         )
     )
 
-    #n_groups = length(arguments$population$label)
-    #FIXME Hardcoded
-    n_groups = 16
     #size = arguments$population$count
     group_names = arguments$population$label
     contact_matrices = arguments$contact_matrices[[location]]
@@ -261,15 +258,15 @@ build_population_for_region = function(arguments, location)
         contact = rep(1, length(contact_matrices)),
         contact_mult = numeric(0),
         contact_lowerto = numeric(0),
-        u = rep(adjusted_params$u, n_groups),
-        y = rep(adjusted_params$y, n_groups),
-        fIp = rep(fixed_params$fIp, n_groups),
-        fIs = rep(fixed_params$fIs, n_groups),
-        fIa = rep(fixed_params$fIa, n_groups),
-        rho = rep(fixed_params$rho, n_groups),
-        tau = rep(fixed_params$tau, n_groups),  
+        u = rep(adjusted_params$u, arguments$ngroups),
+        y = rep(adjusted_params$y, arguments$ngroups),
+        fIp = rep(fixed_params$fIp, arguments$ngroups),
+        fIs = rep(fixed_params$fIs, arguments$ngroups),
+        fIa = rep(fixed_params$fIa, arguments$ngroups),
+        rho = rep(fixed_params$rho, arguments$ngroups),
+        tau = rep(fixed_params$tau, arguments$ngroups),  
         seed_times = 1,
-        dist_seed_ages = rep(1, n_groups),
+        dist_seed_ages = rep(1, arguments$ngroups),
         schedule = list(), # Set time steps for various parameter change events (e.g. scaling of contact matrices)
         observer = NULL,    # Series of callback functions used to trigger events based on variable values
         name = location,
@@ -282,13 +279,10 @@ build_population_for_region = function(arguments, location)
 
 build_population_parameters = function(arguments, locations)
 {
-    #FIXME: Need to remove these hard coded age group bin limits
-    #n_groups = length(arguments$population$label)
-    n_groups = 16
     all_region_params = list()
     for(region in locations)
     {
-        demographics = cm_get_demographics(region, n_groups);
+        demographics = cm_get_demographics(region, arguments$ngroups);
         size = demographics[, round((f + m) * 1000)];
         pars = build_population_for_region(arguments, region)
         pars$size = size
@@ -365,9 +359,7 @@ build_params_from_args = function(arguments)
         message(paste0("Initial Params saved to '", output_file))
     }
 
-    ngroups = length(population_parameter_sets[[1]]$group_names)
-
-    burden_processes = build_burden_processes(ngroups, arguments)
+    burden_processes = build_burden_processes(arguments)
 
     if(typeof(arguments$fast_multinomial$isTrue) == "logical")
     {
