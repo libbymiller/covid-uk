@@ -166,7 +166,7 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
   tag = ifelse(lockdown >= 0, lockdown, "variable");
 
   run$dynamics[, run := r];
-  run$dynamics[, scenario := paste0("", tag)];
+  run$dynamics[, scenario := "Lockdown"];
   run$dynamics[, R0 := R0s[r]];
   totals = add_totals(run, totals);
   dynamics = add_dynamics(run, dynamics, iv);

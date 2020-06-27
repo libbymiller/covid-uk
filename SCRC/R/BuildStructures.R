@@ -422,16 +422,6 @@ build_params_from_args = function(arguments)
 
     # Have to unpack these variables else Rcpp breaks (they are needed globally)
     # Define using the model structure the various region variables
-    list2env(list(
-        locations = locations$locations,
-        london = locations$london,
-        england = locations$england,
-        wales = locations$wales,
-        scotland = locations$scotland,
-        nireland = locations$nireland,
-        westmid = locations$westmid,
-        cumbria  = locations$cumbria),
-        env=parent.frame())
     list2env(list(loc_length = length(locations$london)), env=parent.frame())
 
     # Requires an unmodified version (analog to parametersUK1 in UK.R)
