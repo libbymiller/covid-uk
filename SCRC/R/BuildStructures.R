@@ -78,8 +78,6 @@
 # this model will have the same age-binning?          #
 #######################################################
 
-build_observer = function(lockdown_trigger) function(time, dynamics) {}
-
 build_child_elderly_matrix = function(population_parameters, child_grandparent_contacts)
 {
     # Create additional matrix for child-elderly contacts
@@ -185,7 +183,7 @@ build_burden_processes = function(arguments)
     return (burden_processes)
 }
 
-build_population_for_region = function(arguments, location)
+build_population_for_region = function(arguments)
 {
 # Construct Gamma Distributions using the 
     # cm_delay_gamma function for dE, dIp, dIs, dIa
@@ -241,7 +239,8 @@ build_population_for_region = function(arguments, location)
 
     #size = arguments$population$count
     group_names = arguments$population$label
-    contact_matrices = arguments$contact_matrices[[location]]
+    contact_matrices = arguments$contact_matrices
+    population_size = arguments$size
 
     # Organize parameters into form recognised by model
     population_parameter_set = list(
@@ -252,8 +251,7 @@ build_population_for_region = function(arguments, location)
         dIs = distribution_params$gamma$dIs$p,
         dH = fixed_params$dH,
         dC = fixed_params$dC,
-        #size = size,
-        size = NULL,
+        size = population_size,
         matrices = contact_matrices,
         contact = rep(1, length(contact_matrices)),
         contact_mult = numeric(0),
@@ -269,7 +267,7 @@ build_population_for_region = function(arguments, location)
         dist_seed_ages = rep(1, arguments$ngroups),
         schedule = list(), # Set time steps for various parameter change events (e.g. scaling of contact matrices)
         observer = NULL,    # Series of callback functions used to trigger events based on variable values
-        name = location,
+        name = arguments$region_name,
         #group_names = group_names
         group_names = colnames(contact_matrices[[1]])
     )
@@ -277,80 +275,9 @@ build_population_for_region = function(arguments, location)
     return(population_parameter_set)
 }
 
-build_population_parameters = function(arguments, locations)
-{
-    all_region_params = list()
-    for(region in locations)
-    {
-        demographics = cm_get_demographics(region, arguments$ngroups);
-        size = demographics[, round((f + m) * 1000)];
-        pars = build_population_for_region(arguments, region)
-        pars$size = size
-        all_region_params[[region]] = pars
-    }
-
-    return(all_region_params)
-}
-
-# Get regions for the UK.
-cm_uk_locations = function(structure, country, level) {
-    # Check country code
-    country = toupper(country);
-    if (country == "UK") { 
-        country = "EWSN";
-    }
-    if (!country %like% "^(UK|[EWSN]+)$") {
-        stop("country must be UK, or a combination of E, W, S, and/or N.");
-    }
-    
-    # Interpret level
-    level = as.integer(level);
-    if (level < 0 | level > 4) {
-        stop("level must be 0, 1, 2, 3, or 4");
-    }
-    
-    if (level == 0) {
-        if (country != "EWSN") {
-            stop("For level 0, country must be UK.");
-        }
-        return ("UK | UNITED KINGDOM");
-    } else if (level == 1) {
-        gE = "Country";
-        gW = "Country";
-        gS = "Country";
-        gN = "Country";
-    } else if (level == 2) {
-        gE = "Region";
-        gW = "Country";
-        gS = "Country";
-        gN = "Country";
-    } else if (level == 3) {
-        gE = c("Metropolitan County", "County", "Unitary Authority", "London Borough");
-        gW = "Unitary Authority";
-        gS = "Council Area";
-        gN = "Local Government District";
-    } else if (level == 4) {
-        gE = c("Metropolitan District", "Non-metropolitan District", "Unitary Authority", "London Borough");
-        gW = "Unitary Authority";
-        gS = "Council Area";
-        gN = "Local Government District";
-    }
-    
-    # Extract locations
-    locs = NULL;
-    if (country %like% "E") { locs = c(locs, structure[Code %like% "^E" & Geography1 %in% gE, Name]); }
-    if (country %like% "W") { locs = c(locs, structure[Code %like% "^W" & Geography1 %in% gW, Name]); }
-    if (country %like% "S") { locs = c(locs, structure[Code %like% "^S" & Geography1 %in% gS, Name]); }
-    if (country %like% "N") { locs = c(locs, structure[Code %like% "^N" & Geography1 %in% gN, Name]); }
-    return (paste0("UK | ", locs));
-}
-
-
 build_params_from_args = function(arguments)
 {
-    locations = get_location_labels(arguments)
-
-    population_parameter_sets = build_population_parameters(arguments, locations$location_labels)
+    population_parameter_set = build_population_for_region(arguments)
 
     if(dump_params)
     {
@@ -386,14 +313,14 @@ build_params_from_args = function(arguments)
     }
 
     parameter_set = list(
-        pop = population_parameter_sets,
+        pop = list(population_parameter_set),
         date0 = arguments$time$start_date,
         time0 = as.numeric(arguments$time$start),
         time1 = as.numeric(arguments$time$end),
         report_every = as.numeric(arguments$report$frequency),
         fast_multinomial = is_fast_multi,
         deterministic = is_deterministic, 
-        travel = diag(length(population_parameter_sets)),
+        travel = diag(length(list(population_parameter_set))),
         processes = burden_processes,
         time_step = as.numeric(arguments$time$step)
     )
@@ -405,27 +332,23 @@ build_params_from_args = function(arguments)
 
     population_parameter_set = build_child_elderly_matrix(population_set, child_grandparent_contacts)
 
-    uk_main_params = build_population_for_region(arguments, locations$uk_label)
+    unmodified_params = build_population_for_region(arguments)
 
     unmodified_set = list(
-        pop = list(uk_main_params),
+        pop = list(unmodified_params),
         date0 = arguments$time$start_date,
         time0 = as.numeric(arguments$time$start),
         time1 = as.numeric(arguments$time$end),
         report_every = as.numeric(arguments$report$frequency),
         fast_multinomial = is_fast_multi,
         deterministic = is_deterministic, 
-        travel = diag(length(uk_main_params)),
+        travel = diag(length(unmodified_params)),
         processes = burden_processes,
         time_step = as.numeric(arguments$time$step)
     )
 
-    # Have to unpack these variables else Rcpp breaks (they are needed globally)
-    # Define using the model structure the various region variables
-    list2env(list(loc_length = length(locations$london)), env=parent.frame())
-
     # Requires an unmodified version (analog to parametersUK1 in UK.R)
 
-    return(list(unmodified=unmodified_set, parameters=population_parameter_set, uk_population_structure=locations))
+    return(list(unmodified=unmodified_set, parameters=population_parameter_set))
 
 }

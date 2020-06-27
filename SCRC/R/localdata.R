@@ -22,28 +22,57 @@ local_data_files = list(
     health_burden_process_data = file.path('data', "health_burden_processes.csv"),
     school_terms = file.path("data", "school_terms_base.csv")
 )
-
-get_location_labels = function(arguments)
-{
-    # Identify London boroughs for early seeding, and regions of each country for time courses
-
-    uk_pop = arguments$uk_structure
-
-    locations = cm_uk_locations(uk_pop, "UK", 3)
-    uk_main = cm_uk_locations(uk_pop, "UK", 0)
-    population_struct = list(
-        location_labels = locations,
-        uk_label = uk_main,
-        london = uk_pop[match(str_sub(locations, 6), Name), Geography1 %like% "London"],
-        england = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^E" & !(Geography1 %like% "London")],
-        wales = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^W"],
-        scotland = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^S"],
-        nireland = uk_pop[match(str_sub(locations, 6), Name), Code %like% "^N"],
-        westmid = uk_pop[match(str_sub(locations, 6), Name), Name == "West Midlands (Met County)"],
-        cumbria = uk_pop[match(str_sub(locations, 6), Name), Name == "Cumbria"]
-    )
-
-    return(population_struct)
+# Get regions for the UK.
+cm_uk_locations = function(arguments, country, level) {
+    # Check country code
+    country = toupper(country);
+    if (country == "UK") { 
+        country = "EWSN";
+    }
+    if (!country %like% "^(UK|[EWSN]+)$") {
+        stop("country must be UK, or a combination of E, W, S, and/or N.");
+    }
+    
+    # Interpret level
+    level = as.integer(level);
+    if (level < 0 | level > 4) {
+        stop("level must be 0, 1, 2, 3, or 4");
+    }
+    
+    if (level == 0) {
+        if (country != "EWSN") {
+            stop("For level 0, country must be UK.");
+        }
+        return ("UK | UNITED KINGDOM");
+    } else if (level == 1) {
+        gE = "Country";
+        gW = "Country";
+        gS = "Country";
+        gN = "Country";
+    } else if (level == 2) {
+        gE = "Region";
+        gW = "Country";
+        gS = "Country";
+        gN = "Country";
+    } else if (level == 3) {
+        gE = c("Metropolitan County", "County", "Unitary Authority", "London Borough");
+        gW = "Unitary Authority";
+        gS = "Council Area";
+        gN = "Local Government District";
+    } else if (level == 4) {
+        gE = c("Metropolitan District", "Non-metropolitan District", "Unitary Authority", "London Borough");
+        gW = "Unitary Authority";
+        gS = "Council Area";
+        gN = "Local Government District";
+    }
+    
+    # Extract locations
+    locs = NULL;
+    if (country %like% "E") { locs = c(locs, arguments$uk_structure[Code %like% "^E" & Geography1 %in% gE, Name]); }
+    if (country %like% "W") { locs = c(locs, arguments$uk_structure[Code %like% "^W" & Geography1 %in% gW, Name]); }
+    if (country %like% "S") { locs = c(locs, arguments$uk_structure[Code %like% "^S" & Geography1 %in% gS, Name]); }
+    if (country %like% "N") { locs = c(locs, arguments$uk_structure[Code %like% "^N" & Geography1 %in% gN, Name]); }
+    return (paste0("UK | ", locs));
 }
 
 local_data = function(covid_dir)
@@ -56,19 +85,12 @@ local_data = function(covid_dir)
 
     config_params   = read.ini(file.path(covid_dir, local_data_files$parameter_file))
 
-    # Read contact matrices
-    config_params$contact_matrices = readRDS(file.path(covid_dir, local_data_files$contact_matrices_file))
-    
-    n_groups_cm = config_params$contact_matrices %>% .[names(.) %like% "UK"] %>% .[[1]] %>% .$other %>% colnames %>% length
-
     config_params$population = readRDS(file.path(covid_dir, local_data_files$uk_population))
 
     # Get number of bins from dividing the minimum highest bin (i.e. labelled "X+") across all UK regions
     # and dividing by 5 years
     ngroups_from_pop_dat = config_params$population %>% .[.$name %like% "UK", ] %>% .[.$age %like% "\\+", ]
     ngroups_from_pop_dat = min(as.numeric(sub("\\+", "", ngroups_from_pop_dat$age)))/5
-
-    config_params$ngroups = min(ngroups_from_pop_dat, n_groups_cm)
 
     # Load Age Varying Symptomatic Rates from Prior Analysis
     config_params$age_var_symptom_rates = qread(local_data_files$age_var_symptom_rates)
@@ -84,9 +106,20 @@ local_data = function(covid_dir)
     school_terms = read.csv(local_data_files$school_terms)
     config_params$school_terms = list(close = school_terms[, 1], reopen=school_terms[, 2])
 
+    config_params$region_name  = cm_uk_locations(config_params, "UK", 3)[[1]]
 
+    # Read contact matrices
+    config_params$contact_matrices = readRDS(file.path(covid_dir, local_data_files$contact_matrices_file))[[config_params$region_name]]
+  
+    n_groups_cm = config_params$contact_matrices %>% .$other %>% colnames %>% length
+    config_params$ngroups = min(ngroups_from_pop_dat, n_groups_cm)
+ 
     # Define interventions to be used
     int_par = read.ini(local_data_files$interventions_file)
+
+    # Get Population size for region
+    demographics = cm_get_demographics(config_params$region_name, config_params$ngroups);
+    config_params$size = demographics[, round((f + m) * 1000)];
 
     interventions = list(
         `School Closures`   = list(contact = c(as.numeric(int_par$school_closures$home), 
