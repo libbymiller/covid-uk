@@ -59,6 +59,8 @@ local_data = function(covid_dir)
     # Read contact matrices
     config_params$contact_matrices = readRDS(file.path(covid_dir, local_data_files$contact_matrices_file))
 
+    config_params$contact_matrices %>% .[names(.) %like% "UK"] 
+
     #population = read_xls(file.path(covid_dir, local_data_files$uk_population$address), 
     #                      sheet=local_data_files$uk_population$sheet, range=local_data_files$uk_population$range)
 

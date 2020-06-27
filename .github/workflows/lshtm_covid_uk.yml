@@ -9,7 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: r-lib/actions/setup-r@master
-      - name: Install Requirements
+      - name : Install System Requirements
+        run : sudo apt-get install libxml2-dev -y
+      - name: Install R library Requirements
         run: |
              sudo apt-get install apt-transport-https software-properties-common r-cran-rcppgsl -y
       - name: Install Required Libraries
@@ -27,6 +29,10 @@ jobs:
               install.packages("cowplot")
               install.packages("testit")
               install.packages("readxl")
+              install.packages("ini")
+              install.packages("tidyverse")
+              install.packages("lubridate")
+              install.packages("testit")
         shell: Rscript {0}
       - name: Run Model Locally in Dump Mode
         run: Rscript run_model.R 1 --local --dump

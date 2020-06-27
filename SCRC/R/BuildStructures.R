@@ -113,7 +113,6 @@ build_child_elderly_matrix = function(population_parameters, child_grandparent_c
 }
 
 # FIXME there are a lot of hard coded numbers here! What are they?
-# breaks at the moment as 'x' and 'w' are not same length in weighted.mean
 reformat = function(P)
 {
   # 70-74,3388.488  75-79,2442.147  80-84,1736.567  85-89,1077.555  90-94,490.577  95-99,130.083  100+,15.834
