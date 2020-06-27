@@ -1,5 +1,7 @@
-library(lubridate)
-library(testit)
+suppressPackageStartupMessages({
+  library(lubridate)
+  library(testit)
+})
 
 school_iv_set_contact_matrix = c(1, 1, 0, 1,  1, 1, 0, 1,  1)
 run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dump=FALSE)
@@ -23,7 +25,8 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
 
   # 3. Pick seeding times
   cat(paste("[Selecting Seeding Times]:\n\t[ "))
-  seed_start = sample(eval(parse(text=arguments$seed$seeding_start_range, loc_length)), replace=TRUE)
+  seed_start = sample(eval(parse(text=arguments$seed$seeding_start_range, loc_length)), 
+                      replace=TRUE)
   for(i in seed_start)
   {
     cat(paste(i, " "))

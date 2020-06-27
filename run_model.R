@@ -11,6 +11,12 @@ suppressPackageStartupMessages({
     library(lubridate)    # for manipulating dates and times. NB requires stringr
     library(nloptr)       # for numerical optimization
     library(HDInterval)   # for summarizing results
+    library(qs)
+    library(readxl)
+    library(ini)
+    library(rlang)
+    library(stringr)
+    library(tidyverse)
 })
 
 # Load requested settings from command line
@@ -44,10 +50,18 @@ if(length(covid_uk_search) > 0)
 }
 # covidm options
 cm_path = file.path(covid_uk_path, "covidm");
+scrc = file.path(covid_uk_path, "SCRC")
 
 
+# Import "vanilla" covidm libraries
 source(file.path(cm_path, "R", "covidm.R"))
-source(file.path(cm_path, "R", "Utilities.R"))
+
+# Import SCRC wrapper scripts
+source(file.path(scrc, "R", "Utilities.R"))
+source(try_loc(file.path(scrc, "R", "Observers.R")))
+source(try_loc(file.path(scrc, "R", "BuildStructures.R")))
+source(try_loc(file.path(scrc, "R", "Simulate.R")))
+
 if(rebuild)
 {
   message("Rebuilding C++ Libraries")
@@ -57,18 +71,9 @@ options_print_str = "[Configuration]:\n"
 if(local)
 {
   options_print_str = c(options_print_str, "\tSource : Local\n")
-  source(try_loc(file.path(covid_uk_path, "covidm", "R", "localdata.R")))
+  source(try_loc(file.path(scrc, "R", "localdata.R")))
   configuration = local_data(covid_uk_path)
 }
-
-# Set path
-# Set this path to the base directory of the repository.
-# NOTE: Run from repository
-
-# build parameters for entire UK, for setting R0.
-
-source(try_loc(file.path(cm_path, "R", "BuildStructures.R")))
-source(try_loc(file.path(cm_path, "R", "Simulate.R")))
 
 options_print_str = c(options_print_str, configuration$output_str)
 
@@ -87,9 +92,6 @@ observables = list(
   dynamics = data.table(),
   totals = data.table()
   )
-
-output_file_name = file.path(covid_uk_path, "dynamics.qs")
-options_print_str = c(options_print_str, paste("\n\tOutput File:", output_file_name, "\n"))
 
 # Run the Model
 cat(options_print_str)
@@ -112,6 +114,6 @@ for (r in 1:n_runs)
   }
 }
 
-cm_save(observables$totals, file.path(covid_uk_path, paste0("run-", sub(" ", "-", configuration$params$run_mode$mode),"-", r, "-totals.qs")));
-cm_save(observables$dynamics, file.path(covid_uk_path, paste0("run-", sub(" ", "-", configuration$params$run_mode$mode), "-", r, "-dynamics.qs")));
+cm_save(observables$totals, file.path(covid_uk_path, "output", paste0("run-", sub(" ", "-", configuration$params$run_mode$mode),"-", r, "-totals.qs")));
+cm_save(observables$dynamics, file.path(covid_uk_path, "output", paste0("run-", sub(" ", "-", configuration$params$run_mode$mode), "-", r, "-dynamics.qs")));
 print(Sys.time())

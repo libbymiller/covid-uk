@@ -78,9 +78,6 @@
 # this model will have the same age-binning?          #
 #######################################################
 
-#-------------- Import External Functions ------------#
-source(file.path(cm_path, "R", "Observers.R"))
-
 build_observer = function(lockdown_trigger) function(time, dynamics) {}
 
 build_child_elderly_matrix = function(population_parameters, child_grandparent_contacts)

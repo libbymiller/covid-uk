@@ -1,9 +1,11 @@
-library(qs)
-library(readxl)
-library(ini)
-library(rlang)
-library(stringr)
-library(tidyverse)
+suppressPackageStartupMessages({
+    library(qs)
+    library(readxl)
+    library(ini)
+    library(rlang)
+    library(stringr)
+    library(tidyverse)
+})
 
 local_data_files = list(
     parameter_file = file.path('configuration', 'parameters.ini'),
