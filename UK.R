@@ -11,7 +11,7 @@ library(qs)
 argv = commandArgs(trailingOnly = TRUE);
 argc = length(argv);
 if (argc == 3 && str_count(argv[3], "--") == 0)
-    option.single = as.numeric(argv[argc-2]);
+    option.single = as.numeric(argv[3]);
 } else {
     option.single = -1;
 }
