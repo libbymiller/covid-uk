@@ -41,4 +41,4 @@ jobs:
       - name: Run Model Locally in Dump Mode
         run: Rscript run_model.R 1 --local --dump
       - name: Test Outputs
-        run: Rscript test/regression/test_params.R 
+        run: Rscript tests/regression/test_params.R 
