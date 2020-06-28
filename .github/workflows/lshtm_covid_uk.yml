@@ -18,6 +18,7 @@ jobs:
         env: 
               DEBIAN_FRONTEND: noninteractive
         run: |
+              install.packages("curl")
               install.packages("rlang")
               install.packages("stringr")
               install.packages("data.table")
