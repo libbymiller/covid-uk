@@ -1,4 +1,5 @@
 # covid-uk
+![LSHTM Model](https://github.com/ScottishCovidResponse/covid-uk/workflows/LSHTM%20Model/badge.svg)
 
 Stochastic age-structured model of SARS-nCoV-2 transmission for UK scenario projections.
 
