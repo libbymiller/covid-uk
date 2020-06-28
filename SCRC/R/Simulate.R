@@ -42,7 +42,7 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
     params$pop[[j]]$u = params$pop[[j]]$u * u_adj;
     params$pop[[j]]$y = covy;
     params$pop[[j]]$seed_times = rep(seed_start[j] + 0:27, each = 2);
-    params$pop[[j]]$dist_seed_ages = cm_age_coefficients(as.numeric(arguments$seed$min_age), as.numeric(arguments$seed$max_age), 5 * 0:16);
+    params$pop[[j]]$dist_seed_ages = cm_age_coefficients(as.numeric(arguments$seed$min_age), as.numeric(arguments$seed$max_age), 5 * 0:arguments$ngroups);
   }
   cat(paste("\tDone.\n"))
 
@@ -125,24 +125,30 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
     params$pop[[j]]$u = params$pop[[j]]$u * u_adj;
     params$pop[[j]]$y = covy;
     if (!is.na(lockdown)) {
-      params$pop[[j]]$observer = observer_lockdown(lockdown);
+      params$pop[[j]]$observer = observer_lockdown(arguments, c(lockdown));
     }
   }
             
   # 5b. Set interventions
   if (trigger == "national") {
     intervention_start = peak_t - duration / 2 + intervention_shift;
+    cat(paste("\tIntervention Commences after: ", intervention_start, "days\n"))
   } else if (trigger == "local") {
     intervention_start = peak_t_bypop - duration / 2 + intervention_shift;
+    cat(paste("\tIntervention Commences after: ", intervention_start, "days\n"))
   } else {
+    cat(paste("\tIntervention Commences after: ", intervention_start, "days\n"))
     intervention_start = as.numeric(ymd(trigger) - ymd(params$date0));
   }
-            
+  cat("[Triggering Interventions]: ")       
   if (trigger == "local") {
     # Trigger interventions to one population at a time.
+    cat("\n\tTrigger Type : local")
     for (pi in seq_along(params$pop)) {
       ymd_start = ymd(params$date0) + intervention_start[pi];
       ymd_end = ymd_start + duration - 1;
+      cat("\n\tStart (YMD): ", ymd_start, "\n")
+      cat("\tEnd (YMD): ", ymd_end, "\n")
       iv = cm_iv_build(params)
       cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = school_iv_set_contact_matrix, trace_school = 2);
       cm_iv_set(iv, ymd_start, ymd_end, arguments$intervention);
@@ -151,8 +157,11 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
     }
   } else {
   # Trigger interventions all at once.
+    cat("\n\tTrigger Type : national")
     ymd_start = ymd(params$date0) + intervention_start;
     ymd_end = ymd_start + duration - 1;
+    cat("\n\tStart (YMD): ", ymd_start, "\n")
+    cat("\tEnd (YMD): ", ymd_end, "\n")
     iv = cm_iv_build(params)
     cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = school_iv_set_contact_matrix, trace_school = 2);
     cm_iv_set(iv, ymd_start, ymd_end, arguments$intervention);
@@ -161,9 +170,8 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
   }
   
   # 5c. Run model
+  cat(paste("[Running Lockdown Simulation]: \n"))
   run = cm_simulate(params, 1, r);
-
-  tag = ifelse(lockdown >= 0, lockdown, "variable");
 
   run$dynamics[, run := r];
   run$dynamics[, scenario := "Lockdown"];

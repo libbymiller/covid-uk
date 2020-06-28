@@ -37,10 +37,11 @@ add_dynamics = function(run, dynamics, iv)
   }
   
   csvlines = NULL;
+  
   if (nchar(run$csv[[1]]) > 0) {
     csvlines = fread(run$csv[[1]], header = F);
     csvlines = cbind(run$dynamics$scenario[1], run$dynamics$run[1], csvlines);
-    names(csvlines) = c("scenario", "run", "t", "compartment", "region", "value");
+    names(csvlines) = c("scenario", "run", "t", "compartment", "value");
     csvlines = unique(csvlines);
   }
   # time courses

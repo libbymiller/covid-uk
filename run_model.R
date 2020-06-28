@@ -86,7 +86,7 @@ parameters = model_structures$parameters
 options_print_str = c(options_print_str, "\n\tMode : ", configuration$params$run_mode$mode)
 
 R0s = rnorm(n_runs, mean = as.numeric(configuration$params$r0_distribution$mean),
-            sd = as.numeric(configuration$params$r0_distribution$sd))[[1]]
+            sd = as.numeric(configuration$params$r0_distribution$sd))
 
 observables = list(
   dynamics = data.table(),

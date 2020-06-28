@@ -259,6 +259,8 @@ add_dynamics = function(run, dynamics, iv)
   if (nchar(run$csv[[1]]) > 0) {
     csvlines = fread(run$csv[[1]], header = F);
     csvlines = cbind(run$dynamics$scenario[1], run$dynamics$run[1], csvlines);
+    print(names(csvlines))
+    stop()
     names(csvlines) = c("scenario", "run", "t", "compartment", "region", "value");
     csvlines = unique(csvlines);
   }
@@ -352,7 +354,8 @@ if (analysis == 1) {
   # Set options
   option.trigger = "2020-03-17";
   option.duration = 364;
-  option.lockdown = c(NA, 1000, 2000, 5000);
+  #option.lockdown = c(NA, 1000, 2000, 5000);
+  option.lockdown = c(1000)
   option.intervention_shift = 0;
 } else if (analysis == 4) {
   
@@ -434,8 +437,6 @@ for (r in run_set) {
   params = duplicate(parameters);
   for (j in seq_along(params$pop)) {
     params$pop[[j]]$u = params$pop[[j]]$u * u_adj;
-    print(params$pop[[j]]$u)
-    stop()
     params$pop[[j]]$y = covy;
     params$pop[[j]]$seed_times = rep(seed_start[j] + 0:27, each = 2);
     params$pop[[j]]$dist_seed_ages = cm_age_coefficients(25, 50, 5 * 0:16);
