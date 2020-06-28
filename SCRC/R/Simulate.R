@@ -82,7 +82,7 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
 
   if(dump)
   {
-    output_file = file.path(covid_uk_path, "output", paste0("mod-all-params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
+    output_file = file.path(covid_uk_path, "output", paste0("Sample-stage2-params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
     dput(params, file=output_file)
     message(paste0("[Test Mode Abort]:\n\tParams saved to '", output_file,"'.\n"))
     return(list(run_code=0))

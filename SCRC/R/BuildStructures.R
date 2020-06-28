@@ -243,7 +243,7 @@ build_population_for_sample = function(arguments, sample_label)
     population_size = arguments$size[[sample_label]]
 
     # Organize parameters into form recognised by model
-    population_parameter_set = list(
+    sample_parameter_set = list(
         type = "SEI3R",
         dE = distribution_params$gamma$dE$p,
         dIp = distribution_params$gamma$dIp$p,
@@ -272,17 +272,17 @@ build_population_for_sample = function(arguments, sample_label)
         group_names = colnames(contact_matrices[[1]])
     )
     
-    return(population_parameter_set)
+    return(sample_parameter_set)
 }
 
 build_params_from_args = function(arguments)
 {
-    population_parameter_set = build_population_for_sample(arguments, arguments$sample_name)
+    sample_parameter_set = build_population_for_sample(arguments, arguments$sample_name)
 
     if(dump_params)
     {
-        output_file = file.path(covid_uk_path, "output", paste0("mod-initial-params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
-        dput(population_parameter_sets, file=output_file)
+        output_file = file.path(covid_uk_path, "output", paste0("Sample-stage1-params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
+        dput(sample_parameter_set, file=output_file)
         message(paste0("Initial Params saved to '", output_file))
     }
 
@@ -313,14 +313,14 @@ build_params_from_args = function(arguments)
     }
 
     parameter_set = list(
-        pop = list(population_parameter_set),
+        pop = list(sample_parameter_set),
         date0 = arguments$time$start_date,
         time0 = as.numeric(arguments$time$start),
         time1 = as.numeric(arguments$time$end),
         report_every = as.numeric(arguments$report$frequency),
         fast_multinomial = is_fast_multi,
         deterministic = is_deterministic, 
-        travel = diag(length(list(population_parameter_set))),
+        travel = diag(length(list(sample_parameter_set))),
         processes = burden_processes,
         time_step = as.numeric(arguments$time$step)
     )
@@ -330,25 +330,32 @@ build_params_from_args = function(arguments)
     population_set = cm_split_matrices_ex_in(parameter_set,
                                                        as.numeric(arguments$elderly$from_bin))
 
-    population_parameter_set = build_child_elderly_matrix(population_set, child_grandparent_contacts)
+    sample_parameter_set = build_child_elderly_matrix(population_set, child_grandparent_contacts)
 
-    unmodified_params = build_population_for_sample(arguments, arguments$region_name)
+    region_params = build_population_for_sample(arguments, arguments$region_name)
+
+    if(dump_params)
+    {
+        output_file = file.path(covid_uk_path, "output", paste0("Region-params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
+        dput(region_params, file=output_file)
+        message(paste0("Initial Params saved to '", output_file))
+    }
 
     unmodified_set = list(
-        pop = list(unmodified_params),
+        pop = list(region_params),
         date0 = arguments$time$start_date,
         time0 = as.numeric(arguments$time$start),
         time1 = as.numeric(arguments$time$end),
         report_every = as.numeric(arguments$report$frequency),
         fast_multinomial = is_fast_multi,
         deterministic = is_deterministic, 
-        travel = diag(length(unmodified_params)),
+        travel = diag(length(list(region_params))),
         processes = burden_processes,
         time_step = as.numeric(arguments$time$step)
     )
 
     # Requires an unmodified version (analog to parametersUK1 in UK.R)
 
-    return(list(unmodified=unmodified_set, parameters=population_parameter_set))
+    return(list(unmodified=unmodified_set, parameters=sample_parameter_set))
 
 }

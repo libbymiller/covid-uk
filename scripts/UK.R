@@ -10,8 +10,8 @@ library(qs)
 # Load requested settings from command line
 argv = commandArgs(trailingOnly = TRUE);
 argc = length(argv);
-if (argc == 3) {
-    option.single = as.numeric(argv[argc-2]);
+if (argc == 3 && str_count(argv[3], "--") == 0) {
+    option.single = as.numeric(argv[3]);
 } else {
     option.single = -1;
 }
@@ -118,9 +118,12 @@ parameters = cm_parameters_SEI3R(locations, date_start = "2020-01-29", date_end 
 
 if(dump_params)
 {
-  output_file = file.path(covid_uk_path, "output", paste0("params-stage1-", gsub(" ", "_", gsub(":","",Sys.time())), ".pars"))
-    dput(parameters$pop, file=output_file)
-    message(paste0("Params saved to '", output_file,"' aborting"))
+    output_file_country = file.path(covid_uk_path, "output", paste0("params-UK-", gsub(" ", "_", gsub(":","",Sys.time())), ".pars"))
+    dput(parametersUK1$pops, file=output_file_country)
+    output_file_region = file.path(covid_uk_path, "output", paste0("params-Regional-stage1-", gsub(" ", "_", gsub(":","",Sys.time())), ".pars"))
+    dput(parameters$pop, file=output_file_region)
+    message(paste0("UK params saved to '", output_file_country,"\n"))
+    message(paste0("Regional params saved to '", output_file_region,"\n"))
 }
 
 # Split off the elderly (70+, age groups 15 and 16) so their contact matrices can be manipulated separately
@@ -259,8 +262,6 @@ add_dynamics = function(run, dynamics, iv)
   if (nchar(run$csv[[1]]) > 0) {
     csvlines = fread(run$csv[[1]], header = F);
     csvlines = cbind(run$dynamics$scenario[1], run$dynamics$run[1], csvlines);
-    print(names(csvlines))
-    stop()
     names(csvlines) = c("scenario", "run", "t", "compartment", "region", "value");
     csvlines = unique(csvlines);
   }
@@ -400,6 +401,7 @@ if (analysis == 1) {
 }
 
 # Pick R0s 
+
 R0s = rnorm(n_runs, mean = 2.675739, sd = 0.5719293)
 
 # Do runs
@@ -485,9 +487,9 @@ for (r in run_set) {
 
   if(dump_params)
   {
-    output_file = file.path(covid_uk_path, "output", paste0("params-stage2-", gsub(" ", "_", gsub(":","",Sys.time())), ".pars"))
+    output_file = file.path(covid_uk_path, "output", paste0("params-Regional-stage2-", gsub(" ", "_", gsub(":","",Sys.time())), ".pars"))
     dput(params, file=output_file)
-    message(paste0("Params saved to '", output_file,"' aborting"))
+    message(paste0("Regional params saved to '", output_file,"' aborting"))
     return(0)
   }
   
