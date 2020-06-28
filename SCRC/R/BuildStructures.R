@@ -183,7 +183,7 @@ build_burden_processes = function(arguments)
     return (burden_processes)
 }
 
-build_population_for_region = function(arguments)
+build_population_for_sample = function(arguments, sample_label)
 {
 # Construct Gamma Distributions using the 
     # cm_delay_gamma function for dE, dIp, dIs, dIa
@@ -239,8 +239,8 @@ build_population_for_region = function(arguments)
 
     #size = arguments$population$count
     group_names = arguments$population$label
-    contact_matrices = arguments$contact_matrices
-    population_size = arguments$size
+    contact_matrices = arguments$contact_matrices[[sample_label]]
+    population_size = arguments$size[[sample_label]]
 
     # Organize parameters into form recognised by model
     population_parameter_set = list(
@@ -267,7 +267,7 @@ build_population_for_region = function(arguments)
         dist_seed_ages = rep(1, arguments$ngroups),
         schedule = list(), # Set time steps for various parameter change events (e.g. scaling of contact matrices)
         observer = NULL,    # Series of callback functions used to trigger events based on variable values
-        name = arguments$region_name,
+        name = sample_label,
         #group_names = group_names
         group_names = colnames(contact_matrices[[1]])
     )
@@ -277,7 +277,7 @@ build_population_for_region = function(arguments)
 
 build_params_from_args = function(arguments)
 {
-    population_parameter_set = build_population_for_region(arguments)
+    population_parameter_set = build_population_for_sample(arguments, arguments$sample_name)
 
     if(dump_params)
     {
@@ -332,7 +332,7 @@ build_params_from_args = function(arguments)
 
     population_parameter_set = build_child_elderly_matrix(population_set, child_grandparent_contacts)
 
-    unmodified_params = build_population_for_region(arguments)
+    unmodified_params = build_population_for_sample(arguments, arguments$region_name)
 
     unmodified_set = list(
         pop = list(unmodified_params),

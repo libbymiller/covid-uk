@@ -106,20 +106,28 @@ local_data = function(covid_dir)
     school_terms = read.csv(local_data_files$school_terms)
     config_params$school_terms = list(close = school_terms[, 1], reopen=school_terms[, 2])
 
-    config_params$region_name  = cm_uk_locations(config_params, "UK", 3)[[1]]
+    # Setup region name for producing parameters to set R0 and
+    # sample name for the parameters on which to run the model
+    # in this example: 158 - "Glasgow City"
+    config_params$region_name  = cm_uk_locations(config_params, "UK", 0)
+    config_params$sample_name  = cm_uk_locations(config_params, "UK", 3)[[158]]
 
-    # Read contact matrices
-    config_params$contact_matrices = readRDS(file.path(covid_dir, local_data_files$contact_matrices_file))[[config_params$region_name]]
+    # Read the contact matrices
+    config_params$contact_matrices = readRDS(file.path(covid_dir, local_data_files$contact_matrices_file))
   
-    n_groups_cm = config_params$contact_matrices %>% .$other %>% colnames %>% length
+    # Determine the minimum number of age groups present in this data
+    n_groups_cm = config_params$contact_matrices[[config_params$region_name]] %>% .$other %>% colnames %>% length
     config_params$ngroups = min(ngroups_from_pop_dat, n_groups_cm)
+
+    # Get Population sizes for region and sample
+    demographics_regional = cm_get_demographics(config_params$region_name, config_params$ngroups);
+    config_params$size[[config_params$region_name]] = demographics_regional[, round((f + m) * 1000)];
+
+    demographics_sample = cm_get_demographics(config_params$sample_name, config_params$ngroups)
+    config_params$size[[config_params$sample_name]] = demographics_sample[, round((f + m) * 1000)];
  
     # Define interventions to be used
     int_par = read.ini(local_data_files$interventions_file)
-
-    # Get Population size for region
-    demographics = cm_get_demographics(config_params$region_name, config_params$ngroups);
-    config_params$size = demographics[, round((f + m) * 1000)];
 
     interventions = list(
         `School Closures`   = list(contact = c(as.numeric(int_par$school_closures$home), 
