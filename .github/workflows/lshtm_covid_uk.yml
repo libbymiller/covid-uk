@@ -36,6 +36,7 @@ jobs:
               install.packages("tidyverse")
               install.packages("lubridate")
               install.packages("testit")
+              install.packages("RcppGSL")
         shell: Rscript {0}
       - name: Run Model Locally in Dump Mode
         run: Rscript run_model.R 1 --local --dump
