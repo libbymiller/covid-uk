@@ -490,7 +490,7 @@ for (r in run_set) {
     output_file = file.path(covid_uk_path, "output", paste0("params-Regional-stage2-", gsub(" ", "_", gsub(":","",Sys.time())), ".pars"))
     dput(params, file=output_file)
     message(paste0("Regional params saved to '", output_file,"' aborting"))
-    return(0)
+    quit()
   }
   
   # 4c. Run model

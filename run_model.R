@@ -106,6 +106,12 @@ for (r in 1:n_runs)
                               observables$dynamics, observables$totals, dump_params)
   observables$dynamics = run_result$dynamics
   observables$totals = run_result$totals
+
+  if(dump_params)
+  {
+    quit()
+  }
+
   assert("Failed to retrieve Dynamics from Run", length(observables$dynamics) > 0)
   assert("Failed to retrieve Totals from Run", length(observables$totals) > 0)
   if(run_result$run_code == 0)
