@@ -10,7 +10,8 @@ library(qs)
 # Load requested settings from command line
 argv = commandArgs(trailingOnly = TRUE);
 argc = length(argv);
-if (argc == 3 && str_count(argv[3], "--") == 0) {
+if (argc == 3 && str_count(argv[3], "--") == 0)
+{
     option.single = as.numeric(argv[3]);
 } else {
     option.single = -1;
