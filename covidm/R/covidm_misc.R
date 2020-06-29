@@ -133,7 +133,6 @@ cm_calc_R0 = function(parameters, population) {
     dIa = sum(po$dIa * seq(0, by = parameters$time_step, length.out = length(po$dIa)));
     
     cm = Reduce('+', mapply(function(c, m) c * m, po$contact, po$matrices, SIMPLIFY = F));
-
     ngm = po$u * t(t(cm) * (
         po$y * (po$fIp * dIp + po$fIs * dIs) + 
         (1 - po$y) * po$fIa * dIa)

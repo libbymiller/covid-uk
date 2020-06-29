@@ -1,0 +1,46 @@
+name: LSHTM Model
+
+on: [ push ]
+
+jobs:
+  build:
+    name : Ubuntu Linux R
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: r-lib/actions/setup-r@master
+      - name : Install System Requirements
+        run : sudo apt-get install libxml2-dev libcurl4-openssl-dev libnlopt-dev curl -y
+      - name: Install R library Requirements
+        run: |
+             sudo apt-get install apt-transport-https software-properties-common r-cran-rcppgsl -y
+      - name: Install Required Libraries
+        env: 
+              DEBIAN_FRONTEND: noninteractive
+        run: |
+              install.packages("curl")
+              install.packages("httr")
+              install.packages("rvest")
+              install.packages("rlang")
+              install.packages("stringr")
+              install.packages("data.table")
+              install.packages("ggplot2")
+              install.packages("qs")
+              install.packages("lubridate")
+              install.packages("nloptr")
+              install.packages("HDInterval")
+              install.packages("cowplot")
+              install.packages("testit")
+              install.packages("readxl")
+              install.packages("ini")
+              install.packages("tidyverse")
+              install.packages("lubridate")
+              install.packages("testit")
+              install.packages("RcppGSL")
+        shell: Rscript {0}
+      - name: Run Model Locally in Dump Mode
+        run: Rscript run_model.R 1 --local --dump
+      - name: Test Outputs
+        run: Rscript tests/regression/test_params.R
+      - name: Test Vanilla Model Run (Region = Glasgow City, 10 realisations)
+        run: Rscript run_model.R 10 --local

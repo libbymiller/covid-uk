@@ -1,6 +1,13 @@
 # covid-uk
+![LSHTM Model](https://github.com/ScottishCovidResponse/covid-uk/workflows/LSHTM%20Model/badge.svg)
 
 Stochastic age-structured model of SARS-nCoV-2 transmission for UK scenario projections.
+
+# Removed Features
+
+As this is important I have put this at the top of the README, the following features have been removed possibly pending future review:
+
+* **Varying the seeding time depending on whether the select region is a London borough.** The main issue with this is the method use assumes the data form is absolute (i.e. you want to run on every UK region simultaneously, when in the SCRC case we are initially only running on Scottish data).
 
 ## Quick start guide
 
@@ -18,12 +25,57 @@ echo FLIBS=-L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin18/8.2.0 -L/usr/loca
 
 Finally, install nlopt: `brew install nlopt`
 
+## SCRC Implementation
+
+The SCRC implementation of the LSHTM model is designed to read data and parameters from external sources as opposed to using the included/built in parameters included within the original. Ultimately the wrapper will allow the model to be run either locally using these existing files, or by connecting to an external API which will provide the values.
+
+### Model Run
+
+To run the model using this method use the new `run_model.R` script included. The script takes a single required argument which is the number of stochastic realisations. To run locally (currently the only option available):
+
+```
+Rscript run_model.R <n-realisations> --local
+```
+this will produce outputs in the `output` folder. The model will read parameters locally from the `configuration/parameters.ini` file and from the sources contained within the `data` folder.
+
+### Testing
+
+As the model itself (present as the RCpp function `cm_backend_simulate`) has not been altered testing is only needed on the form of the parameters being fed into the model matching those present during the run of the original form. Contained within the `testing/regression` folder is a script `test_params.R` which compares the parameters. In order to perform the test you will firstly need to run the model in "dump" mode which will stop execution prior to simulation and dump the parameters to the output folder, only one realisation needs to be run:
+
+```
+Rscript run_model.R 1 --local --dump
+```
+then run:
+
+```
+Rscript tests/regression/test_params.R
+```
+
+the script will compare the latest dumps with the files contained within the `tests/test_data/baseline` folder.
+
+## Original Implementation
+
 ### Guide to files
 
-Main parameter setting and model run script is in `UK.R` – there is option to set local path at top. Output collation and plotting functions are in `UK-view.R`. Underlying model code is in `covidm` folder.
+Main parameter setting and model run is in `scripts/UK.R` however the model is using the new `scripts/run_model.sh` script. Output collation and plotting functions are in `UK-view.R`. Underlying model code is in `covidm` folder.
 
-To run `UK.R`, after editing the local path at the top of the script, invoke as follows from the command line:
-`Rscript UK.R 1 50`
+Some parameters are now set to be read from external INI files which are located in the `configuration` folder, these include distribution definitions and
+time steps.
+
+A full print out of the run options can be viewed by running:
+
+```
+./script/run_model.sh --help
+```
+
+and include the ability to the location of these parameter file, as well as other data, and dump the parameters after initialisation for testing.
+
+To run the model in it's simplest form simply run:
+
+```
+./scripts/run_model.sh 1 50
+```
+
 Here, 1 is the number for the analysis you want to run (1, 2.1, 2.2, 3, 4, 5, or 6). 50 is the number of stochastic realisations to run.
 
 1 - 12 week interventions
@@ -41,11 +93,6 @@ Here, 1 is the number for the analysis you want to run (1, 2.1, 2.2, 3, 4, 5, or
 6 - leisure and sports analyses
 
 For 50 runs, each set takes about 6-16 hours on a current laptop.
-
-Additional arguments exist to specify the location of the parameters file (example found in `params/params.ini`) and the location of this repository (if running the script from elsewhere):
-```
-UK.R 1 50 --parameters=./params/params.ini --covid-uk-path=$PWD
-```
 
 ## Testing After Development
 

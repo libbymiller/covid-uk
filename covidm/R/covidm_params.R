@@ -15,14 +15,13 @@ cm_translate_parameters = function(p)
     
     p$time0 = translate_time(p$time0);
     p$time1 = translate_time(p$time1);
-    
     for (pi in seq_along(p$pop)) {
         p$pop[[pi]]$seed_times = sapply(p$pop[[pi]]$seed_times, translate_time);
         for (si in seq_along(p$pop[[pi]]$schedule)) {
             p$pop[[pi]]$schedule[[si]]$t = translate_time(p$pop[[pi]]$schedule[[si]]$t);
         }
     }
-    
+
     return (p);
 }
 
