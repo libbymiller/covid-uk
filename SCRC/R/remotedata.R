@@ -1,9 +1,17 @@
 library(reticulate)
 use_python("/home/kristian/venvs/lshtm/bin/python")
 
-covid_uk = '.'
+remote_data = function()
+{
+    output_str = ""
+    # Define fixed parameter choices (those that do not need to be set by the API itself)
+    config_params = list(
+        child_grandparentcontacts = FALSE,  # This is analysis specific so should be switched off
+                                            # to ensure flexibility
+        deterministic = FALSE,              # Seed the age distributions (set to False in "vanilla" run UK.R)
+        mode = "Normal"                     # Normal analysis run as opposed "R0 Analysis" which checks
+                                            # intervention effect on R0 (might be needed later as a separate run?)
+    )
 
-source_python(file.path(covid_uk, 'SCRC/Python/data.py'))
-
-py_run_string('data_store = Datastore("config.yaml")')
-py_run_string('test_table = data_store.read_table("human/human/age_var_symptomatic_rates")')
+    return(list(params=config_params, output_str=options_print_str))
+}
