@@ -1,4 +1,4 @@
-pyyaml
-semver
-pandas
-h5py
+PyYAML>=5.3.1
+semver>=2.10.2
+pandas>=1.0.5
+h5py>=2.10.0
