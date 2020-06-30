@@ -12,7 +12,9 @@ misc/
 
 .~lock*
 
-covidm/build/
+*.log
+
+covidm/covidm/build/*
 
 submission/
 
