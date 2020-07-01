@@ -85,6 +85,26 @@ local_data = function(covid_dir)
 
     config_params   = read.ini(file.path(covid_dir, local_data_files$parameter_file))
 
+    config_params$school_term_rates = c(config_params$school_term_rates$home,
+                                        config_params$school_term_rates$work,
+                                        config_params$school_term_rates$schools,
+                                        config_params$school_term_rates$other,
+                                        config_params$school_term_rates$home_elderly,
+                                        config_params$school_term_rates$work_elderly,
+                                        config_params$school_term_rates$schools_elderly,
+                                        config_params$school_term_rates$other_elderly,
+                                        config_params$school_term_rates$child_elderly)
+    
+    config_params$lockdown_rates = c(config_params$lockdown_rates$home,
+                                        config_params$lockdown_rates$work,
+                                        config_params$lockdown_rates$schools,
+                                        config_params$lockdown_rates$other,
+                                        config_params$lockdown_rates$home_elderly,
+                                        config_params$lockdown_rates$work_elderly,
+                                        config_params$lockdown_rates$schools_elderly,
+                                        config_params$lockdown_rates$other_elderly,
+                                        config_params$lockdown_rates$child_elderly)
+
     config_params$population = readRDS(file.path(covid_dir, local_data_files$uk_population))
 
     # Get number of bins from dividing the minimum highest bin (i.e. labelled "X+") across all UK regions

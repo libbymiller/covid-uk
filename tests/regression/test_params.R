@@ -43,7 +43,7 @@ message("PASS")
 for(col in names(base_params1))
 {
     # These variables are set later on and so do not need to be compatible
-    if(col %in% c("contact_mult", "contact_lowerto", "schedule", "observer"))
+    if(col %in% c("contact_mult", "contact_lowerto", "schedule", "observer", "name"))
     {
         next;
     }
@@ -83,7 +83,7 @@ for(col in names(base_params2))
 for(col in names(base_params2$pop[[1]]))
 {
     # Only check variables that should have changed
-    if(col %in% c("contact_mult", "contact_lowerto", "observer", "seed_times"))
+    if(col %in% c("contact_mult", "contact_lowerto", "observer", "seed_times", "name"))
     {
         next;
     }

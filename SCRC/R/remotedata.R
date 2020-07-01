@@ -7,6 +7,10 @@ unpack_matrices = function(config_loc)
 {
     read_array = StandardAPI(config_loc)$read_array
 
+    # Model relies on two sets of matrices, the 'region'
+    # set e.g. [1] Scotland, [2] UK and the 'sample' set 
+    # set of that region e.g. [1] Scot. Health Board, [2] Scotland
+
     set_names = c("region", "sample")
     matrix_names = c("home", "other", "school", "work")
 
@@ -32,7 +36,9 @@ objects = function(config_loc)
         list(
             age_var_symptom_rates = read_table("age_var_symptomatic_rates", "age_varying_symptomatic_rates"),
             health_burden_probabilities = read_table("health_burden_processes", "health_burden_processes"),
-            contact_matrices = unpack_matrices(config_loc)
+            contact_matrices = unpack_matrices(config_loc),
+            lockdown_rates = read_table("lockdown_rates", "lockdown_rates"),
+            school_term_rates = read_table("school_term_rates", "school_term_rates")
         )
     )
 }
@@ -52,6 +58,9 @@ remote_data = function(covid_uk)
     config_loc = file.path(covid_uk, "SCRC", "pipeline_data", "config.yaml")
 
     config_params = append(config_params, objects(config_loc))
+
+    print(config_params$school_term_rates)
+    stop()
 
     return(list(params=config_params, output_str=options_print_str))
 }

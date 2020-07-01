@@ -120,7 +120,7 @@ parameters = cm_parameters_SEI3R(locations, date_start = "2020-01-29", date_end 
 if(dump_params)
 {
     output_file_country = file.path(covid_uk_path, "output", paste0("params-UK-", gsub(" ", "_", gsub(":","",Sys.time())), ".pars"))
-    dput(parametersUK1$pops, file=output_file_country)
+    dput(parametersUK1$pop, file=output_file_country)
     output_file_region = file.path(covid_uk_path, "output", paste0("params-Regional-stage1-", gsub(" ", "_", gsub(":","",Sys.time())), ".pars"))
     dput(parameters$pop, file=output_file_region)
     message(paste0("UK params saved to '", output_file_country,"\n"))

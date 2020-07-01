@@ -3,7 +3,6 @@ suppressPackageStartupMessages({
   library(testit)
 })
 
-school_iv_set_contact_matrix = c(1, 1, 0, 1,  1, 1, 0, 1,  1)
 run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dump=FALSE)
 {  
   parameters = model_structs$parameters
@@ -76,7 +75,7 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
   # 4b. Set school terms
   cat(paste("[Setting School Terms]:\n"))
   iv = cm_iv_build(params)
-  cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = school_iv_set_contact_matrix, trace_school = 2);
+  cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = arguments$school_term_rates, trace_school = 2);
   params = cm_iv_apply(params, iv);
   cat(paste("\tDone.\n"))
 
@@ -150,7 +149,7 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
       cat("\n\tStart (YMD): ", ymd_start, "\n")
       cat("\tEnd (YMD): ", ymd_end, "\n")
       iv = cm_iv_build(params)
-      cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = school_iv_set_contact_matrix, trace_school = 2);
+      cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = arguments$school_term_rates, trace_school = 2);
       cm_iv_set(iv, ymd_start, ymd_end, arguments$intervention);
       cm_iv_set(iv, ymd_start, ymd_end, trace_intervention = 2);
       params = cm_iv_apply(params, iv, pi);
@@ -163,7 +162,7 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
     cat("\n\tStart (YMD): ", ymd_start, "\n")
     cat("\tEnd (YMD): ", ymd_end, "\n")
     iv = cm_iv_build(params)
-    cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = school_iv_set_contact_matrix, trace_school = 2);
+    cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = arguments$school_term_rates, trace_school = 2);
     cm_iv_set(iv, ymd_start, ymd_end, arguments$intervention);
     cm_iv_set(iv, ymd_start, ymd_end, trace_intervention = 2);
     params = cm_iv_apply(params, iv);
