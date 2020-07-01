@@ -3,6 +3,49 @@ use_python("/home/kristian/venvs/lshtm/bin/python")
 
 StandardAPI <- import("data_pipeline_api.standard_api")$StandardAPI
 
+unpack_intervention = function(config_loc, ngroups)
+{
+    read_table = StandardAPI(config_loc)$read_table
+    intervention = read_table("intervention_rates", "intervention_rates")
+
+    return(
+        list(
+            contact = intervention[,1][1:9],
+            fIs = rep(intervention[1,][10], ngroups)
+        )
+    )
+}
+
+unpack_terms = function(config_loc)
+{
+    read_table = StandardAPI(config_loc)$read_table
+
+    pop_size = read_table("school_terms", "school_terms")
+
+    return(
+        list(
+            close = pop_size[,2],
+            reopen = pop_size[,2]
+        )
+    )
+
+}
+
+unpack_seeding = function(config_loc)
+{
+    read_estimate = StandardAPI(config_loc)$read_estimate
+
+    return(
+        list(
+            value = read_estimate("seed", "seed"),
+            min_age = read_estimate("min_age", "min_age"),
+            max_age = read_estimate("max_age", "max_age"),
+            seeding_start_range = read_estimate("seeding_min_start_day", "seeding_min_start_day") : 
+                                  read_estimate("seeding_max_start_day", "seeding_max_start_day")
+        )
+    ) 
+}
+
 unpack_populations = function(config_loc)
 {
     read_table = StandardAPI(config_loc)$read_table
@@ -11,7 +54,7 @@ unpack_populations = function(config_loc)
 
     return(
         list(
-            region = pop_size[,2],
+            region = pop_size[,1],
             sample = pop_size[,2]
         )
     )
@@ -47,16 +90,20 @@ objects = function(config_loc)
     read_table = StandardAPI(config_loc)$read_table
     read_array = StandardAPI(config_loc)$read_array
 
-    return(
-        list(
+    params = list(
             age_var_symptom_rates = read_table("age_var_symptomatic_rates", "age_varying_symptomatic_rates"),
             health_burden_probabilities = read_table("health_burden_processes", "health_burden_processes"),
             contact_matrices = unpack_matrices(config_loc),
             lockdown_rates = read_table("lockdown_rates", "lockdown_rates"),
-            school_term_rates = read_table("school_term_rates", "school_term_rates"),
-            size = unpack_populations(config_loc)
+            school_holiday_rates = read_table("school_holiday_rates", "school_holiday_rates"),
+            size = unpack_populations(config_loc),
+            school_terms = unpack_terms(config_loc),
+            seed = unpack_seeding(config_loc)
         )
-    )
+    n_groups = params$contact_matrices$region %>% .$other %>% colnames %>% length
+    params$intervention = unpack_intervention(config_loc, n_groups)
+
+    return(params)
 }
 
 remote_data = function(covid_uk)

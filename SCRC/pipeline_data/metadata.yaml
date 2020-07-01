@@ -54,12 +54,47 @@
   version : 1.0.0
   filename : lockdown_rates/data.h5
 -
-  data_product : school_term_rates
-  component : school_term_rates
+  data_product : school_holiday_rates
+  component : school_holiday_rates
   version : 1.0.0
-  filename : school_term_rates/data.h5
+  filename : school_holiday_rates/data.h5
 -
   data_product : population_sizes
   component : population_sizes
   version : 1.0.0
   filename : population_sizes/data.h5
+-
+  data_product : school_terms
+  component : school_terms
+  version : 1.0.0
+  filename : school_terms/data.h5
+-
+  data_product : intervention_rates
+  component : intervention_rates
+  version : 1.0.0
+  filename : intervention_rates/data.h5
+-
+  data_product : seed
+  component : seed
+  version : 1.0.0
+  filename : seeding/data.toml
+-
+  data_product : min_age
+  component : min_age
+  version : 1.0.0
+  filename : seeding/data.toml
+-
+  data_product : max_age
+  component : max_age
+  version : 1.0.0
+  filename : seeding/data.toml
+-
+  data_product : seeding_min_start_day
+  component : seeding_min_start_day
+  version : 1.0.0
+  filename : seeding/data.toml
+-
+  data_product : seeding_max_start_day
+  component : seeding_max_start_day
+  version : 1.0.0
+  filename : seeding/data.toml

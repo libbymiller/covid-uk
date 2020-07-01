@@ -22,15 +22,12 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
   u_adj = R0 / cm_calc_R0(core_param, 1);
   cat(paste("\tu correction factor : ", u_adj, "\n"))
 
-  # 3. Pick seeding times
-  cat(paste("[Selecting Seeding Times]:\n\t[ "))
-  seed_start = sample(eval(parse(text=arguments$seed$seeding_start_range, loc_length)), 
-                      replace=TRUE)
-  for(i in seed_start)
-  {
-    cat(paste(i, " "))
-  }
-  cat(paste("]\n"))
+  # 3. Pick seeding time
+  cat("[Determining Start Day for Seeding Times]: ")
+  seed_start = sample(arguments$seed$seeding_start_range, length(parameters$pop), replace=TRUE)
+  cat(paste("\n\tSeeding on: Day", seed_start, "\n"))
+  
+
 
   # 4. Do base model
   
@@ -40,7 +37,7 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
   for (j in seq_along(params$pop)) {
     params$pop[[j]]$u = params$pop[[j]]$u * u_adj;
     params$pop[[j]]$y = covy;
-    params$pop[[j]]$seed_times = rep(seed_start[j] + 0:27, each = 2);
+    params$pop[[j]]$seed_times = rep(seed_start[[j]]+ 0:27, each = 2);
     params$pop[[j]]$dist_seed_ages = cm_age_coefficients(as.numeric(arguments$seed$min_age), as.numeric(arguments$seed$max_age), 5 * 0:arguments$ngroups);
   }
   cat(paste("\tDone.\n"))
@@ -75,7 +72,7 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
   # 4b. Set school terms
   cat(paste("[Setting School Terms]:\n"))
   iv = cm_iv_build(params)
-  cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = arguments$school_term_rates, trace_school = 2);
+  cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = arguments$school_holiday_rates, trace_school = 2);
   params = cm_iv_apply(params, iv);
   cat(paste("\tDone.\n"))
 
@@ -149,7 +146,7 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
       cat("\n\tStart (YMD): ", ymd_start, "\n")
       cat("\tEnd (YMD): ", ymd_end, "\n")
       iv = cm_iv_build(params)
-      cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = arguments$school_term_rates, trace_school = 2);
+      cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = arguments$school_holiday_rates, trace_school = 2);
       cm_iv_set(iv, ymd_start, ymd_end, arguments$intervention);
       cm_iv_set(iv, ymd_start, ymd_end, trace_intervention = 2);
       params = cm_iv_apply(params, iv, pi);
@@ -162,7 +159,7 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
     cat("\n\tStart (YMD): ", ymd_start, "\n")
     cat("\tEnd (YMD): ", ymd_end, "\n")
     iv = cm_iv_build(params)
-    cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = arguments$school_term_rates, trace_school = 2);
+    cm_iv_set(iv, arguments$school_terms$close, arguments$school_terms$reopen, contact = arguments$school_holiday_rates, trace_school = 2);
     cm_iv_set(iv, ymd_start, ymd_end, arguments$intervention);
     cm_iv_set(iv, ymd_start, ymd_end, trace_intervention = 2);
     params = cm_iv_apply(params, iv);

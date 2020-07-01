@@ -225,6 +225,8 @@ covid_scenario = qread(age_var_symptom_rates);
 
 # Identify London boroughs for early seeding, and regions of each country for time courses
 london = cm_structure_UK[match(str_sub(locations, 6), Name), Geography1 %like% "London"]
+print(length(london))
+stop()
 england = cm_structure_UK[match(str_sub(locations, 6), Name), Code %like% "^E" & !(Geography1 %like% "London")]
 wales = cm_structure_UK[match(str_sub(locations, 6), Name), Code %like% "^W"]
 scotland = cm_structure_UK[match(str_sub(locations, 6), Name), Code %like% "^S"]

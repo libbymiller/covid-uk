@@ -9,7 +9,6 @@ suppressPackageStartupMessages({
 
 local_data_files = list(
     parameter_file = file.path('configuration', 'parameters.ini'),
-    settings_file = file.path('configuration', 'settings.ini'),
     interventions_file = file.path('configuration', 'interventions.ini'),
     contact_matrices_file = file.path('data', 'all_matrices.rds'),
     age_var_symptom_rates = file.path("data", "2-linelist_symp_fit_fIa0.5.qs"),
@@ -81,15 +80,15 @@ local_data = function(covid_dir)
 
     config_params   = read.ini(file.path(covid_dir, local_data_files$parameter_file))
 
-    config_params$school_term_rates = c(config_params$school_term_rates$home,
-                                        config_params$school_term_rates$work,
-                                        config_params$school_term_rates$schools,
-                                        config_params$school_term_rates$other,
-                                        config_params$school_term_rates$home_elderly,
-                                        config_params$school_term_rates$work_elderly,
-                                        config_params$school_term_rates$schools_elderly,
-                                        config_params$school_term_rates$other_elderly,
-                                        config_params$school_term_rates$child_elderly)
+    config_params$school_holiday_rates = c(config_params$school_holiday_rates$home,
+                                        config_params$school_holiday_rates$work,
+                                        config_params$school_holiday_rates$schools,
+                                        config_params$school_holiday_rates$other,
+                                        config_params$school_holiday_rates$home_elderly,
+                                        config_params$school_holiday_rates$work_elderly,
+                                        config_params$school_holiday_rates$schools_elderly,
+                                        config_params$school_holiday_rates$other_elderly,
+                                        config_params$school_holiday_rates$child_elderly)
 
     config_params$lockdown_rates = c(config_params$lockdown_rates$home,
                                         config_params$lockdown_rates$work,
@@ -107,6 +106,11 @@ local_data = function(covid_dir)
     # and dividing by 5 years
     ngroups_from_pop_dat = config_params$population %>% .[.$name %like% "UK", ] %>% .[.$age %like% "\\+", ]
     ngroups_from_pop_dat = min(as.numeric(sub("\\+", "", ngroups_from_pop_dat$age)))/5
+
+    # Get seeding start day from provided possible range
+    # using list keeps possibility of seeding more than one population
+
+    config_params$seed$seeding_start_range = eval(parse(text=config_params$seed$seeding_start_range))
 
     # Load Age Varying Symptomatic Rates from Prior Analysis
     config_params$age_var_symptom_rates = qread(local_data_files$age_var_symptom_rates)
