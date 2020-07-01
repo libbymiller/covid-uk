@@ -277,7 +277,7 @@ build_population_for_sample = function(arguments, sample_label)
 
 build_params_from_args = function(arguments)
 {
-    sample_parameter_set = build_population_for_sample(arguments, arguments$sample_name)
+    sample_parameter_set = build_population_for_sample(arguments, 'sample')
 
     if(dump_params)
     {
@@ -332,7 +332,7 @@ build_params_from_args = function(arguments)
 
     sample_parameter_set = build_child_elderly_matrix(population_set, child_grandparent_contacts)
 
-    region_params = build_population_for_sample(arguments, arguments$region_name)
+    region_params = build_population_for_sample(arguments, 'region')
 
     if(dump_params)
     {

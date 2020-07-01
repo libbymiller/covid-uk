@@ -113,18 +113,23 @@ local_data = function(covid_dir)
     config_params$sample_name  = cm_uk_locations(config_params, "UK", 3)[[158]]
 
     # Read the contact matrices
-    config_params$contact_matrices = readRDS(file.path(covid_dir, local_data_files$contact_matrices_file))
+    contact_matrices = readRDS(file.path(covid_dir, local_data_files$contact_matrices_file))
+    config_params$contact_matrices$region = contact_matrices[[config_params$region_name]]
+    config_params$contact_matrices$sample = contact_matrices[[config_params$sample_name]]
   
     # Determine the minimum number of age groups present in this data
-    n_groups_cm = config_params$contact_matrices[[config_params$region_name]] %>% .$other %>% colnames %>% length
+    n_groups_cm = config_params$contact_matrices$region %>% .$other %>% colnames %>% length
     config_params$ngroups = min(ngroups_from_pop_dat, n_groups_cm)
 
     # Get Population sizes for region and sample
     demographics_regional = cm_get_demographics(config_params$region_name, config_params$ngroups);
-    config_params$size[[config_params$region_name]] = demographics_regional[, round((f + m) * 1000)];
+
+    config_params$size = list()
+
+    config_params$size$region = demographics_regional[, round((f + m) * 1000)];
 
     demographics_sample = cm_get_demographics(config_params$sample_name, config_params$ngroups)
-    config_params$size[[config_params$sample_name]] = demographics_sample[, round((f + m) * 1000)];
+    config_params$size$sample = demographics_sample[, round((f + m) * 1000)];
  
     # Define interventions to be used
     int_par = read.ini(local_data_files$interventions_file)

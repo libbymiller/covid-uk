@@ -8,3 +8,43 @@
   component : health_burden_processes
   version : 1.0.0
   filename : health_burden_processes/data.h5
+-
+  data_product : contact_matrices
+  component : contact_matrices/region/home
+  version : 1.0.0
+  filename : contact_matrices/data.h5
+-
+  data_product : contact_matrices
+  component : contact_matrices/region/other
+  version : 1.0.0
+  filename : contact_matrices/data.h5
+-
+  data_product : contact_matrices
+  component : contact_matrices/region/work
+  version : 1.0.0
+  filename : contact_matrices/data.h5
+-
+  data_product : contact_matrices
+  component : contact_matrices/region/school
+  version : 1.0.0
+  filename : contact_matrices/data.h5
+-
+  data_product : contact_matrices
+  component : contact_matrices/sample/home
+  version : 1.0.0
+  filename : contact_matrices/data.h5
+-
+  data_product : contact_matrices
+  component : contact_matrices/sample/other
+  version : 1.0.0
+  filename : contact_matrices/data.h5
+-
+  data_product : contact_matrices
+  component : contact_matrices/sample/work
+  version : 1.0.0
+  filename : contact_matrices/data.h5
+-
+  data_product : contact_matrices
+  component : contact_matrices/sample/school
+  version : 1.0.0
+  filename : contact_matrices/data.h5
