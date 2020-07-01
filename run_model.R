@@ -74,6 +74,12 @@ if(local)
   source(try_loc(file.path(scrc, "R", "localdata.R")))
   configuration = local_data(covid_uk_path)
 }
+else
+{
+  options_print_str = c(options_print_str, "\tSource : API\n")
+  source(try_loc(file.path(scrc, "R", "remotedata.R")))
+  configuration = remote_data(covid_uk_path)
+}
 
 options_print_str = c(options_print_str, configuration$output_str)
 

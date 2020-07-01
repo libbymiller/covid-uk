@@ -1,12 +1,10 @@
 -
-  data_product: human/age_var_symptomatic_rates
-  version: 1.0.0
-  extension: csv
-  filename: human/age_var_symptomatic_rates/1/data.csv
-  verified_hash: 839721a1703f2488c029a8d3cd1a5870e433b149
+  data_product : age_var_symptomatic_rates
+  component : age_varying_symptomatic_rates
+  version : 1.0.0
+  filename : age_var_symptomatic_rates/data.h5
 -
-  data_product: human/health_burden_processes
-  version: 1.0.0
-  extension: csv
-  filename: human/health_burden_processes/1/data.csv
-  verified_hash: 839721a1703f2488c029a8d3cd1a5870e433b149
+  data_product : health_burden_processes
+  component : health_burden_processes
+  version : 1.0.0
+  filename : health_burden_processes/data.h5
