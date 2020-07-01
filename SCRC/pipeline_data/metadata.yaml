@@ -58,3 +58,8 @@
   component : school_term_rates
   version : 1.0.0
   filename : school_term_rates/data.h5
+-
+  data_product : population_sizes
+  component : population_sizes
+  version : 1.0.0
+  filename : population_sizes/data.h5

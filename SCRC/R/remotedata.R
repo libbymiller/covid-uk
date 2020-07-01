@@ -3,6 +3,21 @@ use_python("/home/kristian/venvs/lshtm/bin/python")
 
 StandardAPI <- import("data_pipeline_api.standard_api")$StandardAPI
 
+unpack_populations = function(config_loc)
+{
+    read_table = StandardAPI(config_loc)$read_table
+
+    pop_size = read_table("population_sizes", "population_sizes")
+
+    return(
+        list(
+            region = pop_size[,2],
+            sample = pop_size[,2]
+        )
+    )
+
+}
+
 unpack_matrices = function(config_loc)
 {
     read_array = StandardAPI(config_loc)$read_array
@@ -38,7 +53,8 @@ objects = function(config_loc)
             health_burden_probabilities = read_table("health_burden_processes", "health_burden_processes"),
             contact_matrices = unpack_matrices(config_loc),
             lockdown_rates = read_table("lockdown_rates", "lockdown_rates"),
-            school_term_rates = read_table("school_term_rates", "school_term_rates")
+            school_term_rates = read_table("school_term_rates", "school_term_rates"),
+            size = unpack_populations(config_loc)
         )
     )
 }
@@ -58,9 +74,6 @@ remote_data = function(covid_uk)
     config_loc = file.path(covid_uk, "SCRC", "pipeline_data", "config.yaml")
 
     config_params = append(config_params, objects(config_loc))
-
-    print(config_params$school_term_rates)
-    stop()
 
     return(list(params=config_params, output_str=options_print_str))
 }
