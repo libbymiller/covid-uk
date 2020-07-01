@@ -14,10 +14,6 @@ local_data_files = list(
     contact_matrices_file = file.path('data', 'all_matrices.rds'),
     age_var_symptom_rates = file.path("data", "2-linelist_symp_fit_fIa0.5.qs"),
     uk_population = file.path("data", "wpp2019_pop2020.rds"),
-    #uk_population = list(address = file.path('data', 'ukmidyearestimates20192020ladcodes.xls'),
-    #                     sheet = "MYE1",
-    #                     range = "A12:B31"
-    #),
     uk_structure = file.path("data", "structure_UK.rds"),
     health_burden_process_data = file.path('data', "health_burden_processes.csv"),
     school_terms = file.path("data", "school_terms_base.csv")
@@ -94,7 +90,7 @@ local_data = function(covid_dir)
                                         config_params$school_term_rates$schools_elderly,
                                         config_params$school_term_rates$other_elderly,
                                         config_params$school_term_rates$child_elderly)
-    
+
     config_params$lockdown_rates = c(config_params$lockdown_rates$home,
                                         config_params$lockdown_rates$work,
                                         config_params$lockdown_rates$schools,
