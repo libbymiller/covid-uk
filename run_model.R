@@ -81,8 +81,6 @@ if(local)
 
 options_print_str = c(options_print_str, configuration$output_str)
 
-print(configuration$params$seed$value)
-
 set.seed(as.numeric(configuration$params$seed$value))
 
 options_print_str = c(options_print_str, "\n\tSeed : ", as.numeric(configuration$params$seed$value))

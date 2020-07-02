@@ -41,6 +41,8 @@
 #           (False: use seeding - age distribution)   #
 #                                                     #
 # Adjusted Parameters (modified during run):          #
+# UPDATE: Value of these is not important, output is  #
+# same so these will be set to constant values here   #
 #   u_init : ?                                        #
 #   y_init : ?                                        #
 #                                                     #
@@ -237,7 +239,11 @@ build_population_for_sample = function(arguments, sample_label)
         )
     )
 
-    #size = arguments$population$count
+    # Set initial u and y values (value of these does not matter)
+    # as result is the same
+    u_init = 0.08
+    y_init = 0.5
+
     group_names = arguments$population$label
     contact_matrices = arguments$contact_matrices[[sample_label]]
     population_size = arguments$size[[sample_label]]
@@ -256,8 +262,8 @@ build_population_for_sample = function(arguments, sample_label)
         contact = rep(1, length(contact_matrices)),
         contact_mult = numeric(0),
         contact_lowerto = numeric(0),
-        u = rep(adjusted_params$u, arguments$ngroups),
-        y = rep(adjusted_params$y, arguments$ngroups),
+        u = rep(u_init, arguments$ngroups),
+        y = rep(y_init, arguments$ngroups),
         fIp = rep(fixed_params$fIp, arguments$ngroups),
         fIs = rep(fixed_params$fIs, arguments$ngroups),
         fIa = rep(fixed_params$fIa, arguments$ngroups),

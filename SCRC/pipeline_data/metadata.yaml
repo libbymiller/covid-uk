@@ -98,3 +98,18 @@
   component : seeding_max_start_day
   version : 1.0.0
   filename : seeding/data.toml
+-
+  data_product : rel_symptomatic
+  component : rel_symptomatic
+  version : 1.0.0
+  filename : relative_infectiousness/data.toml
+-
+  data_product : rel_subclinical
+  component : rel_subclinical
+  version : 1.0.0
+  filename : relative_infectiousness/data.toml
+-
+  data_product : rel_preclinical
+  component : rel_preclinical
+  version : 1.0.0
+  filename : relative_infectiousness/data.toml

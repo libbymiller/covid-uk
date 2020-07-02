@@ -89,6 +89,7 @@ objects = function(config_loc)
 {
     read_table = StandardAPI(config_loc)$read_table
     read_array = StandardAPI(config_loc)$read_array
+    read_estimate = StandardAPI(config_loc)$read_estimate
 
     params = list(
             age_var_symptom_rates = read_table("age_var_symptomatic_rates", "age_varying_symptomatic_rates"),
@@ -98,7 +99,10 @@ objects = function(config_loc)
             school_holiday_rates = read_table("school_holiday_rates", "school_holiday_rates"),
             size = unpack_populations(config_loc),
             school_terms = unpack_terms(config_loc),
-            seed = unpack_seeding(config_loc)
+            seed = unpack_seeding(config_loc),
+            fIs = read_estimate("rel_symptomatic", "rel_symptomatic"),
+            fIp = read_estimate("rel_preclinical", "rel_preclinical"),
+            fIa = read_estimate("rel_subclinical", "rel_subclinical")
         )
     n_groups = params$contact_matrices$region %>% .$other %>% colnames %>% length
     params$intervention = unpack_intervention(config_loc, n_groups)
