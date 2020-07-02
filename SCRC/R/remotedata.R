@@ -145,7 +145,19 @@ unpack_trigger = function(config_loc)
     )
 }
 
-objects = function(config_loc)
+create_R0s = function(config_loc, seed, n)
+{
+    np_rand <- import("numpy")$random
+    np_rand$seed(seed)
+
+    read_distribution = StandardAPI(config_loc)$read_distribution
+
+    norm = read_distribution("r0_distribution", "r0_distribution")
+
+    return(norm$rvs(as.integer(n)))
+}
+
+objects = function(config_loc, n_groups)
 {
     read_table = StandardAPI(config_loc)$read_table
     read_array = StandardAPI(config_loc)$read_array
@@ -167,13 +179,14 @@ objects = function(config_loc)
             lockdown_trigger = unpack_trigger(config_loc)
         )
     params = append(params, unpack_dis_params(config_loc))
+    params$R0s = create_R0s(config_loc, params$seed$value, n_groups)
     n_groups = params$contact_matrices$region %>% .$other %>% colnames %>% length
     params$intervention = unpack_intervention(config_loc, n_groups)
 
     return(params)
 }
 
-remote_data = function(covid_uk)
+remote_data = function(covid_uk, n_groups)
 {
     output_str = ""
     # Define fixed parameter choices (those that do not need to be set by the API itself)
@@ -189,7 +202,7 @@ remote_data = function(covid_uk)
 
     config_loc = file.path(covid_uk, "SCRC", "pipeline_data", "config.yaml")
 
-    config_params = append(config_params, objects(config_loc))
+    config_params = append(config_params, objects(config_loc, n_groups))
 
     return(list(params=config_params, output_str=options_print_str))
 }

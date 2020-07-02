@@ -70,7 +70,7 @@ cm_uk_locations = function(arguments, country, level) {
     return (paste0("UK | ", locs));
 }
 
-local_data = function(covid_dir)
+local_data = function(covid_dir, n_runs)
 {
     options_print_str = c(paste("\tCOVID-UK Path : ", covid_dir))
     options_print_str = c(options_print_str, paste("\n\tParameter File : ", local_data_files$parameter_file))
@@ -226,6 +226,14 @@ local_data = function(covid_dir)
         config_params$intervention = interventions
     }
 
+    # Set seed and generate R0 values for each run
+    set.seed(as.numeric(configuration$params$seed$value))
+    options_print_str = c(options_print_str, "\n\tSeed : ", as.numeric(config_params$seed$value))
+
+    config_params$R0s = rnorm(n_runs, mean = as.numeric(config_params$r0_distribution$mean),
+                             sd = as.numeric(config_params$r0_distribution$sd))
+
+    # Set bin from which group defined as 'elderly'
     config_params$elderly_from_bin = config_params$elderly$from_bin
 
     return(list(params=config_params, output_str=options_print_str))

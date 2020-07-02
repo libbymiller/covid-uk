@@ -72,25 +72,18 @@ if(local)
 {
   options_print_str = c(options_print_str, "\tSource : Local\n")
   source(try_loc(file.path(scrc, "R", "localdata.R")))
-  configuration = local_data(covid_uk_path)
+  configuration = local_data(covid_uk_path, n_runs)
 } else {
   options_print_str = c(options_print_str, "\tSource : API\n")
   source(try_loc(file.path(scrc, "R", "remotedata.R")))
-  configuration = remote_data(covid_uk_path)
+  configuration = remote_data(covid_uk_path, n_runs)
 }
 
 options_print_str = c(options_print_str, configuration$output_str)
 
-set.seed(as.numeric(configuration$params$seed$value))
-
-options_print_str = c(options_print_str, "\n\tSeed : ", as.numeric(configuration$params$seed$value))
-
 model_structures = build_params_from_args(configuration$params)
 parameters = model_structures$parameters
 options_print_str = c(options_print_str, "\n\tMode : ", configuration$params$run_mode$mode)
-
-R0s = rnorm(n_runs, mean = as.numeric(configuration$params$r0_distribution$mean),
-            sd = as.numeric(configuration$params$r0_distribution$sd))
 
 observables = list(
   dynamics = data.table(),
@@ -103,7 +96,7 @@ cat(options_print_str)
 for (r in 1:n_runs) 
 {
   message(paste0("\n==== Running Realisation: ", r, "/", n_runs, " ===="))
-  R0 = R0s[r]
+  R0 = configuration$params$R0s[r]
 
   # Ensure dynamics and totals get updated
   run_result = run_simulation(r, R0, configuration$params, model_structures, 

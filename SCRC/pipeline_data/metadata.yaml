@@ -238,3 +238,8 @@
   component : duration
   version : 1.0.0
   filename : lockdown_trigger/data.toml
+-
+  data_product : r0_distribution
+  component : r0_distribution
+  version : 1.0.0
+  filename : R0/data.toml
