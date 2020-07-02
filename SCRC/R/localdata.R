@@ -80,27 +80,27 @@ local_data = function(covid_dir, n_runs)
 
     config_params   = read.ini(file.path(covid_dir, local_data_files$parameter_file))
 
-    config_params$school_holiday_rates = c(config_params$school_holiday_rates$home,
-                                        config_params$school_holiday_rates$work,
-                                        config_params$school_holiday_rates$schools,
-                                        config_params$school_holiday_rates$other,
-                                        config_params$school_holiday_rates$home_elderly,
-                                        config_params$school_holiday_rates$work_elderly,
-                                        config_params$school_holiday_rates$schools_elderly,
-                                        config_params$school_holiday_rates$other_elderly,
-                                        config_params$school_holiday_rates$child_elderly)
+    config_params$school_holiday_rates = c(as.numeric(config_params$school_holiday_rates$home),
+                                        as.numeric(config_params$school_holiday_rates$work),
+                                        as.numeric(config_params$school_holiday_rates$schools),
+                                        as.numeric(config_params$school_holiday_rates$other),
+                                        as.numeric(config_params$school_holiday_rates$home_elderly),
+                                        as.numeric(config_params$school_holiday_rates$work_elderly),
+                                        as.numeric(config_params$school_holiday_rates$schools_elderly),
+                                        as.numeric(config_params$school_holiday_rates$other_elderly),
+                                        as.numeric(config_params$school_holiday_rates$child_elderly)
+    )
 
-    config_params$lockdown_rates = c(config_params$lockdown_rates$home,
-                                        config_params$lockdown_rates$work,
-                                        config_params$lockdown_rates$schools,
-                                        config_params$lockdown_rates$other,
-                                        config_params$lockdown_rates$home_elderly,
-                                        config_params$lockdown_rates$work_elderly,
-                                        config_params$lockdown_rates$schools_elderly,
-                                        config_params$lockdown_rates$other_elderly,
-                                        config_params$lockdown_rates$child_elderly)
-
-    config_params$population = readRDS(file.path(covid_dir, local_data_files$uk_population))
+    config_params$lockdown_rates =    c(as.numeric(config_params$lockdown_rates$home),
+                                        as.numeric(config_params$lockdown_rates$work),
+                                        as.numeric(config_params$lockdown_rates$schools),
+                                        as.numeric(config_params$lockdown_rates$other),
+                                        as.numeric(config_params$lockdown_rates$home_elderly),
+                                        as.numeric(config_params$lockdown_rates$work_elderly),
+                                        as.numeric(config_params$lockdown_rates$schools_elderly),
+                                        as.numeric(config_params$lockdown_rates$other_elderly),
+                                        as.numeric(config_params$lockdown_rates$child_elderly)
+    )
 
     # Get number of bins from dividing the minimum highest bin (i.e. labelled "X+") across all UK regions
     # and dividing by 5 years
@@ -123,7 +123,7 @@ local_data = function(covid_dir, n_runs)
     config_params$uk_structure = readRDS(file.path(covid_dir, local_data_files$uk_structure))
 
     # Define school terms
-    school_terms = read.csv(local_data_files$school_terms)
+    school_terms = read.csv(file=local_data_files$school_terms)
     config_params$school_terms = list(close = school_terms[, 1], reopen=school_terms[, 2])
 
     # Setup region name for producing parameters to set R0 and
@@ -245,9 +245,11 @@ local_data = function(covid_dir, n_runs)
         config_params[[name]] = config_params[[name]]$value
     }
 
-    arguments$fast_multinomial = toupper(config_params$fast_multinomial$isTrue) == "TRUE"
-    arguments$deterministic = toupper(config_params$deterministic$isTrue) == "TRUE"
-    arguments$child_grandparentcontacts = toupper(config_params$deterministic$enabled) == "TRUE"
+    config_params$fast_multinomial = toupper(config_params$fast_multinomial$isTrue) == "TRUE"
+    config_params$deterministic = toupper(config_params$deterministic$isTrue) == "TRUE"
+    config_params$child_grandparent_contacts = toupper(config_params$child_grandparentcontacts$enabled) == "TRUE"
+
+    config_params$group_names = colnames(config_params$contact_matrices$region[[1]])
 
     return(list(params=config_params, output_str=options_print_str))
 }

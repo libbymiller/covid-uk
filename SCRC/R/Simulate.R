@@ -89,7 +89,7 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
   run = cm_simulate(params, 1, r);
   run$dynamics[, run := r];
   run$dynamics[, scenario := "Base"];
-  run$dynamics[, R0 := R0s[r]];
+  run$dynamics[, R0 := R0];
   cat("\tCombining Totals: ")
   totals = add_totals(run, totals);
   cat("\tDone\n\tCombining Dynamics: ")
@@ -171,7 +171,7 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
 
   run$dynamics[, run := r];
   run$dynamics[, scenario := "Lockdown"];
-  run$dynamics[, R0 := R0s[r]];
+  run$dynamics[, R0 := R0];
   totals = add_totals(run, totals);
   dynamics = add_dynamics(run, dynamics, iv);
   assert("ERROR: Post-Simulation Dynamics Table Empty", length(dynamics) > 0)

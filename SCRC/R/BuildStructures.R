@@ -239,7 +239,6 @@ build_population_for_sample = function(arguments, sample_label)
     u_init = 0.08
     y_init = 0.5
 
-    group_names = arguments$population$label
     contact_matrices = arguments$contact_matrices[[sample_label]]
     population_size = arguments$size[[sample_label]]
 
@@ -269,8 +268,7 @@ build_population_for_sample = function(arguments, sample_label)
         schedule = list(), # Set time steps for various parameter change events (e.g. scaling of contact matrices)
         observer = NULL,    # Series of callback functions used to trigger events based on variable values
         name = sample_label,
-        #group_names = group_names
-        group_names = colnames(contact_matrices[[1]])
+        group_names = arguments$group_names
     )
     
     return(sample_parameter_set)
@@ -331,7 +329,6 @@ build_params_from_args = function(arguments)
         processes = burden_processes,
         time_step = as.numeric(arguments$time$step)
     )
-    print("YAY")
 
     # Requires an unmodified version (analog to parametersUK1 in UK.R)
 

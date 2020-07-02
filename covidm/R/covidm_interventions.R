@@ -56,7 +56,7 @@ cm_iv_set = function(iv, ymd_iv_first_day, ymd_iv_last_day, ...)
             # Convert start and end dates
             t0 = ymd(ymd_iv_first_day[j]);
             t1 = ymd(ymd_iv_last_day[j]);
-            
+
             # Apply intervention
             iv[, (col) := as(get(col), "list")];
             iv[date >= t0 & date <= t1, (col) := lapply(get(col), function(x) x * changes[[i]])];

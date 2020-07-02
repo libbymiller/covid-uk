@@ -3,32 +3,28 @@ use_python("/home/kristian/venvs/lshtm/bin/python")
 
 StandardAPI <- import("data_pipeline_api.standard_api")$StandardAPI
 
-read_table = function(config_loc, arg1, arg2)
-{
-    return(data.table(StandardAPI(config_loc)$read_table(arg1, arg2)))
-}
-
 unpack_intervention = function(config_loc, ngroups)
 {
-    intervention = read_table(config_loc, "intervention_rates", "intervention_rates")
+    read_table = StandardAPI(config_loc)$read_table
+    intervention = read_table("intervention_rates", "intervention_rates")
 
     return(
         list(
-            contact = intervention[,1][1:9],
-            fIs = rep(intervention[1,][10], ngroups)
+            contact = intervention[[1]][1:9],
+            fIs = rep(intervention[[1]][10], ngroups)
         )
     )
 }
 
 unpack_terms = function(config_loc)
 {
-
-    pop_size = read_table(config_loc, "school_terms", "school_terms")
+    read_table = StandardAPI(config_loc)$read_table
+    school_terms = read_table("school_terms", "school_terms")
 
     return(
         list(
-            close = pop_size[,2],
-            reopen = pop_size[,2]
+            close = school_terms[[1]],
+            reopen = school_terms[[2]]
         )
     )
 
@@ -51,13 +47,13 @@ unpack_seeding = function(config_loc)
 
 unpack_populations = function(config_loc)
 {
-
-    pop_size = read_table(config_loc, "population_sizes", "population_sizes")
+    read_table = StandardAPI(config_loc)$read_table
+    pop_size = read_table("population_sizes", "population_sizes")
 
     return(
         list(
-            region = pop_size[,1],
-            sample = pop_size[,2]
+            region = pop_size[[1]],
+            sample = pop_size[[2]]
         )
     )
 
@@ -159,17 +155,20 @@ create_R0s = function(config_loc, seed, n)
     return(norm$rvs(as.integer(n)))
 }
 
-objects = function(config_loc, n_groups)
+objects = function(config_loc)
 {
     read_array = StandardAPI(config_loc)$read_array
     read_estimate = StandardAPI(config_loc)$read_estimate
+    read_table = StandardAPI(config_loc)$read_table
+
+    health_burden_probabilities = read_table("health_burden_processes", "health_burden_processes")
 
     params = list(
-            age_var_symptom_rates = read_table(config_loc, "age_var_symptomatic_rates", "age_varying_symptomatic_rates"),
-            health_burden_probabilities = read_table(config_loc, "health_burden_processes", "health_burden_processes"),
+            age_var_symptom_rates = data.table(read_table("age_var_symptomatic_rates", "age_varying_symptomatic_rates")),
+            health_burden_probabilities = data.table(read_table("health_burden_processes", "health_burden_processes")),
             contact_matrices = unpack_matrices(config_loc),
-            lockdown_rates = read_table(config_loc, "lockdown_rates", "lockdown_rates"),
-            school_holiday_rates = read_table(config_loc, "school_holiday_rates", "school_holiday_rates"),
+            lockdown_rates = read_table("lockdown_rates", "lockdown_rates"),
+            school_holiday_rates = read_table("school_holiday_rates", "school_holiday_rates"),
             size = unpack_populations(config_loc),
             school_terms = unpack_terms(config_loc),
             seed = unpack_seeding(config_loc),
@@ -182,15 +181,45 @@ objects = function(config_loc, n_groups)
             rho = read_estimate("rho", "rho")
         )
     params = append(params, unpack_dis_params(config_loc))
-    params$R0s = create_R0s(config_loc, params$seed$value, n_groups)
-    n_groups = params$contact_matrices$region %>% .$other %>% colnames %>% length
-    params$intervention = unpack_intervention(config_loc, n_groups)
+    params$ngroups = params$contact_matrices$region$other %>% length %>% sqrt(.)
+    params$intervention = unpack_intervention(config_loc, params$ngroups)
 
     return(params)
 }
 
-remote_data = function(covid_uk, n_groups)
+get_elderly_bin_for_age = function(age, names)
 {
+    x = NULL
+
+    if(any(names %>% str_detect(., "-")))
+    {
+        x <- names %>% head(., -1) %>% strsplit(., "-") %>% lapply(., as.numeric)
+    }
+
+    if(any(names %>% str_detect(., "to")))
+    {
+        x <- names %>% head(., -1) %>% strsplit(., "to") %>% lapply(., as.numeric)
+    }
+
+    for(i in 1:length(x))
+    {
+        if(age >= x[[i]][[1]] && age < x[[i]][[2]])
+        {
+            return(i)
+        }
+    }
+
+    return(-1)
+
+}
+
+remote_data = function(covid_uk, n_runs)
+{
+    # Assume same binning always provided to model
+    group_names = c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29",
+    "30-34", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64",
+    "65-69", "70-74", "75+")
+
     output_str = ""
     # Define fixed parameter choices (those that do not need to be set by the API itself)
     config_params = list(
@@ -203,12 +232,18 @@ remote_data = function(covid_uk, n_groups)
         elderly_from_bin = 15,              # Bin which defines point at which individual is classed as elderly (set to '65-70')
         dH = 1, dC = 1,                     # Unused by model at the moment
         report_frequency = 4,               # Report every 4 steps
-        ngroups = 16                        # Assume binning of ages in same structure ('0-4',...,'65-70', '75+')
+        group_names = group_names           # Assume group names constant
     )
 
     config_loc = file.path(covid_uk, "SCRC", "pipeline_data", "config.yaml")
 
-    config_params = append(config_params, objects(config_loc, n_groups))
+    config_params = append(config_params, objects(config_loc))
+
+    # Define an elderly individual as 70+
+    config_params$elderly_from_bin = get_elderly_bin_for_age(70, group_names)
+
+    # Randomly generate some R0 values
+    config_params$R0s = create_R0s(config_loc, config_params$seed$value, n_runs) 
 
     return(list(params=config_params, output_str=options_print_str))
 }
