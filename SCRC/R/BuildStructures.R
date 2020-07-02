@@ -334,7 +334,7 @@ build_params_from_args = function(arguments)
     # Split off the elderly so their contact matrices can be manipulated separately
     # this doubles the number of matrices in the categories: home, work, school, other
     population_set = cm_split_matrices_ex_in(parameter_set,
-                                                       as.numeric(arguments$elderly$from_bin))
+                                                       as.numeric(arguments$elderly_from_bin))
 
     sample_parameter_set = build_child_elderly_matrix(population_set, child_grandparent_contacts)
 

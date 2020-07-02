@@ -113,3 +113,68 @@
   component : rel_preclinical
   version : 1.0.0
   filename : relative_infectiousness/data.toml
+-
+  data_product : start_day
+  component : start_day
+  version : 1.0.0
+  filename : time/data.toml
+-
+  data_product : end_day
+  component : end_day
+  version : 1.0.0
+  filename : time/data.toml
+-
+  data_product : delay_gamma
+  component : max_day_delay_gamma
+  version : 1.0.0
+  filename : delay_gamma/data.toml
+-
+  data_product : delay_gamma
+  component : time_step_delay_gamma
+  version : 1.0.0
+  filename : delay_gamma/data.toml
+-
+  data_product : start_date_posix
+  component : start_date_posix
+  version : 1.0.0
+  filename : time/data.toml
+-
+  data_product : delay_gamma/dE
+  component : mu
+  version : 1.0.0
+  filename : delay_gamma/dE/data.toml
+-
+  data_product : delay_gamma/dE
+  component : shape
+  version : 1.0.0
+  filename : delay_gamma/dE/data.toml
+-
+  data_product : delay_gamma/dIp
+  component : mu
+  version : 1.0.0
+  filename : delay_gamma/dIp/data.toml
+-
+  data_product : delay_gamma/dIp
+  component : shape
+  version : 1.0.0
+  filename : delay_gamma/dIp/data.toml
+-
+  data_product : delay_gamma/dIs
+  component : mu
+  version : 1.0.0
+  filename : delay_gamma/dIs/data.toml
+-
+  data_product : delay_gamma/dIs
+  component : shape
+  version : 1.0.0
+  filename : delay_gamma/dIs/data.toml
+-
+  data_product : delay_gamma/dIa
+  component : mu
+  version : 1.0.0
+  filename : delay_gamma/dIa/data.toml
+-
+  data_product : delay_gamma/dIa
+  component : shape
+  version : 1.0.0
+  filename : delay_gamma/dIa/data.toml

@@ -215,8 +215,8 @@ local_data = function(covid_dir)
                                     fIs = rep(as.numeric(int_par$combination$fIs_perage), config_params$ngroups)
         )
     )
-
-    if(config_params$run_mode$mode != "R0 Analysis")
+    config_params$mode = config_params$run_mode$mode
+    if(config_params$mode != "R0 Analysis")
     {
         config_params$intervention = interventions[[config_params$intervention_preset$name]]
         options_print_str = c(options_print_str, paste("\n\tInterventions Preset: ", config_params$intervention_preset$name))
@@ -225,6 +225,8 @@ local_data = function(covid_dir)
     {
         config_params$intervention = interventions
     }
+
+    config_params$elderly_from_bin = config_params$elderly$from_bin
 
     return(list(params=config_params, output_str=options_print_str))
 }

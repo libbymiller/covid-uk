@@ -42,7 +42,7 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
   }
   cat(paste("\tDone.\n"))
 
-  if(arguments$run_mode$mode == "R0 Analysis")
+  if(arguments$run_mode == "R0 Analysis")
   {
     # CALCULATE IMPACT ON R0
     cat(paste("[Calculating impact on R0]:\n"))

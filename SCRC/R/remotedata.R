@@ -85,6 +85,39 @@ unpack_matrices = function(config_loc)
     return(contact_matrices)
 }
 
+unpack_times = function(config_loc)
+{
+    read_estimate = StandardAPI(config_loc)$read_estimate
+
+    return(
+        list(
+            max = read_estimate("delay_gamma", "max_day_delay_gamma"),
+            step = read_estimate("delay_gamma", "time_step_delay_gamma"),
+            end = read_estimate("end_day", "end_day"),
+            start = read_estimate("start_day", "start_day"),
+            start_date = as.Date(read_estimate("start_date_posix", "start_date_posix"), "1970-01-01")
+        )
+    )
+}
+
+unpack_dis_params = function(config_loc)
+{
+    read_estimate = StandardAPI(config_loc)$read_estimate
+
+    compartments = c("dE", "dIp", "dIa", "dIs")
+
+    params = list()
+
+    for(comp in compartments)
+    {
+        params[[comp]] = list(mu=read_estimate(file.path("delay_gamma", comp), "mu"),
+                             shape=read_estimate(file.path("delay_gamma", comp), "shape")
+        )
+    }
+
+    return(params)
+}
+
 objects = function(config_loc)
 {
     read_table = StandardAPI(config_loc)$read_table
@@ -102,8 +135,10 @@ objects = function(config_loc)
             seed = unpack_seeding(config_loc),
             fIs = read_estimate("rel_symptomatic", "rel_symptomatic"),
             fIp = read_estimate("rel_preclinical", "rel_preclinical"),
-            fIa = read_estimate("rel_subclinical", "rel_subclinical")
+            fIa = read_estimate("rel_subclinical", "rel_subclinical"),
+            time = unpack_times(config_loc)
         )
+    params = append(params, unpack_dis_params(config_loc))
     n_groups = params$contact_matrices$region %>% .$other %>% colnames %>% length
     params$intervention = unpack_intervention(config_loc, n_groups)
 
@@ -118,8 +153,9 @@ remote_data = function(covid_uk)
         child_grandparentcontacts = FALSE,  # This is analysis specific so should be switched off
                                             # to ensure flexibility
         deterministic = FALSE,              # Seed the age distributions (set to False in "vanilla" run UK.R)
-        mode = "Normal"                     # Normal analysis run as opposed "R0 Analysis" which checks
+        mode = "Normal",                    # Normal analysis run as opposed "R0 Analysis" which checks
                                             # intervention effect on R0 (might be needed later as a separate run?)
+        elderly_from_bin = 15               # Bin which defines point at which individual is classed as elderly (set to '65-70')
     )
 
     config_loc = file.path(covid_uk, "SCRC", "pipeline_data", "config.yaml")
