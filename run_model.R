@@ -82,8 +82,9 @@ if(local)
 options_print_str = c(options_print_str, configuration$output_str)
 
 model_structures = build_params_from_args(configuration$params)
+
 parameters = model_structures$parameters
-options_print_str = c(options_print_str, "\n\tMode : ", configuration$params$run_mode$mode)
+options_print_str = c(options_print_str, "\n\tMode : ", configuration$params$run_mode)
 
 observables = list(
   dynamics = data.table(),
@@ -118,5 +119,5 @@ for (r in 1:n_runs)
 }
 
 cm_save(observables$totals, file.path(covid_uk_path, "output", paste0("run-", sub(" ", "-", configuration$params$run_mode$mode),"-", r, "-totals.qs")));
-cm_save(observables$dynamics, file.path(covid_uk_path, "output", paste0("run-", sub(" ", "-", configuration$params$run_mode$mode), "-", r, "-dynamics.qs")));
+cm_save(observables$dynamics, file.path(covid_uk_path, "output", paste0("run-", sub(" ", "-", configuration$params$run_mode), "-", r, "-dynamics.qs")));
 print(Sys.time())

@@ -191,20 +191,15 @@ build_population_for_sample = function(arguments, sample_label)
     # cm_delay_gamma function for dE, dIp, dIs, dIa
 
     fixed_params = list( 
-        dH = as.numeric(arguments$dH$value),  # Currently unused
-        dC = as.numeric(arguments$dC$value),  # Unused?
+        dH = as.numeric(arguments$dH),  # Currently unused
+        dC = as.numeric(arguments$dC),  # Unused?
 
-        fIa = as.numeric(arguments$fIa$value),
-        fIs = as.numeric(arguments$fIs$value),
-        fIp = as.numeric(arguments$fIp$value),
+        fIa = as.numeric(arguments$fIa),
+        fIs = as.numeric(arguments$fIs),
+        fIp = as.numeric(arguments$fIp),
 
-        rho =  as.numeric(arguments$rho$value),
-        tau = as.numeric(arguments$tau$value)
-    )
-
-    adjusted_params = list(
-        u = as.numeric(arguments$u_init$value),
-        y = as.numeric(arguments$y_init$value)
+        rho =  as.numeric(arguments$rho),
+        tau = as.numeric(arguments$tau)
     )
 
     distribution_params = list(
@@ -292,40 +287,17 @@ build_params_from_args = function(arguments)
         message(paste0("Initial Params saved to '", output_file))
     }
 
+
     burden_processes = build_burden_processes(arguments)
-
-    if(typeof(arguments$fast_multinomial$isTrue) == "logical")
-    {
-        is_fast_multi = arguments$fast_multinomial$isTrue
-    }
-    else {
-       is_fast_multi = toupper(arguments$fast_multinomial$isTrue) == "TRUE"
-    }
-
-    if(typeof(arguments$deterministic$isTrue) == "logical")
-    {
-        is_deterministic = arguments$deterministic$isTrue
-    }
-    else {
-       is_deterministic = toupper(arguments$deterministic$isTrue) == "TRUE"
-    }
-
-    if(typeof(arguments$child_grandparentcontacts$enabled) == "logical")
-    {
-        child_grandparent_contacts = arguments$child_grandparentcontacts$enabled
-    }
-    else {
-       child_grandparent_contacts = toupper(arguments$child_grandparentcontacts$enabled) == "TRUE"
-    }
 
     parameter_set = list(
         pop = list(sample_parameter_set),
         date0 = arguments$time$start_date,
         time0 = as.numeric(arguments$time$start),
         time1 = as.numeric(arguments$time$end),
-        report_every = as.numeric(arguments$report$frequency),
-        fast_multinomial = is_fast_multi,
-        deterministic = is_deterministic, 
+        report_every = as.numeric(arguments$report_frequency),
+        fast_multinomial = arguments$fast_multinomial,
+        deterministic = arguments$deterministic, 
         travel = diag(length(list(sample_parameter_set))),
         processes = burden_processes,
         time_step = as.numeric(arguments$time$step)
@@ -336,7 +308,7 @@ build_params_from_args = function(arguments)
     population_set = cm_split_matrices_ex_in(parameter_set,
                                                        as.numeric(arguments$elderly_from_bin))
 
-    sample_parameter_set = build_child_elderly_matrix(population_set, child_grandparent_contacts)
+    sample_parameter_set = build_child_elderly_matrix(population_set, arguments$child_grandparent_contacts)
 
     region_params = build_population_for_sample(arguments, 'region')
 
@@ -352,13 +324,14 @@ build_params_from_args = function(arguments)
         date0 = arguments$time$start_date,
         time0 = as.numeric(arguments$time$start),
         time1 = as.numeric(arguments$time$end),
-        report_every = as.numeric(arguments$report$frequency),
-        fast_multinomial = is_fast_multi,
-        deterministic = is_deterministic, 
+        report_every = as.numeric(arguments$report_frequency),
+        fast_multinomial = arguments$fast_multinomial,
+        deterministic = arguments$deterministic, 
         travel = diag(length(list(region_params))),
         processes = burden_processes,
         time_step = as.numeric(arguments$time$step)
     )
+    print("YAY")
 
     # Requires an unmodified version (analog to parametersUK1 in UK.R)
 

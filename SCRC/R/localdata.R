@@ -215,8 +215,8 @@ local_data = function(covid_dir, n_runs)
                                     fIs = rep(as.numeric(int_par$combination$fIs_perage), config_params$ngroups)
         )
     )
-    config_params$mode = config_params$run_mode$mode
-    if(config_params$mode != "R0 Analysis")
+    config_params$run_mode = config_params$run_mode$mode
+    if(config_params$run_mode != "R0 Analysis")
     {
         config_params$intervention = interventions[[config_params$intervention_preset$name]]
         options_print_str = c(options_print_str, paste("\n\tInterventions Preset: ", config_params$intervention_preset$name))
@@ -227,7 +227,7 @@ local_data = function(covid_dir, n_runs)
     }
 
     # Set seed and generate R0 values for each run
-    set.seed(as.numeric(configuration$params$seed$value))
+    set.seed(as.numeric(config_params$seed$value))
     options_print_str = c(options_print_str, "\n\tSeed : ", as.numeric(config_params$seed$value))
 
     config_params$R0s = rnorm(n_runs, mean = as.numeric(config_params$r0_distribution$mean),
@@ -235,6 +235,19 @@ local_data = function(covid_dir, n_runs)
 
     # Set bin from which group defined as 'elderly'
     config_params$elderly_from_bin = config_params$elderly$from_bin
+
+
+    # Set report frequency
+    config_params$report_frequency = config_params$report$frequency
+
+    for(name in c("dH", "dC", "fIa", "fIs", "tau", "rho", "fIp"))
+    {
+        config_params[[name]] = config_params[[name]]$value
+    }
+
+    arguments$fast_multinomial = toupper(config_params$fast_multinomial$isTrue) == "TRUE"
+    arguments$deterministic = toupper(config_params$deterministic$isTrue) == "TRUE"
+    arguments$child_grandparentcontacts = toupper(config_params$deterministic$enabled) == "TRUE"
 
     return(list(params=config_params, output_str=options_print_str))
 }

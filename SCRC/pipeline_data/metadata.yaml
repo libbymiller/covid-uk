@@ -243,3 +243,13 @@
   component : r0_distribution
   version : 1.0.0
   filename : R0/data.toml
+-
+  data_product : tau
+  component : tau
+  version : 1.0.0
+  filename : tau/data.toml
+-
+  data_product : rho
+  component : rho
+  version : 1.0.0
+  filename : rho/data.toml

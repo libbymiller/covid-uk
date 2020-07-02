@@ -3,10 +3,14 @@ use_python("/home/kristian/venvs/lshtm/bin/python")
 
 StandardAPI <- import("data_pipeline_api.standard_api")$StandardAPI
 
+read_table = function(config_loc, arg1, arg2)
+{
+    return(data.table(StandardAPI(config_loc)$read_table(arg1, arg2)))
+}
+
 unpack_intervention = function(config_loc, ngroups)
 {
-    read_table = StandardAPI(config_loc)$read_table
-    intervention = read_table("intervention_rates", "intervention_rates")
+    intervention = read_table(config_loc, "intervention_rates", "intervention_rates")
 
     return(
         list(
@@ -18,9 +22,8 @@ unpack_intervention = function(config_loc, ngroups)
 
 unpack_terms = function(config_loc)
 {
-    read_table = StandardAPI(config_loc)$read_table
 
-    pop_size = read_table("school_terms", "school_terms")
+    pop_size = read_table(config_loc, "school_terms", "school_terms")
 
     return(
         list(
@@ -48,9 +51,8 @@ unpack_seeding = function(config_loc)
 
 unpack_populations = function(config_loc)
 {
-    read_table = StandardAPI(config_loc)$read_table
 
-    pop_size = read_table("population_sizes", "population_sizes")
+    pop_size = read_table(config_loc, "population_sizes", "population_sizes")
 
     return(
         list(
@@ -159,16 +161,15 @@ create_R0s = function(config_loc, seed, n)
 
 objects = function(config_loc, n_groups)
 {
-    read_table = StandardAPI(config_loc)$read_table
     read_array = StandardAPI(config_loc)$read_array
     read_estimate = StandardAPI(config_loc)$read_estimate
 
     params = list(
-            age_var_symptom_rates = read_table("age_var_symptomatic_rates", "age_varying_symptomatic_rates"),
-            health_burden_probabilities = read_table("health_burden_processes", "health_burden_processes"),
+            age_var_symptom_rates = read_table(config_loc, "age_var_symptomatic_rates", "age_varying_symptomatic_rates"),
+            health_burden_probabilities = read_table(config_loc, "health_burden_processes", "health_burden_processes"),
             contact_matrices = unpack_matrices(config_loc),
-            lockdown_rates = read_table("lockdown_rates", "lockdown_rates"),
-            school_holiday_rates = read_table("school_holiday_rates", "school_holiday_rates"),
+            lockdown_rates = read_table(config_loc, "lockdown_rates", "lockdown_rates"),
+            school_holiday_rates = read_table(config_loc, "school_holiday_rates", "school_holiday_rates"),
             size = unpack_populations(config_loc),
             school_terms = unpack_terms(config_loc),
             seed = unpack_seeding(config_loc),
@@ -176,7 +177,9 @@ objects = function(config_loc, n_groups)
             fIp = read_estimate("rel_preclinical", "rel_preclinical"),
             fIa = read_estimate("rel_subclinical", "rel_subclinical"),
             time = unpack_times(config_loc),
-            lockdown_trigger = unpack_trigger(config_loc)
+            lockdown_trigger = unpack_trigger(config_loc),
+            tau = read_estimate("tau", "tau"),
+            rho = read_estimate("rho", "rho")
         )
     params = append(params, unpack_dis_params(config_loc))
     params$R0s = create_R0s(config_loc, params$seed$value, n_groups)
@@ -191,13 +194,16 @@ remote_data = function(covid_uk, n_groups)
     output_str = ""
     # Define fixed parameter choices (those that do not need to be set by the API itself)
     config_params = list(
-        child_grandparentcontacts = FALSE,  # This is analysis specific so should be switched off
+        child_grandparent_contacts = FALSE, # This is analysis specific so should be switched off
                                             # to ensure flexibility
+        fast_multinomial = FALSE,
         deterministic = FALSE,              # Seed the age distributions (set to False in "vanilla" run UK.R)
-        mode = "Normal",                    # Normal analysis run as opposed "R0 Analysis" which checks
+        run_mode = "Normal",                # Normal analysis run as opposed "R0 Analysis" which checks
                                             # intervention effect on R0 (might be needed later as a separate run?)
         elderly_from_bin = 15,              # Bin which defines point at which individual is classed as elderly (set to '65-70')
-        dH = 1, dC = 1                      # Unused by model at the moment
+        dH = 1, dC = 1,                     # Unused by model at the moment
+        report_frequency = 4,               # Report every 4 steps
+        ngroups = 16                        # Assume binning of ages in same structure ('0-4',...,'65-70', '75+')
     )
 
     config_loc = file.path(covid_uk, "SCRC", "pipeline_data", "config.yaml")
