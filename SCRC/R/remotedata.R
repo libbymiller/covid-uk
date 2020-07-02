@@ -131,6 +131,20 @@ unpack_dis_params = function(config_loc)
     return(params)
 }
 
+unpack_trigger = function(config_loc)
+{
+    read_estimate = StandardAPI(config_loc)$read_estimate
+
+    return(
+        list(
+            trigger = ifelse(read_estimate("isnational", "isnational") == 0, "national", "local"),
+            duration = read_estimate("duration", "duration"),
+            icu_bed_usage = read_estimate("icu_bed_usage", "icu_bed_usage"),
+            intervention_shift = read_estimate("intervention_shift", "intervention_shift")
+        )
+    )
+}
+
 objects = function(config_loc)
 {
     read_table = StandardAPI(config_loc)$read_table
@@ -149,7 +163,8 @@ objects = function(config_loc)
             fIs = read_estimate("rel_symptomatic", "rel_symptomatic"),
             fIp = read_estimate("rel_preclinical", "rel_preclinical"),
             fIa = read_estimate("rel_subclinical", "rel_subclinical"),
-            time = unpack_times(config_loc)
+            time = unpack_times(config_loc),
+            lockdown_trigger = unpack_trigger(config_loc)
         )
     params = append(params, unpack_dis_params(config_loc))
     n_groups = params$contact_matrices$region %>% .$other %>% colnames %>% length

@@ -15,6 +15,7 @@ misc/
 *.log
 
 covidm/covidm/build/*
+covidm/build/*
 
 submission/
 

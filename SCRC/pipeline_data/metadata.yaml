@@ -218,3 +218,23 @@
   component : shape
   version : 1.0.0
   filename : delay_gamma/ip_to_death/data.toml
+-
+  data_product : isnational
+  component : isnational
+  version : 1.0.0
+  filename : lockdown_trigger/data.toml
+-
+  data_product : icu_bed_usage
+  component : icu_bed_usage
+  version : 1.0.0
+  filename : lockdown_trigger/data.toml
+-
+  data_product : intervention_shift
+  component : intervention_shift
+  version : 1.0.0
+  filename : lockdown_trigger/data.toml
+-
+  data_product : duration
+  component : duration
+  version : 1.0.0
+  filename : lockdown_trigger/data.toml
