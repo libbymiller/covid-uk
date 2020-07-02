@@ -115,6 +115,19 @@ unpack_dis_params = function(config_loc)
         )
     }
 
+    params[["delay_Ip_to_hosp"]] = list(mu=read_estimate(file.path("delay_gamma", "ip_to_hosp"), "mu"),
+                                        shape=read_estimate(file.path("delay_gamma", "ip_to_hosp"), "shape")
+                                        )
+    params[["delay_to_icu"]] = list(mu=read_estimate(file.path("delay_gamma", "to_icu"), "mu"),
+                                        shape=read_estimate(file.path("delay_gamma", "to_icu"), "shape")
+                                        )
+    params[["delay_to_non_icu"]] = list(mu=read_estimate(file.path("delay_gamma", "to_non_icu"), "mu"),
+                                        shape=read_estimate(file.path("delay_gamma", "to_non_icu"), "shape")
+                                        )
+    params[["delay_Ip_to_death"]] = list(mu=read_estimate(file.path("delay_gamma", "ip_to_death"), "mu"),
+                                        shape=read_estimate(file.path("delay_gamma", "ip_to_death"), "shape")
+                                        )
+
     return(params)
 }
 
@@ -155,7 +168,8 @@ remote_data = function(covid_uk)
         deterministic = FALSE,              # Seed the age distributions (set to False in "vanilla" run UK.R)
         mode = "Normal",                    # Normal analysis run as opposed "R0 Analysis" which checks
                                             # intervention effect on R0 (might be needed later as a separate run?)
-        elderly_from_bin = 15               # Bin which defines point at which individual is classed as elderly (set to '65-70')
+        elderly_from_bin = 15,              # Bin which defines point at which individual is classed as elderly (set to '65-70')
+        dH = 1, dC = 1                      # Unused by model at the moment
     )
 
     config_loc = file.path(covid_uk, "SCRC", "pipeline_data", "config.yaml")

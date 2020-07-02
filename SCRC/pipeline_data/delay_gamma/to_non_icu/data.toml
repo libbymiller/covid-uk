@@ -1,0 +1,7 @@
+[mu]
+type = "point-estimate"
+value = 8
+
+[shape]
+type = "point-estimate"
+value = 8

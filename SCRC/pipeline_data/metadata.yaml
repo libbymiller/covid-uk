@@ -178,3 +178,43 @@
   component : shape
   version : 1.0.0
   filename : delay_gamma/dIa/data.toml
+-
+  data_product : delay_gamma/to_icu
+  component : mu
+  version : 1.0.0
+  filename : delay_gamma/to_icu/data.toml
+-
+  data_product : delay_gamma/to_icu
+  component : shape
+  version : 1.0.0
+  filename : delay_gamma/to_icu/data.toml
+-
+  data_product : delay_gamma/to_non_icu
+  component : mu
+  version : 1.0.0
+  filename : delay_gamma/to_non_icu/data.toml
+-
+  data_product : delay_gamma/to_non_icu
+  component : shape
+  version : 1.0.0
+  filename : delay_gamma/to_non_icu/data.toml
+-
+  data_product : delay_gamma/ip_to_hosp
+  component : mu
+  version : 1.0.0
+  filename : delay_gamma/ip_to_hosp/data.toml
+-
+  data_product : delay_gamma/ip_to_hosp
+  component : shape
+  version : 1.0.0
+  filename : delay_gamma/ip_to_hosp/data.toml
+-
+  data_product : delay_gamma/ip_to_death
+  component : mu
+  version : 1.0.0
+  filename : delay_gamma/ip_to_death/data.toml
+-
+  data_product : delay_gamma/ip_to_death
+  component : shape
+  version : 1.0.0
+  filename : delay_gamma/ip_to_death/data.toml
