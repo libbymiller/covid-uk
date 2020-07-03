@@ -129,8 +129,13 @@ local_data = function(covid_dir, n_runs)
     # Setup region name for producing parameters to set R0 and
     # sample name for the parameters on which to run the model
     # in this example: 158 - "Glasgow City"
+
+    region_index  = 12
+
+    options_print_str = c(options_print_str, paste("\n\tRunning Region: ", cm_uk_locations(config_params, "UK", 3)[[region_index]]))
+
     config_params$region_name  = cm_uk_locations(config_params, "UK", 0)
-    config_params$sample_name  = cm_uk_locations(config_params, "UK", 3)[[158]]
+    config_params$sample_name  = cm_uk_locations(config_params, "UK", 3)[[region_index]]
 
     # Read the contact matrices
     contact_matrices = readRDS(file.path(covid_dir, local_data_files$contact_matrices_file))
