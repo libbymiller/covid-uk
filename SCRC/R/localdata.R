@@ -130,7 +130,7 @@ local_data = function(covid_dir, n_runs)
     # sample name for the parameters on which to run the model
     # in this example: 158 - "Glasgow City"
 
-    region_index  = 12
+    region_index  = 158
 
     options_print_str = c(options_print_str, paste("\n\tRunning Region: ", cm_uk_locations(config_params, "UK", 3)[[region_index]]))
 

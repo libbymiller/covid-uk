@@ -77,10 +77,14 @@ unpack_matrices = function(config_loc)
         contact_matrices[[set]] = list()
         for(name in matrix_names)
         {
-            contact_matrices[[set]][[name]] = read_array("contact_matrices", file.path("contact_matrices", set, name))
+            Array = read_array("contact_matrices", file.path("contact_matrices", set, name))
+            stop()
+            contact_matrices[[set]][[name]] = Array$data
+            print(Array$dimensions)
+            stop()
         }
     }
-    return(contact_matrices)
+    return(list(matrices=contact_matrices, group_names=Array$dimensions[[1]]))
 }
 
 unpack_times = function(config_loc)
