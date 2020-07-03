@@ -26,8 +26,6 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
   cat("[Determining Start Day for Seeding Times]: ")
   seed_start = sample(arguments$seed$seeding_start_range, length(parameters$pop), replace=TRUE)
   cat(paste("\n\tSeeding on: Day", seed_start, "\n"))
-  
-
 
   # 4. Do base model
   

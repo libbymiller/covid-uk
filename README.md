@@ -29,6 +29,14 @@ Finally, install nlopt: `brew install nlopt`
 
 The SCRC implementation of the LSHTM model is designed to read data and parameters from external sources as opposed to using the included/built in parameters included within the original. Ultimately the wrapper will allow the model to be run either locally using these existing files, or by connecting to an external API which will provide the values.
 
+### API Run Requirements
+
+In order to run the API call version of the model you will need to install the R wrapper for Python:
+```
+install.packages("reticulate")
+```
+and ensure your python environment has installed the libraries within `SCRC/Python/requirements.txt`. This will also install the data pipeline API.
+
 ### Model Run
 
 To run the model using this method use the new `run_model.R` script included. The script takes a single required argument which is the number of stochastic realisations. To run locally (currently the only option available):

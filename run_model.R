@@ -84,7 +84,7 @@ options_print_str = c(options_print_str, configuration$output_str)
 model_structures = build_params_from_args(configuration$params)
 
 parameters = model_structures$parameters
-options_print_str = c(options_print_str, "\tMode : ", configuration$params$run_mode)
+options_print_str = c(options_print_str, "\n\tMode : ", configuration$params$run_mode)
 
 observables = list(
   dynamics = data.table(),
