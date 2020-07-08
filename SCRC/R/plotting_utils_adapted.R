@@ -4,12 +4,11 @@
 # 
 
 
-# ---- Summary table ----------------------------------------------------------
 #' Summarise epidemic dynamics
 #' 
-#' @param d a `data.table` of epidemic dynamics over time
-#' @param table_spec a `data.table` specifying how each compartment in `d` should be summarised (see details)
-#' @return a summary `data.table` matching `table_spec`
+#' @param d `data.table` of epidemic dynamics over time
+#' @param table_spec `data.table` specifying how each compartment in `d` should be summarised (see details)
+#' @return summary `data.table` matching `table_spec`
 #' 
 #' @details
 #' `table_spec` should contain the following columns:
@@ -75,7 +74,8 @@ make_table = function(d, table_spec)
     stat_nice = str_replace(stat_nice, "beds_icu", "ICU beds");
     stat_nice = str_replace(stat_nice, "beds_nonicu", "non-ICU beds");
     stat_nice = str_replace(stat_nice, "trace_lockdown", "lockdown");
-    stat_nice = str_replace(stat_nice, "S", "susceptibles");
+    stat_nice = str_replace(stat_nice, "trace_intervention", "intervention");
+    stat_nice = str_replace(stat_nice, " s ", " susceptibles ");
     res[, statistic := stat_nice]
     results = rbind(results, res);
   }
@@ -88,7 +88,11 @@ make_table = function(d, table_spec)
 }
 
 
-# ---- Cases?? ----------------------------------------------------------------
+#' Plot infections and deaths by age group
+#' @param t `data.table` of totals by age group
+#' 
+#' @return a `ggplot`
+#' 
 plot_attackrate = function(t)
 {
   ts = t;
@@ -99,7 +103,7 @@ plot_attackrate = function(t)
   
   ts[, total := sum(total), by = .(scenario, run, compartment, age_group)];
   ts = ts[compartment %in% c("cases", "deaths"), median_ci(total), by = .(scenario, compartment, age_group)];
-  ts[, compartment := paste(str_to_sentence(as.character(compartment), "(thousands)"))];
+  ts[, compartment := paste(str_to_sentence(as.character(compartment)), "(thousands)")];
   ts[, scenario := factor(scenario, levels = unique(scenario))];
   
   ggplot(ts) +
@@ -112,71 +116,22 @@ plot_attackrate = function(t)
 }
 
 
-
-# ----- Figure XX?? ----------
-plot_example = function(d0, t, quant, ymd_start, ymd_truncate = "2050-01-01")
+#' Plot compartment sizes over time
+#' @param d0 `data.table` of epidemic dynamics over time
+#' @param t `data.table` of totals
+#' @param quant vector of quantiles for which traces should be plotted - the median (0.5) is always plotted
+#' @param ymd_start the date corresponding to `t = 1`, as a string in a format recognized by [lubridate::ymd] (e.g. "yyyy-mm-dd")
+#' @param ymd_truncate date at which to truncate the plot
+#' @param colours vector of colours passed to [ggplot2::scale_colour_manual]
+#' @param maxy y-axis limit - this will set the y-axis limit across all plots (use `NA` to allow y-axes to vary across panels)
+#' @param exclude scenarios to exclude from plotting
+#' 
+#' @return a `ggplot`
+#' 
+plot_epi = function(d0, t, quant, ymd_start, ymd_truncate = "2050-01-01", colours = NULL, maxy = NA, exclude = NULL)
 {
   # Copy data and process
-  d = duplicate(d0[region %in% c("United Kingdom", "All")])
-  d[, scenario := factor(scenario, levels = unique(scenario))];
-  d[, compartment := factor(compartment, levels = unique(compartment))];
-  
-  # Choose run
-  qrun = t[scenario == "Base", sum(total), by = run][, which(rank(V1) == round(1 + (.N - 1) * quant))];
-  d = d[run == qrun];
-  
-  if (d[, max(run) == 5]) {
-    mrun = 5;
-  }
-  
-  # Merge intervention traces
-  trace_school = d[compartment == "trace_school", .(t, trace_school = value - 1, scenario)]
-  d = merge(d, trace_school, by = c("t", "scenario"), all.x = T);
-  d[, trace_school := trace_school * max(value), by = .(compartment)];
-  
-  trace_intervention = d[compartment == "trace_intervention", .(t, trace_intervention = value - 1, scenario)]
-  d = merge(d, trace_intervention, by = c("t", "scenario"), all.x = T);
-  d[, trace_intervention := trace_intervention * max(value) * 0.75, by = .(compartment)];
-  
-  if (d[compartment == "trace_lockdown", .N > 0]) {
-    trace_lockdown = d[compartment == "trace_lockdown", .(t, trace_lockdown = value - 1, scenario)]
-    d = merge(d, trace_lockdown, by = c("t", "scenario"), all.x = T);
-    d[, trace_lockdown := trace_lockdown * max(value) * 0.5, by = .(compartment)];
-  } else {
-    d[, trace_lockdown := 0];
-  }
-  
-  d = d[compartment %in% c("cases", "deaths", "beds_icu", "beds_nonicu")];
-  
-  # Give nice names
-  d[compartment == "cases", compartment := "Cases"];
-  d[compartment == "deaths", compartment := "Deaths"];
-  d[compartment == "beds_icu", compartment := "ICU beds\nrequired"];
-  d[compartment == "beds_nonicu", compartment := "Non-ICU beds\nrequired"];
-  d[, compartment := factor(compartment, levels = unique(compartment))];
-  
-  d[, date := ymd(ymd_start) + t];
-  
-  # Plot
-  ggplot(d[region == "United Kingdom" & date <= ymd(ymd_truncate)]) +
-    geom_line(aes(x = date, y = value, colour = scenario), size = 0.25) +
-    geom_ribbon(aes(x = date, ymin = 0, ymax = trace_school), fill = "#0000ff", alpha = 0.1) +
-    geom_ribbon(aes(x = date, ymin = 0, ymax = trace_intervention), fill = "#ff0000", alpha = 0.1) +
-    geom_ribbon(aes(x = date, ymin = 0, ymax = trace_lockdown), fill = "#000000", alpha = 0.2) +
-    facet_grid(compartment ~ scenario, switch = "y", scales = "free") +
-    scale_y_continuous(labels = axis_friendly, limits = c(0, NA)) +
-    scale_x_date(date_breaks = "1 month", labels = axis_date) +
-    theme(strip.background = element_blank(), strip.placement = "outside", 
-          axis.text.x = element_text(size = 6, angle = 45, hjust = 1), legend.position = "none") +
-    labs(x = NULL, y = NULL);
-}
-
-
-# ---- Summarise compartments over time ---------------------------------------
-plot_epi = function(d0, t, quant, ymd_start, ymd_truncate = "2050-01-01", colours = NULL, maxy = NA, which_region = "United Kingdom", exclude = NULL)
-{
-  # Copy data and process
-  d = duplicate(d0[region %in% c(which_region, "All")])
+  d = duplicate(d0)
   d[, scenario := factor(scenario, levels = unique(scenario))];
   d[, compartment := factor(compartment, levels = unique(compartment))];
   
@@ -215,18 +170,21 @@ plot_epi = function(d0, t, quant, ymd_start, ymd_truncate = "2050-01-01", colour
   d[, date := ymd(ymd_start) + t];
   
   # Plot
-  plot = ggplot(d[region == which_region & date <= ymd(ymd_truncate) & !(scenario %in% exclude)]) +
+  plot = ggplot(d[date <= ymd(ymd_truncate) & !(scenario %in% exclude)]) +
     geom_line(aes(x = date, y = value, colour = scenario, group = run), size = 0.25, alpha = 0.35) +
-    geom_ribbon(aes(x = date, ymin = 0, ymax = trace_school, group = run), fill = "#0000ff", alpha = 0.1/length(quant)) +
-    geom_ribbon(aes(x = date, ymin = 0, ymax = trace_intervention, group = run), fill = "#ff0000", alpha = 0.2/length(quant)) +
-    geom_ribbon(aes(x = date, ymin = 0, ymax = trace_lockdown, group = run), fill = "#000000", alpha = 0.15/length(quant)) +
-    geom_line(data = d[region == which_region & date <= ymd(ymd_truncate) & run == mrun & !(scenario %in% exclude)], 
+    geom_ribbon(aes(x = date, ymin = 0, ymax = trace_school, group = run, fill = "School holidays"), alpha = 0.5/length(quant)) +
+    geom_ribbon(aes(x = date, ymin = 0, ymax = trace_intervention, group = run, fill = "Intervention"), alpha = 0.5/length(quant)) +
+    geom_ribbon(aes(x = date, ymin = 0, ymax = trace_lockdown, group = run, fill = "Lockdown"), alpha = 0.5/length(quant)) +
+    geom_line(data = d[date <= ymd(ymd_truncate) & run == mrun & !(scenario %in% exclude)], 
               aes(x = date, y = value, colour = scenario), size = 0.6) +
     facet_grid(compartment ~ scenario, switch = "y", scales = "free") +
     scale_y_continuous(labels = axis_friendly, limits = c(0, NA)) +
     scale_x_date(date_breaks = "1 month", labels = axis_date) +
+    scale_fill_manual(name = NULL, 
+                      values = c("School holidays" = "#0000ff", "Intervention" = "#ff0000", "Lockdown" = "#000000")) +
+    guides(colour = FALSE) +
     theme(strip.background = element_blank(), strip.placement = "outside", 
-          axis.text.x = element_text(size = 5, angle = 45, hjust = 1), legend.position = "none") +
+          axis.text.x = element_text(size = 5, angle = 45, hjust = 1)) +
     labs(x = NULL, y = NULL);
   
   if (!is.null(colours)) {

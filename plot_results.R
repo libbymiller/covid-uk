@@ -52,7 +52,6 @@ dynamics <- reflow_dynamics(qread(paste0(data_path, "-1-dynamics.qs")))
 totals <- reflow_totals(qread(paste0(data_path, "-1-totals.qs")))
 
 
-
 # Make plots
 # - summary stats (see docs of make_table() for an explanation of table_spec and how to change the statistics calculated)
 table_spec = fread(
@@ -72,5 +71,17 @@ table_spec = fread(
 tb1 = make_table(dynamics, table_spec)
 pl1 = plot_table(tb1)
 
+
+# - cases & deaths by age group
+pl2 = plot_attackrate(totals)
+
+
+# - epidemiological curves (compartment sizes over time)
+pl3 = plot_epi(dynamics, totals, (0:10)/10, "2020-01-29", "2020-10-15")
+
+
+# Combine plots and save
+f = plot_grid(pl1, pl2, pl3, ncol = 1, rel_heights = c(6, 6, 10), labels = c("a", "b", "c"), label_size = 9);
+
+ggsave(paste0(data_path, "_plots.pdf"), f, width = 20, height = 22, units = "cm", useDingbats = F);
 save_table(tb1, paste0(data_path, "_summary_stats.csv"));
-ggsave(paste0(data_path, "_summary_stats_plot.pdf"), pl1)
