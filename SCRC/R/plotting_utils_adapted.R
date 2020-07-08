@@ -4,12 +4,26 @@
 # 
 
 
-
 # ---- Summary table ----------------------------------------------------------
-make_table = function(d, table_spec = table_spec)
+#' Summarise epidemic dynamics
+#' 
+#' @param d a `data.table` of epidemic dynamics over time
+#' @param table_spec a `data.table` specifying how each compartment in `d` should be summarised (see details)
+#' @return a summary `data.table` matching `table_spec`
+#' 
+#' @details
+#' `table_spec` should contain the following columns:
+#' - `compartment` - lists compartments in `d` to be summarised
+#' - `stat` - the summary statistic required for this compartment. Valid options are "total", "peak", 
+#'            "peak_time", "lockdown_duration" and "total_end"
+#' - `time` - the time resolution at which the summary should be calculated. Valid options are "t" (days)
+#'            or "week" (7 day increments, or weekly if t = 1 is assumed to be the start of a week)
+#' 
+make_table = function(d, table_spec)
 {
   d[, week := t %/% 7]
   results = NULL
+  
   for (spec in seq_len(nrow(table_spec)))
   {
     comp = table_spec[spec, compartment];
@@ -17,51 +31,46 @@ make_table = function(d, table_spec = table_spec)
     time = table_spec[spec, time];
     
     if (stat == "total") {
-      res = d[region == "United Kingdom" & compartment == comp, .(x = sum(value)), by = .(scenario, run, region)];
+      res = d[compartment == comp, .(x = sum(value)), by = .(scenario, run, region)];
       res[, statistic := paste(stat, comp)];
       res = res[, median_ci(x), by = .(scenario, region, statistic)];
       stat_nice = paste("Total", comp);
+      
     } else if (stat == "peak") {
-      # res = d[region == "United Kingdom" & compartment == comp, .(x = sum(value)), by = c("scenario", "run", "t", "region")];
-      # if (time == "week") {
-      #     res = merge(res, res[, .(peak_day = t[which.max(x)]), by = .(scenario, run, region)]);
-      #     res[, in_peak_week := abs(t - peak_day) <= 3];
-      #     res = res[in_peak_week == T, .(x = sum(x)), by = .(scenario, run, region)];
-      # } else {
-      #     res = res[, .(x = max(x)), by = .(scenario, run, region)];
-      # }
-      # res[, statistic := paste(stat, comp)];
-      # res = res[, median_ci(x), by = .(scenario, region, statistic)];
-      # stat_nice = ifelse(time == "t", paste("Peak", comp, "required"),
-      #     paste(comp, "in peak week"));
-      res = d[region == "United Kingdom" & compartment == comp, .(x = sum(value)), by = c("scenario", "run", time, "region")];
+      res = d[compartment == comp, .(x = sum(value)), by = c("scenario", "run", time, "region")];
       res = res[, .(x = max(x)), by = .(scenario, run, region)];
       res[, statistic := paste(stat, comp)];
       res = res[, median_ci(x), by = .(scenario, region, statistic)];
       stat_nice = ifelse(time == "t", paste("Peak", comp, "required"),
                          paste(comp, "in peak week"));
+      
     } else if (stat == "peak_time") {
-      res = d[region == "United Kingdom" & compartment == comp, .(x = sum(value)), by = c("scenario", "run", time, "region")];
+      res = d[compartment == comp, .(x = sum(value)), by = c("scenario", "run", time, "region")];
       res = res[, .(x = get(time)[which.max(x)]), by = .(scenario, run, region)];
       res[, statistic := paste(stat, comp)];
       res = res[, median_ci(x), by = .(scenario, region, statistic)];
       stat_nice = paste("Time to peak", comp, ifelse(time == "t", "(days)", "(weeks)"));
+      
     } else if (stat == "lockdown_duration") {
       if (d[compartment == comp, .N] == 0) { 
+        warning("requested compartment '", comp, "' not present - skipping computation")
         next;
       }
-      res = d[region == "All" & compartment == comp, .(x = mean(value - 1)), by = .(scenario, run, region)];
+      res = d[compartment == comp, .(x = mean(value - 1)), by = .(scenario, run, region)];
       res[, statistic := paste(stat, comp)];
       res = res[, median_ci(x), by = .(scenario, region, statistic)];
       stat_nice = paste("Proportion of time spent in", comp);
+      
     } else if (stat == "total_end") {
-      res = d[region == "United Kingdom" & compartment == comp & t == max(t), .(x = sum(value)), by = .(scenario, run, region)];
+      res = d[compartment == comp & t == max(t), .(x = sum(value)), by = .(scenario, run, region)];
       res[, statistic := paste(stat, comp)];
       res = res[, median_ci(x), by = .(scenario, region, statistic)];
-      stat_nice = paste("Number of ", comp, " at simulation end");
+      stat_nice = paste("Number of", comp, "at simulation end");
+      
     } else {
       stop("Unrecognised stat.");
     }
+    
     stat_nice = str_to_sentence(stat_nice);
     stat_nice = str_replace(stat_nice, "beds_icu", "ICU beds");
     stat_nice = str_replace(stat_nice, "beds_nonicu", "non-ICU beds");
