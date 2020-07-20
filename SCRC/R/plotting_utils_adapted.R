@@ -30,24 +30,24 @@ make_table = function(d, table_spec)
     time = table_spec[spec, time];
     
     if (stat == "total") {
-      res = d[compartment == comp, .(x = sum(value)), by = .(scenario, run, region)];
+      res = d[compartment == comp, .(x = sum(value)), by = .(scenario, run)];
       res[, statistic := paste(stat, comp)];
-      res = res[, median_ci(x), by = .(scenario, region, statistic)];
+      res = res[, median_ci(x), by = .(scenario, statistic)];
       stat_nice = paste("Total", comp);
       
     } else if (stat == "peak") {
-      res = d[compartment == comp, .(x = sum(value)), by = c("scenario", "run", time, "region")];
-      res = res[, .(x = max(x)), by = .(scenario, run, region)];
+      res = d[compartment == comp, .(x = sum(value)), by = c("scenario", "run", time)];
+      res = res[, .(x = max(x)), by = .(scenario, run)];
       res[, statistic := paste(stat, comp)];
-      res = res[, median_ci(x), by = .(scenario, region, statistic)];
+      res = res[, median_ci(x), by = .(scenario, statistic)];
       stat_nice = ifelse(time == "t", paste("Peak", comp, "required"),
                          paste(comp, "in peak week"));
       
     } else if (stat == "peak_time") {
-      res = d[compartment == comp, .(x = sum(value)), by = c("scenario", "run", time, "region")];
-      res = res[, .(x = get(time)[which.max(x)]), by = .(scenario, run, region)];
+      res = d[compartment == comp, .(x = sum(value)), by = c("scenario", "run", time)];
+      res = res[, .(x = get(time)[which.max(x)]), by = .(scenario, run)];
       res[, statistic := paste(stat, comp)];
-      res = res[, median_ci(x), by = .(scenario, region, statistic)];
+      res = res[, median_ci(x), by = .(scenario, statistic)];
       stat_nice = paste("Time to peak", comp, ifelse(time == "t", "(days)", "(weeks)"));
       
     } else if (stat == "lockdown_duration") {
@@ -55,15 +55,15 @@ make_table = function(d, table_spec)
         warning("requested compartment '", comp, "' not present - skipping computation")
         next;
       }
-      res = d[compartment == comp, .(x = mean(value - 1)), by = .(scenario, run, region)];
+      res = d[compartment == comp, .(x = mean(value - 1)), by = .(scenario, run)];
       res[, statistic := paste(stat, comp)];
-      res = res[, median_ci(x), by = .(scenario, region, statistic)];
+      res = res[, median_ci(x), by = .(scenario, statistic)];
       stat_nice = paste("Proportion of time spent in", comp);
       
     } else if (stat == "total_end") {
-      res = d[compartment == comp & t == max(t), .(x = sum(value)), by = .(scenario, run, region)];
+      res = d[compartment == comp & t == max(t), .(x = sum(value)), by = .(scenario, run)];
       res[, statistic := paste(stat, comp)];
-      res = res[, median_ci(x), by = .(scenario, region, statistic)];
+      res = res[, median_ci(x), by = .(scenario, statistic)];
       stat_nice = paste("Number of", comp, "at simulation end");
       
     } else {

@@ -48,8 +48,8 @@ theme_set(theme_cowplot(font_size = 7, line_size = 0.25))
 # load data
 data_path <- file.path(covid_uk_path, "output", run_id)
 
-dynamics <- reflow_dynamics(qread(paste0(data_path, "-1-dynamics.qs")))
-totals <- reflow_totals(qread(paste0(data_path, "-1-totals.qs")))
+dynamics <- reflow_dynamics(qread(paste0(data_path, "-dynamics.qs")))
+totals <- reflow_totals(qread(paste0(data_path, "-totals.qs")))
 
 
 # Make plots
