@@ -1,5 +1,5 @@
 [r0_distribution]
 type = "distribution"
-distribution = "normal"
+distribution = "norm"
 loc = 2.675739
 scale = 0.5719293

@@ -1,7 +1,11 @@
 library(reticulate)
 use_python("/home/kristian/venvs/lshtm/bin/python")
 
-StandardAPI <- import("data_pipeline_api.standard_api")$StandardAPI
+api_py <- import("data_pipeline_api.standard_api")$StandardAPI
+StandardAPI <- function(config_loc)
+{
+    return(api_py(config_loc, "test_uri", "test_git_sha"))
+}
 
 unpack_intervention = function(config_loc, ngroups)
 {
@@ -78,13 +82,10 @@ unpack_matrices = function(config_loc)
         for(name in matrix_names)
         {
             Array = read_array("contact_matrices", file.path("contact_matrices", set, name))
-            stop()
             contact_matrices[[set]][[name]] = Array$data
-            print(Array$dimensions)
-            stop()
         }
     }
-    return(list(matrices=contact_matrices, group_names=Array$dimensions[[1]]))
+    return(list(matrices=contact_matrices, group_names=Array$dimensions[[1]]$names))
 }
 
 unpack_times = function(config_loc)
@@ -153,6 +154,7 @@ create_R0s = function(config_loc, seed, n)
     np_rand$seed(seed)
 
     read_distribution = StandardAPI(config_loc)$read_distribution
+    print(read_distribution)
 
     norm = read_distribution("r0_distribution", "r0_distribution")
 
