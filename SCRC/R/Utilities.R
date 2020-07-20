@@ -44,8 +44,12 @@ add_dynamics = function(run, dynamics, iv)
     names(csvlines) = c("scenario", "run", "t", "compartment", "value");
     csvlines = unique(csvlines);
   }
+  
   # time courses
-  return (rbind(dynamics, interv, csvlines
+  return (rbind(dynamics, 
+                run$dynamics[, .(value = sum(value)), by = .(scenario, run, t, compartment)], # Sum across all age groups
+                interv, 
+                csvlines
   ))
 }
 
