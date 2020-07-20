@@ -3,7 +3,7 @@
 
 Stochastic age-structured model of SARS-nCoV-2 transmission for UK scenario projections.
 
-# Removed Features
+## Removed Features
 
 As this is important I have put this at the top of the README, the following features have been removed possibly pending future review:
 
@@ -45,6 +45,14 @@ To run the model using this method use the new `run_model.R` script included. Th
 Rscript run_model.R <n-realisations> --local
 ```
 this will produce outputs in the `output` folder. The model will read parameters locally from the `configuration/parameters.ini` file and from the sources contained within the `data` folder.
+
+### Plotting
+
+To produce plots and numerical data use the included `plot_results.R` script stating the prefix of the run, if you are using the local version defaults this will be:
+
+`Rscript plot_results.R run-Other-<n-realisations>`
+
+the exact format should be determinable from the `.qs` output files in the `outputs` directory. This script will create a PDF and CSV file with the results.
 
 ### Testing
 
