@@ -86,11 +86,9 @@ cm_iv_apply = function(parameters, iv, populations = -1)
                 names(change)[length(change)] = names(iv)[iv_col];
             }
         }
-        
         # Add to schedule
         schedule[[length(schedule) + 1]] = change;
     }
-
     # Apply to each population requested
     if (populations[1] < 0) {
         populations = seq_along(parameters$pop);

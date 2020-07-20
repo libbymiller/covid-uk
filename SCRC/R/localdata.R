@@ -102,11 +102,6 @@ local_data = function(covid_dir, n_runs)
                                         as.numeric(config_params$lockdown_rates$child_elderly)
     )
 
-    # Get number of bins from dividing the minimum highest bin (i.e. labelled "X+") across all UK regions
-    # and dividing by 5 years
-    ngroups_from_pop_dat = config_params$population %>% .[.$name %like% "UK", ] %>% .[.$age %like% "\\+", ]
-    ngroups_from_pop_dat = min(as.numeric(sub("\\+", "", ngroups_from_pop_dat$age)))/5
-
     # Get seeding start day from provided possible range
     # using list keeps possibility of seeding more than one population
 
@@ -143,8 +138,7 @@ local_data = function(covid_dir, n_runs)
     config_params$contact_matrices$sample = contact_matrices[[config_params$sample_name]]
   
     # Determine the minimum number of age groups present in this data
-    n_groups_cm = config_params$contact_matrices$region %>% .$other %>% colnames %>% length
-    config_params$ngroups = min(ngroups_from_pop_dat, n_groups_cm)
+    config_params$ngroups = config_params$contact_matrices$region %>% .$other %>% colnames %>% length
 
     # Get Population sizes for region and sample
     demographics_regional = cm_get_demographics(config_params$region_name, config_params$ngroups);

@@ -176,7 +176,7 @@ objects = function(config_loc)
             contact_matrices = matrix_data$matrices,
             group_names = matrix_data$group_names,
             lockdown_rates = read_table("lockdown_rates", "lockdown_rates"),
-            school_holiday_rates = read_table("school_holiday_rates", "school_holiday_rates"),
+            school_holiday_rates = read_table("school_holiday_rates", "school_holiday_rates")[,1],
             size = unpack_populations(config_loc),
             school_terms = unpack_terms(config_loc),
             seed = unpack_seeding(config_loc),
@@ -228,7 +228,8 @@ remote_data = function(covid_uk, n_runs)
     "30-34", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64",
     "65-69", "70-74", "75+")
 
-    output_str = ""
+    options_print_str = ""
+
     # Define fixed parameter choices (those that do not need to be set by the API itself)
     config_params = list(
         child_grandparent_contacts = FALSE, # This is analysis specific so should be switched off
