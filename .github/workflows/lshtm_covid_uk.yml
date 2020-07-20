@@ -26,6 +26,7 @@ jobs:
               install.packages("data.table")
               install.packages("ggplot2")
               install.packages("devtools")
+              library(devtools)
               install_version("stringfish", "0.12.2")
               install.packages("qs")
               install.packages("lubridate")
