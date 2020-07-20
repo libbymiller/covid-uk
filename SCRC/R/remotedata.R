@@ -154,7 +154,6 @@ create_R0s = function(config_loc, seed, n)
     np_rand$seed(seed)
 
     read_distribution = StandardAPI(config_loc)$read_distribution
-    print(read_distribution)
 
     norm = read_distribution("r0_distribution", "r0_distribution")
 
@@ -169,10 +168,13 @@ objects = function(config_loc)
 
     health_burden_probabilities = read_table("health_burden_processes", "health_burden_processes")
 
+    matrix_data = unpack_matrices(config_loc)
+
     params = list(
             age_var_symptom_rates = data.table(read_table("age_var_symptomatic_rates", "age_varying_symptomatic_rates")),
             health_burden_probabilities = data.table(read_table("health_burden_processes", "health_burden_processes")),
-            contact_matrices = unpack_matrices(config_loc),
+            contact_matrices = matrix_data$matrices,
+            group_names = matrix_data$group_names,
             lockdown_rates = read_table("lockdown_rates", "lockdown_rates"),
             school_holiday_rates = read_table("school_holiday_rates", "school_holiday_rates"),
             size = unpack_populations(config_loc),
