@@ -44,6 +44,7 @@ jobs:
               install.packages("lubridate")
               install.packages("testit")
               install.packages("RcppGSL")
+              install.packages("reticulate")
         shell: sudo Rscript {0}
       - name: Run Model Locally in Dump Mode
         run: Rscript run_model.R 1 --local --dump
