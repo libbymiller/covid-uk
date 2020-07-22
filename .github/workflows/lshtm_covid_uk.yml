@@ -58,6 +58,7 @@ jobs:
               python3.6 -m pip install --user virtualenv
               python3.6 -m virtualenv wabash
               source wabash/bin/activate
+              pip3 install SCRC/Python/requirements.txt
               pip3 install git+git://github.com/ScottishCovidResponse/data_pipeline_api.git#egg=data_pipeline_api
       - name: Test Remote Vanilla Model Run (Region = Glasgow City, 10 realisations)
         run: Rscript run_model.R 10
