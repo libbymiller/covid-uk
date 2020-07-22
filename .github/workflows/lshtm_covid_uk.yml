@@ -54,7 +54,7 @@ jobs:
         run: Rscript run_model.R 10 --local
       - name: Install pip and SCRC Data Pipeline
         run : |
-              sudo apt-get install install python3.6 python3-pip
+              sudo apt-get install python3.6 python3-pip
               python3.6 -m pip install --user virtualenv
               python3.6 -m virtualenv wabash
               source wabash/bin/activate
