@@ -8,7 +8,7 @@ run_simulation = function(r, R0, arguments, model_structs, dynamics, totals, dum
   parameters = model_structs$parameters
   core_param = model_structs$unmodified
 
-  cat(paste0("[Values]:\n\tR0 : ", R0, "\n"));
+  cat(paste0("\n[Values]:\n\tR0 : ", R0, "\n"));
 
   # 1. Pick age-varying symptomatic rate
   covid_scenario = arguments$age_var_symptom_rates
