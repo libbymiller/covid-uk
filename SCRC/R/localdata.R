@@ -226,8 +226,19 @@ local_data = function(covid_dir, n_runs)
     }
 
     # Set seed and generate R0 values for each run
-    set.seed(as.numeric(config_params$seed$value))
-    options_print_str = c(options_print_str, "\n\tSeed : ", as.numeric(config_params$seed$value))
+    seed_val = as.numeric(config_params$seed$value)
+
+    if(seed_val > 0)
+    {
+        set.seed(seed_val)
+        options_print_str = c(options_print_str, "\n\tSeed : ", seed_val)
+    }
+    else
+    {
+        set.seed(NULL)
+    }
+
+    options_print_str = c(options_print_str, "\n\tSeed : Temporal")
 
     config_params$R0s = rnorm(n_runs, mean = as.numeric(config_params$r0_distribution$mean),
                              sd = as.numeric(config_params$r0_distribution$sd))
