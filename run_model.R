@@ -61,6 +61,7 @@ source(file.path(scrc, "R", "Utilities.R"))
 source(try_loc(file.path(scrc, "R", "Observers.R")))
 source(try_loc(file.path(scrc, "R", "BuildStructures.R")))
 source(try_loc(file.path(scrc, "R", "Simulate.R")))
+source(try_loc(file.path(scrc, "R", "pushdata.R")))
 
 if(rebuild)
 {
@@ -120,4 +121,10 @@ for (r in 1:n_runs)
 
 cm_save(observables$totals, file.path(covid_uk_path, "output", paste0("run-", sub(" ", "-", configuration$params$run_mode),"-", r, "-totals.qs")));
 cm_save(observables$dynamics, file.path(covid_uk_path, "output", paste0("run-", sub(" ", "-", configuration$params$run_mode), "-", r, "-dynamics.qs")));
+
+if(!local)
+{
+  push_data(file.path(covid_uk_path, "output", paste0("run-", sub(" ", "-", configuration$params$run_mode), "-", r)))
+}
+
 print(Sys.time())
