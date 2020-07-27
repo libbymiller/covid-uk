@@ -46,6 +46,8 @@ Rscript run_model.R <n-realisations> --local
 ```
 this will produce outputs in the `output` folder. The model will read parameters locally from the `configuration/parameters.ini` file and from the sources contained within the `data` folder.
 
+The seeding parameter `seed/value` can be set to a value or left at `-1` to indicate time based seeding.
+
 ### Plotting
 
 To produce plots and numerical data use the included `plot_results.R` script stating the prefix of the run, if you are using the local version defaults this will be:
