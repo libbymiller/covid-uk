@@ -2,6 +2,8 @@ library(reticulate)
 use_python("/home/kristian/venvs/lshtm/bin/python")
 
 api_py <- import("data_pipeline_api.standard_api")$StandardAPI
+py_time <- import("time")$time
+
 StandardAPI <- function(config_loc)
 {
     return(api_py(config_loc, "test_uri", "test_git_sha"))
@@ -151,7 +153,8 @@ unpack_trigger = function(config_loc)
 create_R0s = function(config_loc, seed, n)
 {
     np_rand <- import("numpy")$random
-    np_rand$seed(seed)
+
+    np_rand$seed(ifelse(seed > 0, seed, as.integer(py_time())))
 
     read_distribution = StandardAPI(config_loc)$read_distribution
 

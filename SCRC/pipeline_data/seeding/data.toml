@@ -1,6 +1,6 @@
 [seed]
 type = "point-estimate"
-value = 1234567
+value = -1
 
 [min_age]
 type = "point-estimate"
