@@ -33,5 +33,8 @@ push_data <- function(data_path)
     dynamics <- reflow_dynamics(qread(paste0(data_path, "-dynamics.qs")))
     totals <- reflow_totals(qread(paste0(data_path, "-totals.qs")))
     tb1 = make_table(dynamics, table_spec)
-    
+    print(tb1)
+    write.csv(x=tb1, file="demo.csv")
+    stop()
+    StandardAPI$write_table("dynamics", "dynamics-table", tb1)
 }
