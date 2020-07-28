@@ -111,8 +111,6 @@ arrange_by_age_and_categ <- function(t)
 plot_attackrate = function(t)
 {
   ts = arrange_by_age_and_categ(t)
-  write.csv(ts, file="demo.csv")
-  stop()
   
   ggplot(ts) +
     geom_col(aes(x = age_group, y = median / 1000, fill = scenario)) +

@@ -239,7 +239,7 @@ remote_data = function(covid_uk, n_runs)
                                             # to ensure flexibility
         fast_multinomial = FALSE,
         deterministic = FALSE,              # Seed the age distributions (set to False in "vanilla" run UK.R)
-        run_mode = "Normal",                # Normal analysis run as opposed "R0 Analysis" which checks
+        run_mode = "LSHTMModel",            # Normal analysis run as opposed "R0 Analysis" which checks
                                             # intervention effect on R0 (might be needed later as a separate run?)
         elderly_from_bin = 15,              # Bin which defines point at which individual is classed as elderly (set to '65-70')
         dH = 1, dC = 1,                     # Unused by model at the moment
