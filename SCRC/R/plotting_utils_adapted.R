@@ -87,13 +87,7 @@ make_table = function(d, table_spec)
   results
 }
 
-
-#' Plot infections and deaths by age group
-#' @param t `data.table` of totals by age group
-#' 
-#' @return a `ggplot`
-#' 
-plot_attackrate = function(t)
+arrange_by_age_and_categ <- function(t)
 {
   ts = t;
   ts[, age_lower := (as.numeric(str_replace(group, "([0-9]+)(-|\\+).*", "\\1")) %/% 10) * 10];
@@ -105,6 +99,20 @@ plot_attackrate = function(t)
   ts = ts[compartment %in% c("cases", "deaths"), median_ci(total), by = .(scenario, compartment, age_group)];
   ts[, compartment := paste(str_to_sentence(as.character(compartment)), "(thousands)")];
   ts[, scenario := factor(scenario, levels = unique(scenario))];
+
+  return(ts)
+}
+
+#' Plot infections and deaths by age group
+#' @param t `data.table` of totals by age group
+#' 
+#' @return a `ggplot`
+#' 
+plot_attackrate = function(t)
+{
+  ts = arrange_by_age_and_categ(t)
+  write.csv(ts, file="demo.csv")
+  stop()
   
   ggplot(ts) +
     geom_col(aes(x = age_group, y = median / 1000, fill = scenario)) +
