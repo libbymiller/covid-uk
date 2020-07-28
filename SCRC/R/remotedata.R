@@ -6,7 +6,7 @@ py_time <- import("time")$time
 
 StandardAPI <- function(config_loc)
 {
-    return(api_py(config_loc, "test_uri", "test_git_sha"))
+    return(api_py$from_config(config_loc, "test_uri", "test_git_sha"))
 }
 
 unpack_intervention = function(config_loc, ngroups)
