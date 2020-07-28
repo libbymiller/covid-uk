@@ -124,7 +124,8 @@ cm_save(observables$dynamics, file.path(covid_uk_path, "output", paste0("run-", 
 
 if(!local)
 {
-  push_data(file.path(covid_uk_path, "output", paste0("run-", sub(" ", "-", configuration$params$run_mode), "-", r)))
+  push_data(file.path(covid_uk_path, "output", 
+                      paste0("run-", sub(" ", "-", configuration$params$run_mode), "-", r)))
 }
 
 print(Sys.time())

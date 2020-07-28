@@ -28,6 +28,20 @@ table_spec = fread(
   S, total_end, t"
 )
 
+prepare_dynamics <- function(t_dynamics, format=table_spec)
+{
+  table <- make_table(t_dynamics, format)
+  base  <- table %>% .[scenario == "Base"] %>% select(statistic, lower, median, upper)
+  lockdown <- table %>% .[scenario == "Lockdown"] %>% select(statistic, lower, median, upper)
+
+  return(
+    list(
+      base = base,
+      lockdown = lockdown
+    )
+  )
+}
+
 prepare_totals <- function(t_total)
 {
   cases_deaths <- arrange_by_age_and_categ(t_total)
@@ -46,22 +60,43 @@ prepare_totals <- function(t_total)
   )
 }
 
-push_data <- function(data_path)
+push_data <- function(data_path, make_csv=FALSE)
 {
-    file_names <- list(totals = "cases_deaths.h5")
+    file_names <- list(totals = "cases_deaths.h5", dynamics="dynamics.h5")
     # Reformat data before loading as data tables
     dynamics <- reflow_dynamics(qread(paste0(data_path, "-dynamics.qs")))
     totals <- reflow_totals(qread(paste0(data_path, "-totals.qs")))
     
     total_tables <- prepare_totals(totals)
+    dynamics_tables <- prepare_dynamics(dynamics)
 
     for(category in names(total_tables))
     {
       for(table in names(total_tables[[category]]))
       {
-        create_table(filename = file.path("output", file_names$totals),
+        create_table(filename = file_names$totals,
+                     path = "output",
                      component = paste0(category,"_",table),
                      df = total_tables[[category]][[table]])
+        if(make_csv)
+        {
+          write.csv(total_tables[[category]][[table]],
+                    file=file.path("output", paste0(category,"_", table, ".csv")),
+                    row.names=FALSE)
+        }
+      }
+    }
+    for(category in names(dynamics_tables))
+    {
+      create_table(filename = file_names$dynamics,
+                  path = "output",
+                  component = paste0(category),
+                  df = dynamics_tables[[category]])
+      if(make_csv)
+      {
+        write.csv(dynamics_tables[[category]],
+                  file=file.path("output", paste0(category,"_dynamics.csv")),
+                  row.names=FALSE)
       }
     }
 }
