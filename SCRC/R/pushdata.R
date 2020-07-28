@@ -1,4 +1,5 @@
 library(reticulate)
+library(SCRCdataAPI)
 use_python("/home/kristian/venvs/lshtm/bin/python")
 
 api_py <- import("data_pipeline_api.standard_api")$StandardAPI
@@ -47,6 +48,7 @@ prepare_totals <- function(t_total)
 
 push_data <- function(data_path)
 {
+    file_names <- list(totals = "cases_deaths.h5")
     # Reformat data before loading as data tables
     dynamics <- reflow_dynamics(qread(paste0(data_path, "-dynamics.qs")))
     totals <- reflow_totals(qread(paste0(data_path, "-totals.qs")))
@@ -57,9 +59,9 @@ push_data <- function(data_path)
     {
       for(table in names(total_tables[[category]]))
       {
-        write.csv(total_tables[[category]][[table]], 
-                  file=file.path(paste0(data_path, "_", category, "_", table, ".csv")),
-                  row.names=FALSE)
+        create_table(filename = file.path("output", file_names$totals),
+                     component = paste0(category,"_",table),
+                     df = total_tables[[category]][[table]])
       }
     }
 }
