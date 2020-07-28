@@ -83,7 +83,8 @@ for(col in names(base_params2))
 for(col in names(base_params2$pop[[1]]))
 {
     # Only check variables that should have changed
-    if(col %in% c("contact_mult", "contact_lowerto", "observer", "seed_times", "name"))
+    # u and y are altered depending on random number generation so are included in exceptions
+    if(col %in% c("contact_mult", "contact_lowerto", "observer", "seed_times", "name", "u", "y"))
     {
         next;
     }
