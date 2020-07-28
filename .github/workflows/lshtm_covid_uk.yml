@@ -56,6 +56,5 @@ jobs:
         run : |
               sudo apt-get install python3.6 python3-pip
               sudo pip install -r SCRC/Python/requirements.txt
-              sudo pip install git+git://github.com/ScottishCovidResponse/data_pipeline_api.git#egg=data_pipeline_api
       - name: Test Remote Vanilla Model Run (Region = Glasgow City, 10 realisations)
         run: Rscript run_model.R 10
