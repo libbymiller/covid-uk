@@ -4,19 +4,32 @@ on: [ push ]
 
 jobs:
   build:
-    name : Ubuntu Linux R
-    runs-on: ubuntu-latest
+    name : ${{ matrix.os }} Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+          fail-fast: false
+          matrix:
+            os:  ['ubuntu-latest', 'macos-latest']
     steps:
       - uses: actions/checkout@v2
-      - name: Install R
+
+      - name: Install R (Ubuntu)
         run : |
               sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
               sudo add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/'
               sudo apt update
               sudo apt install r-base r-base-core r-recommended
-      - name : Install System Requirements
+        if: matrix.os == "ubuntu-latest"
+
+      - name: Install R (macOS)
+        run : |
+              rm /usr/local/bin/gfortran
+              brew install r gdal openssl hdf5 udunits proj
+
+      - name : Install System Requirements (Ubuntu)
         run : sudo apt-get install libxml2-dev libcurl4-openssl-dev libnlopt-dev curl libgsl-dev libhdf5-dev libudunits2-dev libgdal-dev -y
-      - name: Install R library Requirements
+
+      - name: Install R library Requirements (Ubuntu)
         run: |
              sudo apt-get install apt-transport-https software-properties-common -y
       - name: Install Required Libraries
@@ -45,7 +58,7 @@ jobs:
               install.packages("testit")
               install.packages("RcppGSL")
               install.packages("reticulate")
-              remote::install_github("ScottishCovidResponse/SCRCdataAPI")
+              remotes::install_github("ScottishCovidResponse/SCRCdataAPI")
         shell: sudo Rscript {0}
       - name: Run Model Locally in Dump Mode
         run: Rscript run_model.R 1 --local --dump
