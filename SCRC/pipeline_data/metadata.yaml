@@ -59,10 +59,10 @@
   version : 1.0.0
   filename : school_holiday_rates/data.h5
 -
-  data_product : population_sizes
-  component : population_sizes
+  data_product : population_size/persons
+  component : population_size/persons
   version : 1.0.0
-  filename : population_sizes/data.h5
+  filename : population_sizes/0.20200729.0.h5
 -
   data_product : school_terms
   component : school_terms

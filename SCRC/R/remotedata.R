@@ -51,15 +51,20 @@ unpack_seeding = function(config_loc)
     ) 
 }
 
-unpack_populations = function(config_loc)
+# FIXME: Assume in future these two data sets will be separate
+# UNITED KINGDOM set should be read as is, but "sample" set can be
+# any other data set in the same form (eg. health board in same binning)
+# or specify a different region below
+
+unpack_populations = function(config_loc, region="Glasgow City")
 {
     read_table = StandardAPI(config_loc)$read_table
-    pop_size = read_table("population_sizes", "population_sizes")
+    pop_size = read_table("population_size/persons", "population_size/persons")
 
     return(
         list(
-            region = pop_size[[1]],
-            sample = pop_size[[2]]
+            region = pop_size[which(pop_size$Name == "UNITED KINGDOM"), ] %>% select(., -Name) %>% as.vector %>% as.numeric,
+            sample = pop_size[which(pop_size$Name %like% region), ] %>% select(., -Name) %>% as.vector %>% as.numeric
         )
     )
 
