@@ -18,6 +18,31 @@ file_addr <- paste0("file?uri=%2fpeoplepopulationandcommunity%2fpopulationandmig
                     "scotlandandnorthernireland%2fmid2019april2020localauthoritydistrictcodes",
                     "/ukmidyearestimates20192020ladcodes.xls")
 
+key <- read.table("data/upload_scripts/token.txt")
+product_name <- file.path("population",
+			  "population_sizes")
+
+version_number <- paste(struct_version, date_accessed, dataset_version)
+
+tmp <- as.Date(todays_date, format = "%Y-%m-%d")
+
+namespace <- "LSHTM"
+
+processed_path <- file.path("data-raw", product_name)
+
+product_storageRoot <- "boydorr"
+
+product_path <- product_name
+
+product_filename <- paste0(version_number, ".h5")
+
+product_storageRootId <- new_storage_root(name = product_storageRoot,
+                                          root = "ftp://boydorr.gla.ac.uk/scrc/",
+                                          key = key)
+
+namespaceId <- new_namespace(name = namespace,
+                             key = key)
+
 retrieve_file_data <- function()
 {
     download.file(file.path(source_root, file_addr), 
@@ -65,7 +90,7 @@ rebin <- function(data)
 
 make_table <- function(table, component_name, file_name=NA)
 {
-    file_name <- ifelse(!is.na(file_name), file_name, paste(struct_version, date_accessed, dataset_version, "h5", sep=".")) %>% gsub("-", "", .)
+    file_name <- ifelse(!is.na(file_name), file_name, product_filename) %>% gsub("-", "", .)
     create_table(filename=file_name, component=component_name, df=table, path=getwd())
 }
 
@@ -75,3 +100,12 @@ for(table in names(tables))
 {
     make_table(tables[[table]], file.path("population_size", table))
 }
+
+dataProductURIs <- upload_data_product(
+  storage_root_id = product_storageRootId,
+  name = product_name,
+  processed_path = file.path(processed_path, product_filename),
+  product_path = paste(namespace, product_path, product_filename, sep = "/"),
+  version = version_number,
+  namespace_id = namespaceId,
+  key = key)
