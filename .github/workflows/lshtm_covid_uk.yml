@@ -19,19 +19,23 @@ jobs:
               sudo add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/'
               sudo apt update
               sudo apt install r-base r-base-core r-recommended
-        if: matrix.os == "ubuntu-latest"
+        if: matrix.os == 'ubuntu-latest'
 
       - name: Install R (macOS)
         run : |
               rm /usr/local/bin/gfortran
               brew install r gdal openssl hdf5 udunits proj
+        if: matrix.os == 'macos-latest'
 
       - name : Install System Requirements (Ubuntu)
         run : sudo apt-get install libxml2-dev libcurl4-openssl-dev libnlopt-dev curl libgsl-dev libhdf5-dev libudunits2-dev libgdal-dev -y
+        if: matrix.os == 'ubuntu-latest'
 
       - name: Install R library Requirements (Ubuntu)
         run: |
              sudo apt-get install apt-transport-https software-properties-common -y
+        if: matrix.os == 'ubuntu-latest'
+
       - name: Install Required Libraries
         env: 
               DEBIAN_FRONTEND: noninteractive
@@ -61,15 +65,21 @@ jobs:
               install.packages("reticulate")
               remotes::install_github("ScottishCovidResponse/SCRCdataAPI")
         shell: sudo Rscript {0}
+        
       - name: Run Model Locally in Dump Mode
         run: Rscript run_model.R 1 --local --dump
+
       - name: Test Outputs
         run: Rscript tests/regression/test_params.R
+
       - name: Test Local Vanilla Model Run (Region = Glasgow City, 10 realisations)
         run: Rscript run_model.R 10 --local
+
       - name: Install pip and SCRC Data Pipeline
         run : |
               sudo apt-get install python3.6 python3-pip
               sudo pip install -r SCRC/Python/requirements.txt
+        if: matrix.os == 'ubuntu-latest'
+
       - name: Test Remote Vanilla Model Run (Region = Glasgow City, 10 realisations)
         run: Rscript run_model.R 10
