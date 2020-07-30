@@ -38,7 +38,7 @@ jobs:
         env: 
               DEBIAN_FRONTEND: noninteractive
         run: |
-              chooseCRANmirror(graphics=FALSE)
+              options(repos="https://cran.rstudio.com" )
               install.packages("remotes")
               library(remotes)
               remotes::install_github("traversc/qs@legacy")
