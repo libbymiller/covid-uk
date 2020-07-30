@@ -38,7 +38,7 @@ jobs:
         env: 
               DEBIAN_FRONTEND: noninteractive
         run: |
-              chooseCRANmirror(81)
+              chooseCRANmirror(graphics=FALSE)
               install.packages("remotes")
               library(remotes)
               remotes::install_github("traversc/qs@legacy")
