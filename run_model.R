@@ -48,6 +48,13 @@ if(length(covid_uk_search) > 0)
 } else {
   covid_uk_path = getwd();
 }
+config_search = grep('--config*', argv, value = TRUE)
+if(length(config_search) > 0)
+{
+  config_path = strsplit(config_search, split = '=')[[1]][[2]];
+} else {
+  config_path = config_loc = file.path(covid_uk_path, "SCRC", "pipeline_data", "config.yaml")
+}
 # covidm options
 cm_path = file.path(covid_uk_path, "covidm");
 scrc = file.path(covid_uk_path, "SCRC")
@@ -75,9 +82,10 @@ if(local)
   source(try_loc(file.path(scrc, "R", "localdata.R")))
   configuration = local_data(covid_uk_path, n_runs)
 } else {
-  options_print_str = c(options_print_str, "\tSource : API")
+  options_print_str = c(options_print_str, "\tSource : API\n")
+  options_print_str = c(options_print_str, paste("\tConfig Path :", config_path))
   source(try_loc(file.path(scrc, "R", "remotedata.R")))
-  configuration = remote_data(covid_uk_path, n_runs)
+  configuration = remote_data(covid_uk_path, config_path, n_runs)
 }
 
 options_print_str = c(options_print_str, configuration$output_str)
@@ -125,7 +133,8 @@ cm_save(observables$dynamics, file.path(covid_uk_path, "output", paste0("run-", 
 if(!local)
 {
   push_data(file.path(covid_uk_path, "output", 
-                      paste0("run-", sub(" ", "-", configuration$params$run_mode), "-", r)), TRUE)
+                      paste0("run-", sub(" ", "-", configuration$params$run_mode), "-", r)), 
+                      config_path)
 }
 
 print(Sys.time())

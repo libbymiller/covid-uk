@@ -1,6 +1,8 @@
 library(reticulate)
 library(SCRCdataAPI)
+library(magrittr)
 library(progress)
+
 use_python("/home/kristian/venvs/lshtm/bin/python")
 
 api_py <- import("data_pipeline_api.standard_api")$StandardAPI
@@ -8,6 +10,8 @@ StandardAPI <- function(config_loc)
 {
     return(api_py(config_loc, "test_uri", "test_git_sha"))
 }
+
+pandas_df <- import("pandas")$DataFrame
 
 # Import utility and plotting functions 
 scrc = file.path(covid_uk_path, "SCRC")
@@ -108,8 +112,11 @@ prepare_totals <- function(t_total)
   )
 }
 
-push_data <- function(data_path, make_csv=FALSE)
+push_data <- function(data_path, config_path, make_csv=FALSE)
 {
+    output_location <- config_path %>%
+                       gsub("/config.yaml", "", .)
+
     out_str = c("[Formatting Data]:\n", "\tRetrieving data\n")
     cat(out_str)
     file_names <- list(totals = "cases_deaths.h5",
@@ -128,18 +135,21 @@ push_data <- function(data_path, make_csv=FALSE)
     dynamics_tables <- prepare_dynamics_summary(dynamics)
 
     cat("[Saving to HDF5]:\n")
-    cat("\tSaving Totals\n")
+    cat(c("\tSaving Totals to Folder : ",
+              file.path(output_location, "cases_deaths"), "\n"))
     prog_totals = progress_bar$new(total=100)
     for(category in names(total_tables))
     {
       for(table in names(total_tables[[category]]))
       {
         prog_totals$tick()
-        create_table(filename = file_names$totals,
-                     path = "output",
-                     component = paste0(category,"_",table),
-                     df = total_tables[[category]][[table]]
-                     )
+
+        # Need to change first column from factor to character vector
+        total_tables[[category]][[table]]$age_group %<>% sapply(., as.character)
+        pd_table <- pandas_df(total_tables[[category]][[table]])
+
+        StandardAPI(config_path)$write_table("lshtm_outputs/cases_deaths", paste0(category,"_",table), pd_table)
+
         if(make_csv)
         {
           write.csv(total_tables[[category]][[table]],
@@ -148,16 +158,18 @@ push_data <- function(data_path, make_csv=FALSE)
         }
       }
     }
-    cat("\n\tSaving Dynamics Summary\n")
+
+    cat(paste("\n\tSaving Dynamics Summary to Folder : ", 
+              file.path(output_location, "dynamics_summary"), "\n"))
     prog_dyn_sum = progress_bar$new(total=100)
     for(category in names(dynamics_tables))
     {
       prog_dyn_sum$tick()
-      create_table(filename = file_names$dynamics,
-                  path = "output",
-                  component = paste0(category),
-                  df = dynamics_tables[[category]]
-                  )
+      dynamics_tables[[category]]$statistic %<>% sapply(., as.character)
+      pd_table <- pandas_df(dynamics_tables[[category]])
+      StandardAPI(config_path)$write_table("lshtm_outputs/dynamics_summary", 
+                                           paste0(category), pd_table)
+
       if(make_csv)
       {
         write.csv(dynamics_tables[[category]],
@@ -165,18 +177,20 @@ push_data <- function(data_path, make_csv=FALSE)
                   row.names=FALSE)
       }
     }
-    cat("\n\tSaving Dynamics Time Series\n")
+    cat(paste("\n\tSaving Dynamics Time Series to Folder : ", 
+              file.path(output_location, "lshtm_outputs", "dynamics_time_series"), "\n"))
     prog_dyn_ts = progress_bar$new(total=100)
     for(scenario in names(dynamics_time_series))
     {
       for(compartment in names(dynamics_time_series[[scenario]]))
       {
         prog_dyn_ts$tick()
-        create_table(filename = file_names$time_series,
-                     path = "output",
-                     component = paste(scenario, compartment, sep="_"),
-                     df = dynamics_time_series[[scenario]][[compartment]]
-                     )
+
+        pd_table <- pandas_df(dynamics_tables[[category]])
+        StandardAPI(config_path)$write_table("lshtm_outputs/dynamics_time_series", 
+                                           paste(scenario, compartment, 
+                                                 "time", "series.csv", sep="_"), 
+                                              pd_table)
         if(make_csv)
         {
           write.csv(dynamics_time_series[[scenario]][[compartment]],

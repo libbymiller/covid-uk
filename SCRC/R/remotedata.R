@@ -229,7 +229,7 @@ get_elderly_bin_for_age = function(age, names)
 
 }
 
-remote_data = function(covid_uk, n_runs)
+remote_data = function(covid_uk, config_loc, n_runs)
 {
     # Assume same binning always provided to model
     group_names = c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29",
@@ -251,8 +251,6 @@ remote_data = function(covid_uk, n_runs)
         report_frequency = 4,               # Report every 4 steps
         group_names = group_names           # Assume group names constant
     )
-
-    config_loc = file.path(covid_uk, "SCRC", "pipeline_data", "config.yaml")
 
     config_params = append(config_params, objects(config_loc))
 

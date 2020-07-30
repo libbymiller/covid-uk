@@ -54,6 +54,7 @@ jobs:
               install.packages("readxl")
               install.packages("ini")
               install.packages("tidyverse")
+              install.packages("magrittr")
               install.packages("lubridate")
               install.packages("testit")
               install.packages("RcppGSL")
