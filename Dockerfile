@@ -9,7 +9,7 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD5
 RUN add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/'
 RUN apt update
 RUN apt install r-base-dev r-doc-html r-base-core r-recommended -y
-RUN apt install libxml2-dev libssl-dev libcurl4-openssl-dev libnlopt-dev curl libgsl-dev -y
+RUN apt install libxml2-dev libssl-dev libcurl4-openssl-dev libnlopt-dev curl libgsl-dev libhdf5-dev libudunits2-dev libgdal-dev -y
 RUN apt install apt-transport-https software-properties-common -y
 RUN R -e "install.packages(\"remotes\")"
 RUN R -e "library(remotes)"
@@ -33,6 +33,8 @@ RUN R -e "install.packages(\"lubridate\")"
 RUN R -e "install.packages(\"testit\")"
 RUN R -e "install.packages(\"RcppGSL\")"
 RUN R -e "install.packages(\"reticulate\")"
+RUN R -e "install.packages(\"snakecase\")"
+RUN R -e "remotes::install_github(\"ScottishCovidResponse/SCRCdataAPI\")"
 RUN apt install libgsl-dev -y
 RUN R -e "install.packages(\"RcppGSL\")"
 RUN apt install libnlopt-dev -y
