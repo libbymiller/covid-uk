@@ -179,10 +179,11 @@ push_data <- function(data_path, make_csv=FALSE)
                      )
         if(make_csv)
         {
-          write_csv(dynamics_time_series[[scenario]][[compartment]],
+          write.csv(dynamics_time_series[[scenario]][[compartment]],
                     file=file.path("output", paste(scenario, compartment, "time", "series.csv", sep="_")),
                     row.names=FALSE)
         }
       }
+      cat("\n")
     }
 }
