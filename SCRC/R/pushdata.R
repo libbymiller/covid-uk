@@ -5,7 +5,7 @@ library(progress)
 
 use_python("/home/kristian/venvs/lshtm/bin/python")
 
-api_py <- import("data_pipeline_api.standard_api")$StandardAPI
+api_py <- import("data_pipeline_api.standard_api")$StandardAPI$from_config
 StandardAPI <- function(config_loc)
 {
     return(api_py(config_loc, "test_uri", "test_git_sha"))

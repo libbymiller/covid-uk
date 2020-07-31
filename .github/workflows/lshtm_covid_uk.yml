@@ -78,7 +78,7 @@ jobs:
 
       - name: Install pip and SCRC Data Pipeline
         run : |
-              sudo apt-get install python3.6 python3-pip
+              sudo apt-get install python3.6 python3-pip python3-setuptools
               sudo pip3 install pandas
               sudo pip3 install -r SCRC/Python/requirements.txt
         if: matrix.os == 'ubuntu-latest'
