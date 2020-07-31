@@ -134,7 +134,7 @@ if(!local)
 {
   push_data(file.path(covid_uk_path, "output", 
                       paste0("run-", sub(" ", "-", configuration$params$run_mode), "-", r)), 
-                      config_path)
+                      config_path, TRUE)
 }
 
 print(Sys.time())

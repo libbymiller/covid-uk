@@ -50,13 +50,12 @@ prepare_dynamics_summary <- function(t_dynamics, format=table_spec)
 prepare_dynamics <- function(t_dynamics)
 {
   output = list(Base=list(), Lockdown=list())
-  time_labels <- NA
-  dt <- NA
   for(s in names(output))
   {
     for(c in unique(t_dynamics[,compartment]))
     {
-      
+      dt <- NA
+      time_labels <- NA
       for(r in unique(t_dynamics[,run]))
       {
         time_series <- t_dynamics[scenario == s][run == r][compartment == c] %>%
@@ -137,7 +136,7 @@ push_data <- function(data_path, config_path, make_csv=FALSE)
     cat("[Saving to HDF5]:\n")
     cat(c("\tSaving Totals to Folder : ",
               file.path(output_location, "cases_deaths"), "\n"))
-    prog_totals = progress_bar$new(total=100)
+    prog_totals = progress_bar$new(total=length(total_tables)*length(total_tables[[1]]))
     for(category in names(total_tables))
     {
       for(table in names(total_tables[[category]]))
@@ -161,7 +160,7 @@ push_data <- function(data_path, config_path, make_csv=FALSE)
 
     cat(paste("\n\tSaving Dynamics Summary to Folder : ", 
               file.path(output_location, "dynamics_summary"), "\n"))
-    prog_dyn_sum = progress_bar$new(total=100)
+    prog_dyn_sum = progress_bar$new(total=length(dynamics_tables))
     for(category in names(dynamics_tables))
     {
       prog_dyn_sum$tick()
@@ -179,17 +178,18 @@ push_data <- function(data_path, config_path, make_csv=FALSE)
     }
     cat(paste("\n\tSaving Dynamics Time Series to Folder : ", 
               file.path(output_location, "lshtm_outputs", "dynamics_time_series"), "\n"))
-    prog_dyn_ts = progress_bar$new(total=100)
+    prog_dyn_ts = progress_bar$new(total=length(dynamics_time_series)*length(dynamics_time_series[[1]]))
     for(scenario in names(dynamics_time_series))
     {
       for(compartment in names(dynamics_time_series[[scenario]]))
       {
         prog_dyn_ts$tick()
+        colnames(dynamics_time_series[[scenario]][[compartment]]) <- as.character(1:ncol(dynamics_time_series[[scenario]][[compartment]]))
 
-        pd_table <- pandas_df(dynamics_tables[[category]])
+        pd_table <- pandas_df(dynamics_time_series[[scenario]][[compartment]])
         StandardAPI(config_path)$write_table("lshtm_outputs/dynamics_time_series", 
                                            paste(scenario, compartment, 
-                                                 "time", "series.csv", sep="_"), 
+                                                 "time", "series", sep="_"), 
                                               pd_table)
         if(make_csv)
         {

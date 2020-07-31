@@ -18,13 +18,13 @@ file_addr <- paste0("file?uri=%2fpeoplepopulationandcommunity%2fpopulationandmig
                     "scotlandandnorthernireland%2fmid2019april2020localauthoritydistrictcodes",
                     "/ukmidyearestimates20192020ladcodes.xls")
 
-key <- read.table("data/upload_scripts/token.txt")
+key <- read.table("SCRC/data_uploading/token.txt")
 product_name <- file.path("population",
 			  "population_sizes")
 
-version_number <- paste(struct_version, date_accessed, dataset_version)
+tmp <- as.Date(date_accessed, format = "%Y-%m-%d")
 
-tmp <- as.Date(todays_date, format = "%Y-%m-%d")
+version_number <- paste("0", gsub("-", "", tmp), "0" , sep = ".")
 
 namespace <- "LSHTM"
 
@@ -90,7 +90,10 @@ rebin <- function(data)
 
 make_table <- function(table, component_name, file_name=NA)
 {
-    file_name <- ifelse(!is.na(file_name), file_name, product_filename) %>% gsub("-", "", .)
+    file_name <- ifelse(!is.na(file_name), file_name, product_filename) %>%
+                 gsub("-", "", .) %>%
+                 file.path(processed_path, .)
+    dir.create(processed_path, recursive=TRUE)
     create_table(filename=file_name, component=component_name, df=table, path=getwd())
 }
 
