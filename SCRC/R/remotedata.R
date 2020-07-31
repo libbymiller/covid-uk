@@ -80,20 +80,24 @@ unpack_matrices = function(config_loc)
     # set e.g. [1] Scotland, [2] UK and the 'sample' set 
     # set of that region e.g. [1] Scot. Health Board, [2] Scotland
 
-    set_names = c("region", "sample")
     matrix_names = c("home", "other", "school", "work")
 
     contact_matrices = list()
 
-    for(set in set_names)
+    contact_matrices[["sample"]] = list()
+    for(name in matrix_names)
     {
-        contact_matrices[[set]] = list()
-        for(name in matrix_names)
-        {
-            Array = read_array("contact_matrices", file.path("contact_matrices", set, name))
-            contact_matrices[[set]][[name]] = Array$data
-        }
+        Array = read_array("contact_matrices", file.path("contact_matrices", "sample", name))
+        contact_matrices[["sample"]][[name]] = Array$data
     }
+
+    contact_matrices[["region"]] = list()
+    for(name in matrix_names)
+    {
+        Array = read_array("uk_national_contact_matrices", file.path("uk_national_matrices", name))
+        contact_matrices[["region"]][[name]] = Array$data
+    }
+
     return(list(matrices=contact_matrices, group_names=Array$dimensions[[1]]$names))
 }
 

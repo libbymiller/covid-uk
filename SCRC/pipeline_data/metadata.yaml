@@ -9,20 +9,25 @@
   version : 1.0.0
   filename : health_burden_processes/data.h5
 -
-  data_product : contact_matrices
-  component : contact_matrices/region/home
+  data_product : uk_national_contact_matrices
+  component : uk_national_matrices/home
   version : 1.0.0
-  filename : contact_matrices/data.h5
+  filename : uk_national_contact_matrices/0.20200731.0.h5
 -
-  data_product : contact_matrices
-  component : contact_matrices/region/other
+  data_product : uk_national_contact_matrices
+  component : uk_national_matrices/other
   version : 1.0.0
-  filename : contact_matrices/data.h5
+  filename : uk_national_contact_matrices/0.20200731.0.h5
 -
-  data_product : contact_matrices
-  component : contact_matrices/region/work
+  data_product : uk_national_contact_matrices
+  component : uk_national_matrices/work
   version : 1.0.0
-  filename : contact_matrices/data.h5
+  filename : uk_national_contact_matrices/0.20200731.0.h5
+-
+  data_product : uk_national_contact_matrices
+  component : uk_national_matrices/school
+  version : 1.0.0
+  filename : uk_national_contact_matrices/0.20200731.0.h5
 -
   data_product : contact_matrices
   component : contact_matrices/region/school
