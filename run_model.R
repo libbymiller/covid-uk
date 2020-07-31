@@ -68,7 +68,6 @@ source(file.path(scrc, "R", "Utilities.R"))
 source(try_loc(file.path(scrc, "R", "Observers.R")))
 source(try_loc(file.path(scrc, "R", "BuildStructures.R")))
 source(try_loc(file.path(scrc, "R", "Simulate.R")))
-source(try_loc(file.path(scrc, "R", "pushdata.R")))
 
 if(rebuild)
 {
@@ -85,6 +84,7 @@ if(local)
   options_print_str = c(options_print_str, "\tSource : API\n")
   options_print_str = c(options_print_str, paste("\tConfig Path :", config_path))
   source(try_loc(file.path(scrc, "R", "remotedata.R")))
+  source(try_loc(file.path(scrc, "R", "pushdata.R")))
   configuration = remote_data(covid_uk_path, config_path, n_runs)
 }
 
@@ -134,7 +134,7 @@ if(!local)
 {
   push_data(file.path(covid_uk_path, "output", 
                       paste0("run-", sub(" ", "-", configuration$params$run_mode), "-", r)), 
-                      config_path, TRUE)
+                      config_path)
 }
 
 print(Sys.time())
