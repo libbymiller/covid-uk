@@ -22,7 +22,9 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
 
       - name: Install R (macOS)
-        run : brew install r gdal openssl hdf5 udunits proj
+        run : |
+              brew install r gdal openssl hdf5 udunits proj
+              brew link openssl --force
         if: matrix.os == 'macos-latest'
 
       - name : Install System Requirements (Ubuntu)

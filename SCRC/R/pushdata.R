@@ -152,7 +152,7 @@ push_data <- function(data_path, config_path, make_csv=FALSE)
         if(make_csv)
         {
           write.csv(total_tables[[category]][[table]],
-                    file=file.path("output", paste0(category,"_", table, ".csv")),
+                    file=file.path("output", paste0(category,"_", table, "_", "totals.csv")),
                     row.names=FALSE)
         }
       }
@@ -172,7 +172,7 @@ push_data <- function(data_path, config_path, make_csv=FALSE)
       if(make_csv)
       {
         write.csv(dynamics_tables[[category]],
-                  file=file.path("output", paste0(category,"_dynamics.csv")),
+                  file=file.path("output", paste0(category,"_dynamics_summary.csv")),
                   row.names=FALSE)
       }
     }
