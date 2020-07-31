@@ -3,7 +3,8 @@ library(SCRCdataAPI)
 library(magrittr)
 library(progress)
 
-use_python("/home/kristian/venvs/lshtm/bin/python")
+python_version <- system("which python", intern=TRUE)
+use_python(python_version)
 
 api_py <- import("data_pipeline_api.standard_api")$StandardAPI$from_config
 StandardAPI <- function(config_loc)
