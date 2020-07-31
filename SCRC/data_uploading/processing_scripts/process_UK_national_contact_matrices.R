@@ -18,8 +18,10 @@ library(SCRCdataAPI)
 
 source_root <- "https://www.ncbi.nlm.nih.gov"
 
-description <- paste("Contact Matrices for 152 Countries in the",
-                    "categories: 'home', 'other', 'school', 'work'")
+description <- paste("Paper: 'Contact Matrices for 152 countries",
+                     "Projecting social contact matrices in 152 countries",
+                     " using contact surveys and demographic data'",
+                     "A. R. Cook et. al., categories: 'home', 'other', 'school', 'work'")
 
 file_addr <- "pmc/articles/PMC5609774/bin/pcbi.1005697.s002.zip"
 
