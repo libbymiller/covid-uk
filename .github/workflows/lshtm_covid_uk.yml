@@ -79,7 +79,7 @@ jobs:
       - name: Install pip and SCRC Data Pipeline
         run : |
               sudo apt-get install python3.6 python3-pip
-              sudo pip install -r SCRC/Python/requirements.txt
+              sudo pip3 install -r SCRC/Python/requirements.txt
         if: matrix.os == 'ubuntu-latest'
 
       - name: Test Remote Vanilla Model Run (Region = Glasgow City, 10 realisations)
