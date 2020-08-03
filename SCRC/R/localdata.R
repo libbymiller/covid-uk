@@ -1,3 +1,16 @@
+##############################################################################
+#                                                                            #
+#                       Local Argument Construction                          #
+#                                                                            #
+#   Construct argument set using the parameters from the INI file and the    #
+#   data as included within the LSHTM original model. This would be classed  #
+#   as a "local" run of the model. Script based on existing LSHTM scripts.   #
+#                                                                            #
+#   @authors : K. Zarebski, N. Davies                                        #
+#   @date    : last modified 2020-08-03                                      #
+#                                                                            #
+##############################################################################
+
 suppressPackageStartupMessages({
     library(qs)
     library(readxl)
@@ -7,6 +20,7 @@ suppressPackageStartupMessages({
     library(tidyverse)
 })
 
+# List of all local data locations with respect to the repository root
 local_data_files = list(
     parameter_file = file.path('configuration', 'parameters.ini'),
     interventions_file = file.path('configuration', 'interventions.ini'),
@@ -17,7 +31,11 @@ local_data_files = list(
     health_burden_process_data = file.path('data', "health_burden_processes.csv"),
     school_terms = file.path("data", "school_terms_base.csv")
 )
-# Get regions for the UK.
+
+#' Get regions for the UK - N. Davies
+#' 
+#' Fetches the regions list using the syntax
+#' under which the arrays are held within the model data
 cm_uk_locations = function(arguments, country, level) {
     # Check country code
     country = toupper(country);
@@ -70,16 +88,26 @@ cm_uk_locations = function(arguments, country, level) {
     return (paste0("UK | ", locs));
 }
 
+#' Build local argument set
+#' 
+#' This function constructs a list of parameters to be fed to the model
+#' during a local run
+#' 
+#' @param covid_dir location of the main code repository on the system
+#' @param n_runs number of model runs during session
 local_data = function(covid_dir, n_runs)
 {
+    # Assorted print outs for session information
     options_print_str = c(paste("\tCOVID-UK Path : ", covid_dir))
     options_print_str = c(options_print_str, paste("\n\tParameter File : ", local_data_files$parameter_file))
     options_print_str = c(options_print_str, paste("\n\tMatrices File : ", local_data_files$contact_matrices_file))
     options_print_str = c(options_print_str, paste("\n\tAge-Varying Symptomatic Rates File : ", local_data_files$age_var_symptom_rates))
     options_print_str = c(options_print_str, paste("\n\tSchool Terms Data File : ", local_data_files$school_terms))
 
+    # Read the parameters locally from the INI file
     config_params   = read.ini(file.path(covid_dir, local_data_files$parameter_file))
 
+    # Assemble the school holiday rates from the INI file into an array
     config_params$school_holiday_rates = c(as.numeric(config_params$school_holiday_rates$home),
                                         as.numeric(config_params$school_holiday_rates$work),
                                         as.numeric(config_params$school_holiday_rates$schools),
@@ -91,6 +119,7 @@ local_data = function(covid_dir, n_runs)
                                         as.numeric(config_params$school_holiday_rates$child_elderly)
     )
 
+    # Assemble the lockdown rates from the INI file into an array
     config_params$lockdown_rates =    c(as.numeric(config_params$lockdown_rates$home),
                                         as.numeric(config_params$lockdown_rates$work),
                                         as.numeric(config_params$lockdown_rates$schools),
@@ -150,7 +179,9 @@ local_data = function(covid_dir, n_runs)
     demographics_subset = cm_get_demographics(config_params$subset_name, config_params$ngroups)
     config_params$size$subset = demographics_subset[, round((f + m) * 1000)];
  
-    # Define interventions to be used
+    # Define the interventions included within the original model as presets
+    # to be selected from
+
     int_par = read.ini(local_data_files$interventions_file)
 
     interventions = list(
@@ -214,6 +245,10 @@ local_data = function(covid_dir, n_runs)
                                     fIs = rep(as.numeric(int_par$combination$fIs_perage), config_params$ngroups)
         )
     )
+    
+    # Retrieve the run mode information, if "R0 Analysis" the session
+    # will only run the mini investigation into how the interventions each
+    # effect the value of R0, any other value run model as normal
     config_params$run_mode = config_params$run_mode$mode
     if(config_params$run_mode != "R0 Analysis")
     {
@@ -228,6 +263,7 @@ local_data = function(covid_dir, n_runs)
     # Set seed and generate R0 values for each run
     seed_val = as.numeric(config_params$seed$value)
 
+    # If seed specified use this seed, else use time based seeding
     if(seed_val > 0)
     {
         set.seed(seed_val)
@@ -236,10 +272,11 @@ local_data = function(covid_dir, n_runs)
     else
     {
         set.seed(NULL)
+        options_print_str = c(options_print_str, "\n\tSeed : Temporal")
     }
 
-    options_print_str = c(options_print_str, "\n\tSeed : Temporal")
-
+    # Randomly generate values of R0 for the runs using the seed and
+    # distribution parameters
     config_params$R0s = rnorm(n_runs, mean = as.numeric(config_params$r0_distribution$mean),
                              sd = as.numeric(config_params$r0_distribution$sd))
 
@@ -252,13 +289,18 @@ local_data = function(covid_dir, n_runs)
 
     for(name in c("dH", "dC", "fIa", "fIs", "tau", "rho", "fIp"))
     {
+        # Simplify the arguments read from the INI file to be
+        # equal to the value as opposed to a length one list
+        # containing the value
         config_params[[name]] = config_params[[name]]$value
     }
 
+    # Convert string booleans to real booleans
     config_params$fast_multinomial = toupper(config_params$fast_multinomial$isTrue) == "TRUE"
     config_params$deterministic = toupper(config_params$deterministic$isTrue) == "TRUE"
     config_params$child_grandparent_contacts = toupper(config_params$child_grandparentcontacts$enabled) == "TRUE"
 
+    # Fetch names of groups from the columns of an input matrix
     config_params$group_names = colnames(config_params$contact_matrices$region[[1]])
 
     return(list(params=config_params, output_str=options_print_str))

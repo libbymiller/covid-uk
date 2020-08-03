@@ -1,21 +1,48 @@
-library(reticulate)
+##############################################################################
+#                                                                            #
+#                      API Based Argument Construction                       #
+#                                                                            #
+#   Construct argument set using the arguments from as defined by the SCRC   #
+#   data API implementation. Parameter values and data are read from files   #
+#   using the API, these files can therefore be dynamically changed.         #
+#                                                                            #
+#   @author : K. Zarebski                                                    #
+#   @date   : last modified 2020-08-03                                       #
+#                                                                            #
+##############################################################################
 
+library(reticulate) # Run Python commands within R
+
+# Determine Python binary from the current 'which python' command result
 python_version <- system("which python", intern=TRUE)
 use_python(python_version)
 
+# Import the StandardAPI from the SCRC data pipeline API
 api_py <- import("data_pipeline_api.standard_api")$StandardAPI
 py_time <- import("time")$time
 
+# Create a function as a wrapper allowing direct usage of the API
+# FIXME: The details under the from_config method will need to be set
+# eventually to the real repository
 StandardAPI <- function(config_loc)
 {
-    return(api_py$from_config(config_loc, "test_uri", "test_git_sha"))
+    return(api_py$from_config(config_loc, "test_repo", "test_git_sha"))
 }
 
+#' Get the intervention
+#' 
+#' Retrieve the current intervention choice from the API
+#' 
+#' @param config_loc Location of the API config.yaml file
+#' @param ngroups Number of age groups
 unpack_intervention = function(config_loc, ngroups)
 {
     read_table = StandardAPI(config_loc)$read_table
     intervention = read_table("intervention_rates", "intervention_rates")
 
+    # Rates associated with the given intervention are defined as
+    # 9 contact rates for the contact matrix types and a factor on the
+    # symptomatic infectiousness
     return(
         list(
             contact = intervention[[1]][1:9],
@@ -24,6 +51,11 @@ unpack_intervention = function(config_loc, ngroups)
     )
 }
 
+#' Get School Terms
+#' 
+#' Retrieve the school terms from the API
+#' 
+#' @param config_loc Location of config.yaml API file
 unpack_terms = function(config_loc)
 {
     read_table = StandardAPI(config_loc)$read_table
@@ -38,6 +70,12 @@ unpack_terms = function(config_loc)
 
 }
 
+#' Get Seed Settings
+#' 
+#' Retrieves the seeding configuration from the relevant
+#' files via the API
+#' 
+#' @param config_loc Location of the config.yaml API file
 unpack_seeding = function(config_loc)
 {
     read_estimate = StandardAPI(config_loc)$read_estimate
@@ -53,11 +91,16 @@ unpack_seeding = function(config_loc)
     ) 
 }
 
-# FIXME: Assume in future these two data sets will be separate
-# UNITED KINGDOM set should be read as is, but "subset" set can be
-# any other data set in the same form (eg. health board in same binning)
-# or specify a different region below
-
+#' Fetch populations
+#' 
+#' Retrieve the populations for the given regions.
+#' FIXME: Assume in future these two data sets will be separate
+#' UNITED KINGDOM set should be read as is, but "subset" set can be
+#' any other data set in the same form (eg. health board in same binning)
+#' or specify a different region below
+#' 
+#' @param config_loc Location of the config.yaml API file
+#' @param region Name of the subset region, default is the demo of Glasgow City
 unpack_populations = function(config_loc, region="Glasgow City")
 {
     read_table = StandardAPI(config_loc)$read_table
@@ -72,6 +115,11 @@ unpack_populations = function(config_loc, region="Glasgow City")
 
 }
 
+#' Get Contact Matrices
+#' 
+#' Retrieve the contact matrices from the API
+#' 
+#' @param config_loc Location of the config.yaml API file
 unpack_matrices = function(config_loc)
 {
     read_array = StandardAPI(config_loc)$read_array
@@ -101,6 +149,11 @@ unpack_matrices = function(config_loc)
     return(list(matrices=contact_matrices, group_names=Array$dimensions[[1]]$names))
 }
 
+#' Get Time configurations
+#' 
+#' Retrieves the time based settings from the API
+#'
+#' @param config_loc Location of the config.yaml API file
 unpack_times = function(config_loc)
 {
     read_estimate = StandardAPI(config_loc)$read_estimate
@@ -116,7 +169,15 @@ unpack_times = function(config_loc)
     )
 }
 
-fetch_dis_components <- function(dis_label, config_loc)
+#' Get Distribution Components
+#' 
+#' For a given gamma distribution held within the API
+#' the function returns the components from the args
+#' and kwds members of the scipy.stats object
+#' 
+#' @param dis_label Name of the distribution in the API
+#' @param config_loc Location of the config.yaml API file
+fetch_gamma_components <- function(dis_label, config_loc)
 {
     distribution = StandardAPI(config_loc)$read_distribution(dis_label, dis_label)
     
@@ -128,6 +189,13 @@ fetch_dis_components <- function(dis_label, config_loc)
     )
 }
 
+#' Get and Store Distribution Parameters
+#' 
+#' Unpacks the distribution parameters from the API
+#' and stores them into a list matching the form
+#' of the local run arguments
+#' 
+#' @param config_loc Location of the config.yaml API file
 unpack_dis_params = function(config_loc)
 {
 
@@ -137,32 +205,39 @@ unpack_dis_params = function(config_loc)
 
     for(comp in compartments)
     {
-        args <- fetch_dis_components(comp, config_loc)
+        args <- fetch_gamma_components(comp, config_loc)
 
         params[[comp]] = list(mu=args$loc,
                              shape=args$scale)
 
     }
 
-    args <- fetch_dis_components("ip_to_hosp", config_loc)
+    args <- fetch_gamma_components("ip_to_hosp", config_loc)
     params[["delay_Ip_to_hosp"]] = list(mu=args$loc,
                                         shape=args$scale)
 
-    args <- fetch_dis_components("to_icu", config_loc)
+    args <- fetch_gamma_components("to_icu", config_loc)
     params[["delay_to_icu"]] = list(mu=args$loc,
                                     shape=args$scale)
     
-    args <- fetch_dis_components("to_non_icu", config_loc)
+    args <- fetch_gamma_components("to_non_icu", config_loc)
     params[["delay_to_non_icu"]] = list(mu=args$loc,
                                         shape=args$scale)
     
-    args <- fetch_dis_components("ip_to_death", config_loc)
+    args <- fetch_gamma_components("ip_to_death", config_loc)
     params[["delay_Ip_to_death"]] = list(mu=args$loc,
                                         shape=args$scale)
 
     return(params)
 }
 
+#' Get Trigger Configuration
+#' 
+#' Retrieve the Lockdown trigger settings from API.
+#' These include whether to lockdown based on an offset
+#' from the peak, or based on the ICU bed usage
+#' 
+#' @param config_loc Location of the config.yaml API file
 unpack_trigger = function(config_loc)
 {
     read_estimate = StandardAPI(config_loc)$read_estimate
@@ -177,6 +252,15 @@ unpack_trigger = function(config_loc)
     )
 }
 
+#' Generate R0 Values
+#' 
+#' Generates an array of R0 values of length matching
+#' the number of runs requested 'n'. The values are generated
+#' using the relevant normal distribution retrieved from the API.
+#' 
+#' @param config_loc Location of the config.yaml API file
+#' @param seed The generation seed
+#' @param n Number of values to generate
 create_R0s = function(config_loc, seed, n)
 {
     np_rand <- import("numpy")$random
@@ -190,6 +274,14 @@ create_R0s = function(config_loc, seed, n)
     return(norm$rvs(as.integer(n)))
 }
 
+#' Gathers and assembles all arguments
+#' 
+#' This function performs all operations to retrieve
+#' the required data and parameters from the API
+#' then assembling the results into a list that matches
+#' the form of a local arguments set
+#' 
+#' @param config_loc Location of the config.yaml API file
 objects = function(config_loc)
 {
     read_array = StandardAPI(config_loc)$read_array
@@ -225,6 +317,14 @@ objects = function(config_loc)
     return(params)
 }
 
+#' Fetch the bin for a given lower elderly age limit
+#' 
+#' Retrieves the bin associated with the age given which
+#' is the choice of lower boundary above which someone is
+#' classed as being elderly
+#' 
+#' @param age Lower age boundary
+#' @param names List of bin labels (0-4, 0 to 4, etc.)
 get_elderly_bin_for_age = function(age, names)
 {
     x = NULL
@@ -251,6 +351,14 @@ get_elderly_bin_for_age = function(age, names)
 
 }
 
+#' Final argument form
+#' 
+#' This function is called by the main model run to
+#' assemble all arguments from the API and retrieve them
+#' 
+#' @param covid_uk repository root location
+#' @param config_loc location of the config.yaml API file
+#' @param n_runs number of model runs this session
 remote_data = function(covid_uk, config_loc, n_runs)
 {
     # Assume same binning always provided to model
