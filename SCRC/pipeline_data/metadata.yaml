@@ -77,52 +77,52 @@
   data_product : seed
   component : seed
   version : 1.0.0
-  filename : seeding/data.toml
+  filename : seeding/0.1.0.toml
 -
   data_product : min_age
   component : min_age
   version : 1.0.0
-  filename : seeding/data.toml
+  filename : seeding/0.1.0.toml
 -
   data_product : max_age
   component : max_age
   version : 1.0.0
-  filename : seeding/data.toml
+  filename : seeding/0.1.0.toml
 -
   data_product : seeding_min_start_day
   component : seeding_min_start_day
   version : 1.0.0
-  filename : seeding/data.toml
+  filename : seeding/0.1.0.toml
 -
   data_product : seeding_max_start_day
   component : seeding_max_start_day
   version : 1.0.0
-  filename : seeding/data.toml
+  filename : seeding/0.1.0.toml
 -
   data_product : rel_symptomatic
   component : rel_symptomatic
   version : 1.0.0
-  filename : relative_infectiousness/data.toml
+  filename : relative_infectiousness/0.1.0.toml
 -
   data_product : rel_subclinical
   component : rel_subclinical
   version : 1.0.0
-  filename : relative_infectiousness/data.toml
+  filename : relative_infectiousness/0.1.0.toml
 -
   data_product : rel_preclinical
   component : rel_preclinical
   version : 1.0.0
-  filename : relative_infectiousness/data.toml
+  filename : relative_infectiousness/0.1.0.toml
 -
   data_product : start_day
   component : start_day
   version : 1.0.0
-  filename : time/data.toml
+  filename : time/0.1.0.toml
 -
   data_product : end_day
   component : end_day
   version : 1.0.0
-  filename : time/data.toml
+  filename : time/0.1.0.toml
 -
   data_product : delay_gamma
   component : max_day_delay_gamma
@@ -137,7 +137,7 @@
   data_product : start_date_posix
   component : start_date_posix
   version : 1.0.0
-  filename : time/data.toml
+  filename : time/0.1.0.toml
 -
   data_product : dE
   component : dE
@@ -182,22 +182,22 @@
   data_product : isnational
   component : isnational
   version : 1.0.0
-  filename : lockdown_trigger/data.toml
+  filename : lockdown_trigger/0.1.0.toml
 -
   data_product : icu_bed_usage
   component : icu_bed_usage
   version : 1.0.0
-  filename : lockdown_trigger/data.toml
+  filename : lockdown_trigger/0.1.0.toml
 -
   data_product : intervention_shift
   component : intervention_shift
   version : 1.0.0
-  filename : lockdown_trigger/data.toml
+  filename : lockdown_trigger/0.1.0.toml
 -
   data_product : duration
   component : duration
   version : 1.0.0
-  filename : lockdown_trigger/data.toml
+  filename : lockdown_trigger/0.1.0.toml
 -
   data_product : r0_distribution
   component : r0_distribution
@@ -207,9 +207,9 @@
   data_product : tau
   component : tau
   version : 1.0.0
-  filename : tau/data.toml
+  filename : tau/0.1.0.toml
 -
   data_product : rho
   component : rho
   version : 1.0.0
-  filename : rho/data.toml
+  filename : rho/0.1.0.toml
