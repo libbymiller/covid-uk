@@ -1,17 +1,31 @@
-library(reticulate)
-library(SCRCdataAPI)
-library(magrittr)
-library(progress)
+##############################################################################
+#                                                                            #
+#                         API Model Output Handling                          #
+#                                                                            #
+#   Assembly and storage of results using the SCRC data pipeline.            #
+#                                                                            #
+#   @author : K. Zarebski                                                    #
+#   @date : last modified 2020-08-03                                         #
+#                                                                            #
+##############################################################################
 
+library(reticulate)  # Run Python commands within R
+library(SCRCdataAPI) # For storage of outputs
+library(magrittr)    # For special two way pipes
+library(progress)    # For progress bar
+
+# Determine Python binary from the current 'which python' command result
 python_version <- system("which python", intern=TRUE)
 use_python(python_version)
 
+# Import the StandardAPI from the SCRC data pipeline API
 api_py <- import("data_pipeline_api.standard_api")$StandardAPI$from_config
 StandardAPI <- function(config_loc)
 {
     return(api_py(config_loc, "test_uri", "test_git_sha"))
 }
 
+# DataFrame class for conversion to Python-friendly type
 pandas_df <- import("pandas")$DataFrame
 
 # Import utility and plotting functions 
@@ -19,6 +33,7 @@ scrc = file.path(covid_uk_path, "SCRC")
 source(file.path(scrc, "R", "plotting_utils_adapted.R"))
 source(file.path(scrc, "R", "plotting_utils_basic.R"))
 
+# Table specification for formatting outputs
 table_spec = fread(
   "compartment, stat, time
   cases, total, t
@@ -34,6 +49,12 @@ table_spec = fread(
   S, total_end, t"
 )
 
+#' Reformat/Prepare Dynamics Summary
+#' 
+#' Reformats output to give summary of the dynamics from a model run
+#' 
+#' @param t_dynamics Dynamics table from output
+#' @param format Format of output table
 prepare_dynamics_summary <- function(t_dynamics, format=table_spec)
 {
   table <- make_table(t_dynamics, format)
@@ -48,8 +69,16 @@ prepare_dynamics_summary <- function(t_dynamics, format=table_spec)
   )
 }
 
+#' Prepare/Format Dynamics Time Series Data
+#' 
+#' Creates a table showing the dynamics data over time
+#' for time series based outputs
+#' 
+#' @param t_dynamics Dynamics table from output
 prepare_dynamics <- function(t_dynamics)
 {
+  # Iterate through Base, Lockdown scenarios
+  # and fetch the time series data for each compartment
   output = list(Base=list(), Lockdown=list())
   for(s in names(output))
   {
@@ -80,6 +109,12 @@ prepare_dynamics <- function(t_dynamics)
   return(output)
 }
 
+#' Prepare/Format totals data
+#' 
+#' Reformat the totals output from the model run into
+#' a summary table
+#' 
+#' @param t_total Totals table from output
 prepare_totals <- function(t_total)
 {
   cases_deaths <- arrange_by_age_and_categ(t_total)
@@ -112,6 +147,14 @@ prepare_totals <- function(t_total)
   )
 }
 
+#' Send the Data to the API
+#' 
+#' Uses the API to create HDF5 files to store the output
+#' for both dynamics and totals
+#' 
+#' @param data_path Location of output qs files
+#' @param config_path Location of config.yaml API file
+#' @param make_csv Option to create CSV files also (Default: FALSE)
 push_data <- function(data_path, config_path, make_csv=FALSE)
 {
     output_location <- config_path %>%
