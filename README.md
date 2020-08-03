@@ -1,33 +1,21 @@
-# covid-uk
+# Scottish COVID Response Consortium Adaptation of the LSHTM COVID-UK Model
 ![LSHTM Model](https://github.com/ScottishCovidResponse/covid-uk/workflows/LSHTM%20Model/badge.svg)
 
-Stochastic age-structured model of SARS-nCoV-2 transmission for UK scenario projections.
+This is the SCRC version of the COVID-UK model by the London School of Hygiene & Tropical Medicine. The model is described as:
 
-## Removed Features
+*[A] Stochastic age-structured model of SARS-nCoV-2 transmission for UK scenario projections*.
 
-As this is important I have put this at the top of the README, the following features have been removed possibly pending future review:
-
-* **Varying the seeding time depending on whether the select region is a London borough.** The main issue with this is the method use assumes the data form is absolute (i.e. you want to run on every UK region simultaneously, when in the SCRC case we are initially only running on Scottish data).
-
-## Quick start guide
-
-### Installing dependencies for Mac OS
-
-You will need to install gfortran binaries from here: https://github.com/fxcoudert/gfortran-for-macOS/releases
-
-Once installed, run `gcc --version` in terminal to get your current version, e.g. `Target: x86_64-apple-darwin18.8.2.0`. Then run below in terminal to add library path for R:
-
-`cd ~
-mkdir .R
-cd .R
-echo FLIBS=-L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin18/8.2.0 -L/usr/local/gfortran/lib -lgfortran -lquadmath -lm >> Makevars
-`
-
-Finally, install nlopt: `brew install nlopt`
+The Wiki for this project can be found on this repository [here](https://github.com/ScottishCovidResponse/covid-uk/wiki).
 
 ## SCRC Implementation
 
 The SCRC implementation of the LSHTM model is designed to read data and parameters from external sources as opposed to using the included/built in parameters included within the original. Ultimately the wrapper will allow the model to be run either locally using these existing files, or by connecting to an external API which will provide the values.
+
+### Removed Features
+
+As this is important I have put this at the top of the README, the following features have been removed possibly pending future review:
+
+* **Varying the seeding time depending on whether the select region is a London borough.** The main issue with this is the method use assumes the data form is absolute (i.e. you want to run on every UK region simultaneously, when in the SCRC case we are initially only running on Scottish data).
 
 ### API Run Requirements
 
@@ -71,7 +59,7 @@ Rscript tests/regression/test_params.R
 
 the script will compare the latest dumps with the files contained within the `tests/test_data/baseline` folder.
 
-## Original Implementation
+## Original Model
 
 ### Guide to files
 
@@ -111,17 +99,6 @@ Here, 1 is the number for the analysis you want to run (1, 2.1, 2.2, 3, 4, 5, or
 6 - leisure and sports analyses
 
 For 50 runs, each set takes about 6-16 hours on a current laptop.
-
-## Testing After Development
-
-The R scripts require libaries to be installed (see the `Dockerfile` which contains a list of bash commands showing installation of these) and have been confirmed to run with Rscript `v4.0.0`.
-
-Included within the repository is a set of tests which are designed to be run from a development branch, they compare the results obtained with the current scripts to those obtained with running the original source code from the parent repository. It is recommended you run within the root of this repository:
-
-`./scripts/run_tests.sh`
-
-which will run the relevant R code followed by the Python nose tests.
-The tests require you to install the modules contained within the `tests/requirements.txt` file.
 
 ## Running on Docker (Recommended)
 
