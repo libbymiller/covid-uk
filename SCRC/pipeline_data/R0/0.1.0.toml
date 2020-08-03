@@ -1,0 +1,5 @@
+[r0_distribution]
+type = "distribution"
+distribution = "normal"
+mu = 2.675739
+sigma = 0.5719293

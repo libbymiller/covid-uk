@@ -1,7 +1,0 @@
-[mu]
-type = "point-estimate"
-value = 3.5
-
-[shape]
-type = "point-estimate"
-value = 4.0

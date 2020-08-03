@@ -1,0 +1,5 @@
+[dE]
+type = "distribution"
+distribution = "gamma"
+k = 4.0
+theta = 4.0

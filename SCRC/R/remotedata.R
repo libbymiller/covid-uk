@@ -116,9 +116,20 @@ unpack_times = function(config_loc)
     )
 }
 
+fetch_dis_components <- function(dis_label, config_loc)
+{
+    distribution = StandardAPI(config_loc)$read_distribution(dis_label, dis_label)
+    
+    return(
+        list(
+            loc = distribution$args[[1]],
+            scale = distribution$kwds[["scale"]]
+        )
+    )
+}
+
 unpack_dis_params = function(config_loc)
 {
-    read_estimate = StandardAPI(config_loc)$read_estimate
 
     compartments = c("dE", "dIp", "dIa", "dIs")
 
@@ -126,23 +137,28 @@ unpack_dis_params = function(config_loc)
 
     for(comp in compartments)
     {
-        params[[comp]] = list(mu=read_estimate(file.path("delay_gamma", comp), "mu"),
-                             shape=read_estimate(file.path("delay_gamma", comp), "shape")
-        )
+        args <- fetch_dis_components(comp, config_loc)
+
+        params[[comp]] = list(mu=args$loc,
+                             shape=args$scale)
+
     }
 
-    params[["delay_Ip_to_hosp"]] = list(mu=read_estimate(file.path("delay_gamma", "ip_to_hosp"), "mu"),
-                                        shape=read_estimate(file.path("delay_gamma", "ip_to_hosp"), "shape")
-                                        )
-    params[["delay_to_icu"]] = list(mu=read_estimate(file.path("delay_gamma", "to_icu"), "mu"),
-                                        shape=read_estimate(file.path("delay_gamma", "to_icu"), "shape")
-                                        )
-    params[["delay_to_non_icu"]] = list(mu=read_estimate(file.path("delay_gamma", "to_non_icu"), "mu"),
-                                        shape=read_estimate(file.path("delay_gamma", "to_non_icu"), "shape")
-                                        )
-    params[["delay_Ip_to_death"]] = list(mu=read_estimate(file.path("delay_gamma", "ip_to_death"), "mu"),
-                                        shape=read_estimate(file.path("delay_gamma", "ip_to_death"), "shape")
-                                        )
+    args <- fetch_dis_components("ip_to_hosp", config_loc)
+    params[["delay_Ip_to_hosp"]] = list(mu=args$loc,
+                                        shape=args$scale)
+
+    args <- fetch_dis_components("to_icu", config_loc)
+    params[["delay_to_icu"]] = list(mu=args$loc,
+                                    shape=args$scale)
+    
+    args <- fetch_dis_components("to_non_icu", config_loc)
+    params[["delay_to_non_icu"]] = list(mu=args$loc,
+                                        shape=args$scale)
+    
+    args <- fetch_dis_components("ip_to_death", config_loc)
+    params[["delay_Ip_to_death"]] = list(mu=args$loc,
+                                        shape=args$scale)
 
     return(params)
 }

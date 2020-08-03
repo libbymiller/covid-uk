@@ -127,97 +127,57 @@
   data_product : delay_gamma
   component : max_day_delay_gamma
   version : 1.0.0
-  filename : delay_gamma/data.toml
+  filename : delay_gamma/0.1.0.toml
 -
   data_product : delay_gamma
   component : time_step_delay_gamma
   version : 1.0.0
-  filename : delay_gamma/data.toml
+  filename : delay_gamma/0.1.0.toml
 -
   data_product : start_date_posix
   component : start_date_posix
   version : 1.0.0
   filename : time/data.toml
 -
-  data_product : delay_gamma/dE
-  component : mu
+  data_product : dE
+  component : dE
   version : 1.0.0
-  filename : delay_gamma/dE/data.toml
+  filename : dE/0.1.0.toml
 -
-  data_product : delay_gamma/dE
-  component : shape
+  data_product : dIp
+  component : dIp
   version : 1.0.0
-  filename : delay_gamma/dE/data.toml
+  filename : dIp/0.1.0.toml
 -
-  data_product : delay_gamma/dIp
-  component : mu
+  data_product : dIa
+  component : dIa
   version : 1.0.0
-  filename : delay_gamma/dIp/data.toml
+  filename : dIa/0.1.0.toml
 -
-  data_product : delay_gamma/dIp
-  component : shape
+  data_product : dIs
+  component : dIs
   version : 1.0.0
-  filename : delay_gamma/dIp/data.toml
+  filename : dIs/0.1.0.toml
 -
-  data_product : delay_gamma/dIs
-  component : mu
+  data_product : ip_to_hosp
+  component : ip_to_hosp
   version : 1.0.0
-  filename : delay_gamma/dIs/data.toml
+  filename : ip_to_hosp/0.1.0.toml
 -
-  data_product : delay_gamma/dIs
-  component : shape
+  data_product : to_icu
+  component : to_icu
   version : 1.0.0
-  filename : delay_gamma/dIs/data.toml
+  filename : to_icu/0.1.0.toml
 -
-  data_product : delay_gamma/dIa
-  component : mu
+  data_product : to_non_icu
+  component : to_non_icu
   version : 1.0.0
-  filename : delay_gamma/dIa/data.toml
+  filename : to_non_icu/0.1.0.toml
 -
-  data_product : delay_gamma/dIa
-  component : shape
+  data_product : ip_to_death
+  component : ip_to_death
   version : 1.0.0
-  filename : delay_gamma/dIa/data.toml
--
-  data_product : delay_gamma/to_icu
-  component : mu
-  version : 1.0.0
-  filename : delay_gamma/to_icu/data.toml
--
-  data_product : delay_gamma/to_icu
-  component : shape
-  version : 1.0.0
-  filename : delay_gamma/to_icu/data.toml
--
-  data_product : delay_gamma/to_non_icu
-  component : mu
-  version : 1.0.0
-  filename : delay_gamma/to_non_icu/data.toml
--
-  data_product : delay_gamma/to_non_icu
-  component : shape
-  version : 1.0.0
-  filename : delay_gamma/to_non_icu/data.toml
--
-  data_product : delay_gamma/ip_to_hosp
-  component : mu
-  version : 1.0.0
-  filename : delay_gamma/ip_to_hosp/data.toml
--
-  data_product : delay_gamma/ip_to_hosp
-  component : shape
-  version : 1.0.0
-  filename : delay_gamma/ip_to_hosp/data.toml
--
-  data_product : delay_gamma/ip_to_death
-  component : mu
-  version : 1.0.0
-  filename : delay_gamma/ip_to_death/data.toml
--
-  data_product : delay_gamma/ip_to_death
-  component : shape
-  version : 1.0.0
-  filename : delay_gamma/ip_to_death/data.toml
+  filename : ip_to_death/0.1.0.toml
 -
   data_product : isnational
   component : isnational
@@ -242,7 +202,7 @@
   data_product : r0_distribution
   component : r0_distribution
   version : 1.0.0
-  filename : R0/data.toml
+  filename : R0/0.1.0.toml
 -
   data_product : tau
   component : tau
