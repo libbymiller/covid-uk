@@ -1,85 +1,94 @@
-#######################################################
-#               Expected Arguments                    #
-#                                                     #
-# Single Value Fixed Parameters:                      #
-#   run_mode : "R0 Analysis" for the short simulation #
-#              on how an intervention affects R0 else #
-#              run normal model mode                  #
-#   from_bin : bin number which marks the lower age   #
-#              bound for someone being defined as     #
-#              elderly (default 15 for 16 bin with    #
-#              last bin as 75+)                       #
-#   time:                                             #
-#       max : Maximum time (in days)                  #
-#       step : Time interval (in days)                #
-#       start: start day                              #
-#       end: end day                                  #
-#   rho : ?                                           #
-#   tau : ?                                           #
-#   fIa : ?                                           #
-#   fIs : ?                                           #
-#   fIp : ?                                           #
-#   from_bin : bin at which we define the             #
-#              start of 'elderly' age state           #
-#   lockdown_trigger:                                 #
-#       trigger : "national"/"local" COVID trigger    #
-#       duration : duration of lockdown in days       #
-#       icu_bed_usage : occupancy of ICU bed usage    #
-#                       to trigger lockdown (option)  #
-#       intervention_shift : lockdown trigger based   #
-#                            on shift from peak       #
-#                                                     #
-#    rates: (school term, lockdown)                   #
-#           home, work, schools, other, home_elderly  #
-#        work_elderly, schools_elderly, other_elderly #
-#                                                     #
-#    seed:                                            #
-#           value, min_age, max_age                   #
-#                                                     #
-# Flags:                                              #
-#   deterministic : Determines age seeding            #
-#           (False: use seeding - age distribution)   #
-#                                                     #
-# Adjusted Parameters (modified during run):          #
-# UPDATE: Value of these is not important, output is  #
-# same so these will be set to constant values here   #
-#   u_init : ?                                        #
-#   y_init : ?                                        #
-#                                                     #
-# Distribution Parameters:                            #
-#   dE : gamma(mu, shape)                             #
-#   dIp : gamma(mu, shape)                            #
-#   dIs : gamma(mu, shape)                            #
-#   dIa : gamma(mu, shape)                            #
-#   delay_Ip_to_hosp : gamma(mu, shape) delay between #
-#                      becoming infectious and being  #
-#                      admitted to hospital           #
-#   delay_to_icu : gamma(mu, shape) delay between     #
-#                  hospital admission and ICU         #
-#   delay_to_non_icu : gamma(mu, shape) delay between #
-#                      hospital admission and non-ICU #
-#   delay_Ip_to_death : gamma(mu, shape) delay between#
-#                       infection and death           #
-#                                                     #
-# Array Parameters:                                   #
-#   population : binned population data               #
-#                list(label=list(), count=list()) ?   #
-#   interventions :                                   #
-#       list(label=list(val, val, ...), ...)          #
-#       (seems to be of length 9, no idea why yet)    #
-#                                                     #
-# Matrix Parameters:                                  #
-#   contact_matrix for given region:                  #
-#       list(home, work, school, other)               #
-#                                                     #
-#                                                     #
-# Age binning will be inferred from the data being    #
-# passed into the model?                              #
-#                                                     #
-# Will it be safe to assume all arrays passed into    #
-# this model will have the same age-binning?          #
-#######################################################
+##############################################################################
+#                                                                            #
+#                       Build Model Input Structures                         #
+#                                                                            #
+#   This file aims to replace the default behaviour of the LSHTM. Originally #
+#   parameters were constructed for all regions within the UK in sequence    #
+#   leading to long run times. Now a single set of parameters is constructed #
+#   based on the arguments passed which will ultimately be read from the     #
+#   SCRC data pipeline API.                                                  #
+#                                                                            #
+#   @author : K. Zarebski                                                    #
+#   @date   : last modified 2020-08-03                                       #
+#                                                                            #
+##############################################################################
+#                                                                            #
+#                            Expected Arguments                              #
+#                                                                            #
+#   The argument set provided during parameter construction is expected to   #
+#   contain the following:                                                   #
+#                                                                            #
+# Single Value Fixed Parameters:                                             #
+#   run_mode : - "R0 Analysis" for the short simulation on how               #
+#                intervention affects R0                                     #
+#              - Else for any other run normal model (also sets output       #
+#                filename label)                                             #
+#                                                                            #
+#   elderly_from_bin : bin number which marks the lower age bound for        #
+#                      someone to be classed as elderly                      #
+#                      (default 15 for 16 bin of 5 yrs, last bin "75+")      #                                          #
+#   time :                                                                   #
+#       - max : Maximum time (in days)                                       #
+#       - step : Time interval (in days)                                     #
+#       - start: start day                                                   #
+#       - end: end day                                                       #
+#   rho : ?                                                                  #
+#   tau : ?                                                                  #
+#   fIa : Asymptomatic infectiousness factor                                 #
+#   fIs : Symptomatic infectiousness factor                                  #
+#   fIp : Preclinical infectiousness factor                                  #
+#   lockdown_trigger:                                                        #
+#       - trigger : "national"/"local" COVID trigger                         #
+#       - duration : duration of lockdown in days                            #
+#       - icu_bed_usage : occupancy of ICU bed usage                         #
+#                       to trigger lockdown (option)                         #
+#       - intervention_shift : lockdown trigger based on shift from peak max #
+#    seed:                                                                   #
+#       - value : actual numeric seed                                        #
+#       - min_age :                                                          #
+#       - max_age :                                                          #
+#                                                                            #
+# Flags:                                                                     #
+#   deterministic : Determines age seeding                                   #
+#           (False: use seeding - age distribution)                          #
+#   child_elderly_matrix : Construct terms for contact between <15 and 55+   #
+#                                                                            #
+# Compartment Distribution Parameters:                                       #
+#      - dE  : gamma(mu, shape)                                              #
+#      - dIp : gamma(mu, shape)                                              #
+#      - dIs : gamma(mu, shape)                                              #
+#      - dIa : gamma(mu, shape)                                              #
+#      - delay_Ip_to_hosp : gamma(mu, shape) delay between becoming          # 
+#                           infectious and being admitted to hospital        #
+#      - delay_to_icu : gamma(mu, shape) delay between hospital admission    #
+#                       and ICU                                              #
+#   delay_to_non_icu : gamma(mu, shape) delay between hospital admission     #
+#                      and non-ICU                                           #
+#   delay_Ip_to_death : gamma(mu, shape) delay between infection and death   #
+#                                                                            #
+# Array/Table Parameters:                                                    #
+#      - population : table of binned population ages for UK regions         #
+#      - rates : (school term, lockdown) home, work, schools, other,         #
+#                home_elderly, work_elderly, schools_elderly, other_elderly  #
+#      - interventions : list(label=list(val, val, ...), ...)                #
+#                        matching the above with 9th term being for if       #
+#                        the option of child_elderly_matrix is set           #
+#                                                                            #
+# Matrix Parameters:                                                         #
+#      - contact_matrix for given region: list(home, work, school, other)    #
+#                                                                            #
+##############################################################################
 
+#' Build the Child-Elderly Contact Matrix
+#' 
+#' This function constructs the matrix between
+#' under 15s and over 55s if the relevant option
+#' is set to TRUE, if FALSE a matrix of zeros is constructed
+#' 
+#' @param population_parameters Parameter set on which to append the matrix
+#' @param child_grandparent_contacts Whether to add non-zero matrix terms
+#' @examples
+#' build_child_elderly_matrix(list(pop=list(..), TRUE))
 build_child_elderly_matrix = function(population_parameters, child_grandparent_contacts)
 {
     # Create additional matrix for child-elderly contacts
@@ -93,17 +102,18 @@ build_child_elderly_matrix = function(population_parameters, child_grandparent_c
     N = nrow(mat_ref);
     popsize = population_parameters$pop[[j]]$size;
     mat = matrix(0, ncol = N, nrow = N);
-    
+
     # Add child-grandparent contacts: under 15s to 55+s
-    if(child_grandparent_contacts == TRUE)
+    if(child_grandparent_contacts == FALSE)
     {
+        cat("[Child-Elderly Contacts]:\n\tAdding Child (<15) - Grandparent (55+) Contacts Matrix\n")
         for (a in 1:3) {
             dist = c(rep(0, 10 + a), mat_ref[a, (11 + a):N]);
             dist = dist/sum(dist);
             mat[a, ] = mat[a, ] + gran * dist;
             mat[, a] = mat[, a] + (gran * dist) * (popsize[a] / popsize);
         }
-    } 
+    }
     # Add child-grandparent contact matrix to population
     population_parameters$pop[[j]]$matrices$gran = mat;
     population_parameters$pop[[j]]$contact = c(population_parameters$pop[[j]]$contact, 0);
@@ -120,6 +130,16 @@ reformat = function(P)
   return (rep(x, each = 2))
 }
 
+#' Construct the process probability arrays
+#' 
+#' Function constructs arrays of probabilities for
+#' the various stages of ICU and non-ICU cases and deaths
+#' using the given arguments set built either via API or local methods
+#' 
+#' @param arguments Argument set containing the required probabilities
+#' 
+#' @examples
+#' build_burden_processes(list(health_burden_probabilities=list(Prop_symp_hospitalised=0.1,...)))
 build_burden_processes = function(arguments)
 {
     process_probs = arguments$health_burden_probabilities
@@ -185,9 +205,17 @@ build_burden_processes = function(arguments)
     return (burden_processes)
 }
 
+#' Build the parameter subset
+#' 
+#' Function constructs parameter subset for a single region
+#' using the provided arguments. This is an adaptation of the original
+#' model run which constructed this subset for every region in tandem.
+#' 
+#' @param arguments Argument set from which to construct these parameters
+#' @param subset_label Label to identify this subset
 build_population_for_subset = function(arguments, subset_label)
 {
-# Construct Gamma Distributions using the 
+    # Construct Gamma Distributions using the 
     # cm_delay_gamma function for dE, dIp, dIs, dIa
 
     fixed_params = list( 
@@ -274,6 +302,13 @@ build_population_for_subset = function(arguments, subset_label)
     return(subset_parameter_set)
 }
 
+#' Constructs a parameter set for a given set of arguments
+#' 
+#' Function receives a complete list of arguments in order
+#' to then construct a parameter set including a member for population which
+#' is itself a parameter subset.
+#' 
+#' @param arguments Arguments for which to construct the parameters
 build_params_from_args = function(arguments)
 {
     subset_parameter_set = build_population_for_subset(arguments, 'subset')
