@@ -21,7 +21,7 @@ product_name <- file.path("schools",
 
 tmp <- as.Date(date_accessed, format = "%Y-%m-%d")
 
-version_number <- paste("0", gsub("-", "", tmp), "0" , sep = ".")
+version_number <- paste(struct_version, gsub("-", "", tmp), dataset_version, sep = ".")
 
 namespace <- "LSHTM"
 
@@ -33,12 +33,12 @@ product_path <- product_name
 
 product_filename <- paste0(version_number, ".h5")
 
-product_storageRootId <- new_storage_root(name = product_storageRoot,
-                                          root = "ftp://boydorr.gla.ac.uk/scrc/",
-                                          key = key)
+#product_storageRootId <- new_storage_root(name = product_storageRoot,
+#                                          root = "ftp://boydorr.gla.ac.uk/scrc/",
+#                                          key = key)
 
-namespaceId <- new_namespace(name = namespace,
-                             key = key)
+#namespaceId <- new_namespace(name = namespace,
+#                             key = key)
 
 retrieve_file_data <- function()
 {
@@ -55,4 +55,4 @@ retrieve_file_data <- function()
 
 data <- retrieve_file_data()
 
-create_table(file="data_2.h5", path="SCRC/pipeline_data/school_terms", component="school_terms", df=data)
+create_table(file=paste(version_number, "h5", sep="."), path="SCRC/pipeline_data/school_terms", component="school_terms", df=data)

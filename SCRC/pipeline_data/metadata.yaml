@@ -67,7 +67,7 @@
   data_product : school_terms
   component : school_terms
   version : 1.0.0
-  filename : school_terms/data.h5
+  filename : school_terms/0.20200803.0.h5
 -
   data_product : intervention_rates
   component : intervention_rates
