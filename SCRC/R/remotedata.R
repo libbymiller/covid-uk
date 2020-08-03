@@ -94,7 +94,7 @@ unpack_matrices = function(config_loc)
     contact_matrices[["region"]] = list()
     for(name in matrix_names)
     {
-        Array = read_array("uk_national_contact_matrices", file.path("uk_national_matrices", name))
+        Array = read_array("national_contact_matrices", file.path("contact_matrices", name))
         contact_matrices[["region"]][[name]] = Array$data
     }
 

@@ -101,7 +101,7 @@ uk_matrices <- fetch_all_matrices_for_UK()
 for(matrix in names(uk_matrices))
 {
     create_array(file=paste(version_number,"h5",sep="."),
-                 path="SCRC/pipeline_data/uk_national_contact_matrices",
-                 array=uk_matrices[[matrix]], component=file.path("uk_national_matrices", matrix), 
+                 path="SCRC/pipeline_data/national_contact_matrices",
+                 array=uk_matrices[[matrix]], component=file.path("contact_matrices", matrix), 
                  dimension_names=list(rowvalue=rownames(uk_matrices[[matrix]]), colvalue=colnames(uk_matrices[[matrix]])))
 }
