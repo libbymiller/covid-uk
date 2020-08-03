@@ -54,7 +54,7 @@ unpack_seeding = function(config_loc)
 }
 
 # FIXME: Assume in future these two data sets will be separate
-# UNITED KINGDOM set should be read as is, but "sample" set can be
+# UNITED KINGDOM set should be read as is, but "subset" set can be
 # any other data set in the same form (eg. health board in same binning)
 # or specify a different region below
 
@@ -66,7 +66,7 @@ unpack_populations = function(config_loc, region="Glasgow City")
     return(
         list(
             region = pop_size[which(pop_size$Name == "UNITED KINGDOM"), ] %>% select(., -Name) %>% as.vector %>% as.numeric,
-            sample = pop_size[which(pop_size$Name %like% region), ] %>% select(., -Name) %>% as.vector %>% as.numeric
+            subset = pop_size[which(pop_size$Name %like% region), ] %>% select(., -Name) %>% as.vector %>% as.numeric
         )
     )
 
@@ -77,18 +77,18 @@ unpack_matrices = function(config_loc)
     read_array = StandardAPI(config_loc)$read_array
 
     # Model relies on two sets of matrices, the 'region'
-    # set e.g. [1] Scotland, [2] UK and the 'sample' set 
+    # set e.g. [1] Scotland, [2] UK and the 'subset' set 
     # set of that region e.g. [1] Scot. Health Board, [2] Scotland
 
     matrix_names = c("home", "other", "school", "work")
 
     contact_matrices = list()
 
-    contact_matrices[["sample"]] = list()
+    contact_matrices[["subset"]] = list()
     for(name in matrix_names)
     {
         Array = read_array("subregion_matrices", file.path("contact_matrices", name))
-        contact_matrices[["sample"]][[name]] = Array$data
+        contact_matrices[["subset"]][[name]] = Array$data
     }
 
     contact_matrices[["region"]] = list()

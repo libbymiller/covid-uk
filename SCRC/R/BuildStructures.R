@@ -185,7 +185,7 @@ build_burden_processes = function(arguments)
     return (burden_processes)
 }
 
-build_population_for_sample = function(arguments, sample_label)
+build_population_for_subset = function(arguments, subset_label)
 {
 # Construct Gamma Distributions using the 
     # cm_delay_gamma function for dE, dIp, dIs, dIa
@@ -239,11 +239,11 @@ build_population_for_sample = function(arguments, sample_label)
     u_init = 0.08
     y_init = 0.5
 
-    contact_matrices = arguments$contact_matrices[[sample_label]]
-    population_size = arguments$size[[sample_label]]
+    contact_matrices = arguments$contact_matrices[[subset_label]]
+    population_size = arguments$size[[subset_label]]
 
     # Organize parameters into form recognised by model
-    sample_parameter_set = list(
+    subset_parameter_set = list(
         type = "SEI3R",
         dE = distribution_params$gamma$dE$p,
         dIp = distribution_params$gamma$dIp$p,
@@ -267,21 +267,21 @@ build_population_for_sample = function(arguments, sample_label)
         dist_seed_ages = rep(1, arguments$ngroups),
         schedule = list(), # Set time steps for various parameter change events (e.g. scaling of contact matrices)
         observer = NULL,    # Series of callback functions used to trigger events based on variable values
-        name = sample_label,
+        name = subset_label,
         group_names = arguments$group_names
     )
     
-    return(sample_parameter_set)
+    return(subset_parameter_set)
 }
 
 build_params_from_args = function(arguments)
 {
-    sample_parameter_set = build_population_for_sample(arguments, 'sample')
+    subset_parameter_set = build_population_for_subset(arguments, 'subset')
 
     if(dump_params)
     {
         output_file = file.path(covid_uk_path, "output", paste0("Sample-stage1-params-", gsub(" ", "", gsub(":","",Sys.time())), ".pars"))
-        dput(sample_parameter_set, file=output_file)
+        dput(subset_parameter_set, file=output_file)
         message(paste0("Initial Params saved to '", output_file))
     }
 
@@ -289,14 +289,14 @@ build_params_from_args = function(arguments)
     burden_processes = build_burden_processes(arguments)
 
     parameter_set = list(
-        pop = list(sample_parameter_set),
+        pop = list(subset_parameter_set),
         date0 = arguments$time$start_date,
         time0 = as.numeric(arguments$time$start),
         time1 = as.numeric(arguments$time$end),
         report_every = as.numeric(arguments$report_frequency),
         fast_multinomial = arguments$fast_multinomial,
         deterministic = arguments$deterministic, 
-        travel = diag(length(list(sample_parameter_set))),
+        travel = diag(length(list(subset_parameter_set))),
         processes = burden_processes,
         time_step = as.numeric(arguments$time$step)
     )
@@ -306,9 +306,9 @@ build_params_from_args = function(arguments)
     population_set = cm_split_matrices_ex_in(parameter_set,
                                                        as.numeric(arguments$elderly_from_bin))
 
-    sample_parameter_set = build_child_elderly_matrix(population_set, arguments$child_grandparent_contacts)
+    subset_parameter_set = build_child_elderly_matrix(population_set, arguments$child_grandparent_contacts)
 
-    region_params = build_population_for_sample(arguments, 'region')
+    region_params = build_population_for_subset(arguments, 'region')
 
     if(dump_params)
     {
@@ -332,6 +332,6 @@ build_params_from_args = function(arguments)
 
     # Requires an unmodified version (analog to parametersUK1 in UK.R)
 
-    return(list(unmodified=unmodified_set, parameters=sample_parameter_set))
+    return(list(unmodified=unmodified_set, parameters=subset_parameter_set))
 
 }

@@ -122,7 +122,7 @@ local_data = function(covid_dir, n_runs)
     config_params$school_terms = list(close = school_terms[, 1], reopen=school_terms[, 2])
 
     # Setup region name for producing parameters to set R0 and
-    # sample name for the parameters on which to run the model
+    # subset name for the parameters on which to run the model
     # in this example: 158 - "Glasgow City"
 
     region_index  = 158
@@ -130,25 +130,25 @@ local_data = function(covid_dir, n_runs)
     options_print_str = c(options_print_str, paste("\n\tRunning Region: ", cm_uk_locations(config_params, "UK", 3)[[region_index]]))
 
     config_params$region_name  = cm_uk_locations(config_params, "UK", 0)
-    config_params$sample_name  = cm_uk_locations(config_params, "UK", 3)[[region_index]]
+    config_params$subset_name  = cm_uk_locations(config_params, "UK", 3)[[region_index]]
 
     # Read the contact matrices
     contact_matrices = readRDS(file.path(covid_dir, local_data_files$contact_matrices_file))
     config_params$contact_matrices$region = contact_matrices[[config_params$region_name]]
-    config_params$contact_matrices$sample = contact_matrices[[config_params$sample_name]]
+    config_params$contact_matrices$subset = contact_matrices[[config_params$subset_name]]
   
     # Determine the minimum number of age groups present in this data
     config_params$ngroups = config_params$contact_matrices$region %>% .$other %>% colnames %>% length
 
-    # Get Population sizes for region and sample
+    # Get Population sizes for region and subset
     demographics_regional = cm_get_demographics(config_params$region_name, config_params$ngroups);
 
     config_params$size = list()
 
     config_params$size$region = demographics_regional[, round((f + m) * 1000)];
 
-    demographics_sample = cm_get_demographics(config_params$sample_name, config_params$ngroups)
-    config_params$size$sample = demographics_sample[, round((f + m) * 1000)];
+    demographics_subset = cm_get_demographics(config_params$subset_name, config_params$ngroups)
+    config_params$size$subset = demographics_subset[, round((f + m) * 1000)];
  
     # Define interventions to be used
     int_par = read.ini(local_data_files$interventions_file)

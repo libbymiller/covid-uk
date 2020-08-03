@@ -6,9 +6,9 @@
 #   these are used in the construction of the UK parameter set (labelled     #
 #   "region" set within code) which is used to calculate the R0 adjustment   #
 #   only. This is NOT the data set which is being simulated                  #
-#   (labelled "sample"). Technically the region parameter set/matrices etc   #
-#   could be held constant for every model run, replace these at your own    #
-#   risk.                                                                    #
+#   (labelled "sample"/"subregion"). Technically the region parameter        #
+#   set/matrices etc could be held constant for every model run, replace     #
+#   these at your own risk.                                                  #
 #                                                                            #
 ##############################################################################
 
