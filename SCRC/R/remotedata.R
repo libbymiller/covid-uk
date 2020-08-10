@@ -205,28 +205,28 @@ unpack_dis_params = function(config_loc)
 
     for(comp in compartments)
     {
-        args <- fetch_gamma_components(comp, config_loc)
+        args <- fetch_gamma_components(file.path("distributions", comp), config_loc)
 
-        params[[comp]] = list(mu=args$loc,
-                             shape=args$scale)
+        params[[comp]] = list(mu=args$k,
+                             shape=args$theta)
 
     }
 
-    args <- fetch_gamma_components("ip_to_hosp", config_loc)
-    params[["delay_Ip_to_hosp"]] = list(mu=args$loc,
-                                        shape=args$scale)
+    args <- fetch_gamma_components(file.path("distributions", "ip_to_hosp"), config_loc)
+    params[["delay_Ip_to_hosp"]] = list(mu=args$k,
+                                        shape=args$theta)
 
-    args <- fetch_gamma_components("to_icu", config_loc)
-    params[["delay_to_icu"]] = list(mu=args$loc,
-                                    shape=args$scale)
+    args <- fetch_gamma_components(file.path("distributions", "to_icu"), config_loc)
+    params[["delay_to_icu"]] = list(mu=args$k,
+                                    shape=args$theta)
     
-    args <- fetch_gamma_components("to_non_icu", config_loc)
-    params[["delay_to_non_icu"]] = list(mu=args$loc,
-                                        shape=args$scale)
+    args <- fetch_gamma_components(file.path("distributions", "to_non_icu"), config_loc)
+    params[["delay_to_non_icu"]] = list(mu=args$k,
+                                        shape=args$theta)
     
-    args <- fetch_gamma_components("ip_to_death", config_loc)
-    params[["delay_Ip_to_death"]] = list(mu=args$loc,
-                                        shape=args$scale)
+    args <- fetch_gamma_components(file.path("distributions", "ip_to_death"), config_loc)
+    params[["delay_Ip_to_death"]] = list(mu=args$k,
+                                        shape=args$theta)
 
     return(params)
 }
@@ -269,7 +269,7 @@ create_R0s = function(config_loc, seed, n)
 
     read_distribution = StandardAPI(config_loc)$read_distribution
 
-    norm = read_distribution("r0_distribution", "r0_distribution")
+    norm = read_distribution("distributions/R0", "R0")
 
     return(norm$rvs(as.integer(n)))
 }
@@ -307,8 +307,8 @@ objects = function(config_loc)
             fIa = read_estimate("rel_subclinical", "rel_subclinical"),
             time = unpack_times(config_loc),
             lockdown_trigger = unpack_trigger(config_loc),
-            tau = read_estimate("tau", "tau"),
-            rho = read_estimate("rho", "rho")
+            tau = read_estimate("fixed-parameters/tau", "tau"),
+            rho = read_estimate("fixed-parameters/rho", "rho")
         )
     params = append(params, unpack_dis_params(config_loc))
     params$ngroups = params$contact_matrices$region$other %>% length %>% sqrt(.)

@@ -1,5 +1,6 @@
-[dIa]
+[dIp]
 type = "distribution"
 distribution = "gamma"
-k = 5.0
-theta = 4.0
+k = 1.5
+theta = 4
+

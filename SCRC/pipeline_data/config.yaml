@@ -1,3 +1,29 @@
 data_directory: .
 run_id: local_test
-fail_on_hash_mismatch: False
+access_log: access-{run_id}.yaml
+fail_on_hash_mismatch: True
+run_metadata:
+  default_input_namespace: LSHTM
+read:
+  - where:
+      data_product: distributions/R0
+  - where:
+      data_product: distributions/to_icu
+  - where:
+      data_product: distributions/to_non_icu
+  - where:
+      data_product: distributions/dIs
+  - where:
+      data_product: distributions/dIa
+  - where:
+      data_product: distributions/dIp
+  - where:
+      data_product: distributions/dE
+  - where:
+      data_product: distributions/ip_to_death
+  - where:
+      data_product: distributions/ip_to_hosp
+  - where:
+      data_product: fixed-parameters/tau
+  - where:
+      data_product: fixed-parameters/rho

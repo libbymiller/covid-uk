@@ -1,5 +1,6 @@
-[dIs]
+[ip_to_death]
 type = "distribution"
 distribution = "gamma"
-k = 3.5
-theta = 4.0
+k = 22
+theta = 22
+

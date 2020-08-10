@@ -1,5 +1,6 @@
-[to_icu]
+[ip_to_hosp]
 type = "distribution"
 distribution = "gamma"
-k = 10
-theta = 10
+k = 7
+theta = 7
+

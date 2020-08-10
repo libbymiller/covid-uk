@@ -1,215 +1,88 @@
--
-  data_product : age_var_symptomatic_rates
-  component : age_varying_symptomatic_rates
-  version : 1.0.0
-  filename : age_var_symptomatic_rates/data.h5
--
-  data_product : health_burden_processes
-  component : health_burden_processes
-  version : 1.0.0
-  filename : health_burden_processes/data.h5
--
-  data_product : national_contact_matrices
-  component : contact_matrices/home
-  version : 1.0.0
-  filename : national_contact_matrices/0.20200803.0.h5
--
-  data_product : national_contact_matrices
-  component : contact_matrices/other
-  version : 1.0.0
-  filename : national_contact_matrices/0.20200803.0.h5
--
-  data_product : national_contact_matrices
-  component : contact_matrices/work
-  version : 1.0.0
-  filename : national_contact_matrices/0.20200803.0.h5
--
-  data_product : national_contact_matrices
-  component : contact_matrices/school
-  version : 1.0.0
-  filename : national_contact_matrices/0.20200803.0.h5
--
-  data_product : subregion_matrices
-  component : contact_matrices/home
-  version : 1.0.0
-  filename : subregion_contact_matrices/0.20200803.0.h5
--
-  data_product : subregion_matrices
-  component : contact_matrices/other
-  version : 1.0.0
-  filename : subregion_contact_matrices/0.20200803.0.h5
--
-  data_product : subregion_matrices
-  component : contact_matrices/work
-  version : 1.0.0
-  filename : subregion_contact_matrices/0.20200803.0.h5
--
-  data_product : subregion_matrices
-  component : contact_matrices/school
-  version : 1.0.0
-  filename : subregion_contact_matrices/0.20200803.0.h5
--
-  data_product : lockdown_rates
-  component : lockdown_rates
-  version : 1.0.0
-  filename : lockdown_rates/data.h5
--
-  data_product : school_holiday_rates
-  component : school_holiday_rates
-  version : 1.0.0
-  filename : school_holiday_rates/data.h5
--
-  data_product : population_size/persons
-  component : population_size/persons
-  version : 1.0.0
-  filename : population_sizes/0.20200729.0.h5
--
-  data_product : school_terms
-  component : school_terms
-  version : 1.0.0
-  filename : school_terms/0.20200803.0.h5
--
-  data_product : intervention_rates
-  component : intervention_rates
-  version : 1.0.0
-  filename : intervention_rates/data.h5
--
-  data_product : seed
-  component : seed
-  version : 1.0.0
-  filename : seeding/0.1.0.toml
--
-  data_product : min_age
-  component : min_age
-  version : 1.0.0
-  filename : seeding/0.1.0.toml
--
-  data_product : max_age
-  component : max_age
-  version : 1.0.0
-  filename : seeding/0.1.0.toml
--
-  data_product : seeding_min_start_day
-  component : seeding_min_start_day
-  version : 1.0.0
-  filename : seeding/0.1.0.toml
--
-  data_product : seeding_max_start_day
-  component : seeding_max_start_day
-  version : 1.0.0
-  filename : seeding/0.1.0.toml
--
-  data_product : rel_symptomatic
-  component : rel_symptomatic
-  version : 1.0.0
-  filename : relative_infectiousness/0.1.0.toml
--
-  data_product : rel_subclinical
-  component : rel_subclinical
-  version : 1.0.0
-  filename : relative_infectiousness/0.1.0.toml
--
-  data_product : rel_preclinical
-  component : rel_preclinical
-  version : 1.0.0
-  filename : relative_infectiousness/0.1.0.toml
--
-  data_product : start_day
-  component : start_day
-  version : 1.0.0
-  filename : time/0.1.0.toml
--
-  data_product : end_day
-  component : end_day
-  version : 1.0.0
-  filename : time/0.1.0.toml
--
-  data_product : delay_gamma
-  component : max_day_delay_gamma
-  version : 1.0.0
-  filename : delay_gamma/0.1.0.toml
--
-  data_product : delay_gamma
-  component : time_step_delay_gamma
-  version : 1.0.0
-  filename : delay_gamma/0.1.0.toml
--
-  data_product : start_date_posix
-  component : start_date_posix
-  version : 1.0.0
-  filename : time/0.1.0.toml
--
-  data_product : dE
-  component : dE
-  version : 1.0.0
-  filename : dE/0.1.0.toml
--
-  data_product : dIp
-  component : dIp
-  version : 1.0.0
-  filename : dIp/0.1.0.toml
--
-  data_product : dIa
-  component : dIa
-  version : 1.0.0
-  filename : dIa/0.1.0.toml
--
-  data_product : dIs
-  component : dIs
-  version : 1.0.0
-  filename : dIs/0.1.0.toml
--
-  data_product : ip_to_hosp
-  component : ip_to_hosp
-  version : 1.0.0
-  filename : ip_to_hosp/0.1.0.toml
--
-  data_product : to_icu
-  component : to_icu
-  version : 1.0.0
-  filename : to_icu/0.1.0.toml
--
-  data_product : to_non_icu
-  component : to_non_icu
-  version : 1.0.0
-  filename : to_non_icu/0.1.0.toml
--
-  data_product : ip_to_death
-  component : ip_to_death
-  version : 1.0.0
-  filename : ip_to_death/0.1.0.toml
--
-  data_product : isnational
-  component : isnational
-  version : 1.0.0
-  filename : lockdown_trigger/0.1.0.toml
--
-  data_product : icu_bed_usage
-  component : icu_bed_usage
-  version : 1.0.0
-  filename : lockdown_trigger/0.1.0.toml
--
-  data_product : intervention_shift
-  component : intervention_shift
-  version : 1.0.0
-  filename : lockdown_trigger/0.1.0.toml
--
-  data_product : duration
-  component : duration
-  version : 1.0.0
-  filename : lockdown_trigger/0.1.0.toml
--
-  data_product : r0_distribution
-  component : r0_distribution
-  version : 1.0.0
-  filename : R0/0.1.0.toml
--
-  data_product : tau
-  component : tau
-  version : 1.0.0
-  filename : tau/0.1.0.toml
--
-  data_product : rho
-  component : rho
-  version : 1.0.0
-  filename : rho/0.1.0.toml
+- accessibility: 0
+  component: rho
+  data_product: fixed-parameters/rho
+  extension: toml
+  filename: fixed-parameters/rho/0.1.0/0.1.0.toml
+  namespace: LSHTM
+  verified_hash: d5e7c98e1abdc8212152a1475f82f7de557f372b
+  version: 0.1.0
+- accessibility: 0
+  component: tau
+  data_product: fixed-parameters/tau
+  extension: toml
+  filename: fixed-parameters/tau/0.1.0/0.1.0.toml
+  namespace: LSHTM
+  verified_hash: 2e53cfe99ccd38a7c065b957865eb4cdd687463a
+  version: 0.1.0
+- accessibility: 0
+  component: ip_to_hosp
+  data_product: distributions/ip_to_hosp
+  extension: toml
+  filename: distributions/ip_to_hosp/0.1.0/0.1.0.toml
+  namespace: LSHTM
+  verified_hash: af0d3413bd6561cd7fbdffaac767c0af5f784efc
+  version: 0.1.0
+- accessibility: 0
+  component: ip_to_death
+  data_product: distributions/ip_to_death
+  extension: toml
+  filename: distributions/ip_to_death/0.1.0/0.1.0.toml
+  namespace: LSHTM
+  verified_hash: d39b9b3b1e931156414579829d69b422b8b03dc1
+  version: 0.1.0
+- accessibility: 0
+  component: dE
+  data_product: distributions/dE
+  extension: toml
+  filename: distributions/dE/0.1.0/0.1.0.toml
+  namespace: LSHTM
+  verified_hash: a228861317e47f4a91fbe1dd2d76ef1e37dcae09
+  version: 0.1.0
+- accessibility: 0
+  component: dIp
+  data_product: distributions/dIp
+  extension: toml
+  filename: distributions/dIp/0.1.0/0.1.0.toml
+  namespace: LSHTM
+  verified_hash: 75c0b658579b2b4680deb2f86fd72c76fbdbad13
+  version: 0.1.0
+- accessibility: 0
+  component: dIa
+  data_product: distributions/dIa
+  extension: toml
+  filename: distributions/dIa/0.1.0/0.1.0.toml
+  namespace: LSHTM
+  verified_hash: 2e88fdf8feffaa70fb22be9c794d8b12338fab70
+  version: 0.1.0
+- accessibility: 0
+  component: dIs
+  data_product: distributions/dIs
+  extension: toml
+  filename: distributions/dIs/0.1.0/0.1.0.toml
+  namespace: LSHTM
+  verified_hash: 36b2f759b987074b34119f5e20ebc5b2cc24c8a0
+  version: 0.1.0
+- accessibility: 0
+  component: to_non_icu
+  data_product: distributions/to_non_icu
+  extension: toml
+  filename: distributions/to_non_icu/0.1.0/0.1.0.toml
+  namespace: LSHTM
+  verified_hash: a0fe6ef6c5f762961992dd31a6295ccc91ddde07
+  version: 0.1.0
+- accessibility: 0
+  component: to_icu
+  data_product: distributions/to_icu
+  extension: toml
+  filename: distributions/to_icu/0.1.0/0.1.0.toml
+  namespace: LSHTM
+  verified_hash: e97f4293d0c0e891a94c7da61fae7e7587bf0a9f
+  version: 0.1.0
+- accessibility: 0
+  component: R0
+  data_product: distributions/R0
+  extension: toml
+  filename: distributions/R0/0.1.0/0.1.0.toml
+  namespace: LSHTM
+  verified_hash: 3bd4f4683bf44427a2f1b7c02b277a5e1b21bda4
+  version: 0.1.0
