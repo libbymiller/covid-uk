@@ -291,8 +291,6 @@ objects = function(config_loc)
     #health_burden_probabilities = read_table("health_burden_processes", "health_burden_processes")
 
     matrix_data = unpack_matrices(config_loc)
-    print("DAMNS")
-
 
     params = list(
             age_var_symptom_rates = data.table(read_table("age_var_symptomatic_rates", "age_varying_symptomatic_rates")),
@@ -300,7 +298,7 @@ objects = function(config_loc)
             contact_matrices = matrix_data$matrices,
             group_names = matrix_data$group_names,
             lockdown_rates = read_table("lockdown_rates", "lockdown_rates"),
-            school_holiday_rates = read_table("school_holiday_rates", "school_holiday_rates")[,1],
+            school_holiday_rates = read_table("school/holiday_rates", "school_holiday_rates") %>% as.integer,
             size = unpack_populations(config_loc),
             school_terms = unpack_terms(config_loc),
             seed = unpack_seeding(config_loc),

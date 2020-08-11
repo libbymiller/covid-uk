@@ -37,7 +37,7 @@ if(!file.exists(token_file))
     stop(paste("Failed to find file API token file at", token_file))
 }
 
-key <- read.table("SCRC/data_uploading/token.txt")
+key <- read.table(token_file)
 
 if(is.na(region))
 {
@@ -58,7 +58,7 @@ description <- paste(survey_obj$reference$title, paste0(survey_obj$reference$aut
 
 tmp <- as.Date(date_accessed, format = "%Y-%m-%d")
 
-version_number <- paste("0", gsub("-", "", tmp), "0" , sep = ".")
+version_number <- paste(struct_version, gsub("-", "", tmp), dataset_version , sep = ".")
 namespace <- "LSHTM"
 product_name <- file.path("contact_matrices", "subregion")
 
