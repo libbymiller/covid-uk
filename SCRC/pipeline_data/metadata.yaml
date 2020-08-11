@@ -223,6 +223,14 @@
   verified_hash: 15de9a69d23219da7bed6ba01d605e5651768803
   version: 0.20200811.0
 - accessibility: 0
+  component: school_terms
+  data_product: school/school_terms
+  extension: h5
+  filename: school/school_terms/0.20200811.0/0.20200811.0.h5
+  namespace: LSHTM
+  verified_hash: d354e26fe7accc586b75f124214103b188b37e80
+  version: 0.20200811.0
+- accessibility: 0
   component: school_holiday_rates
   data_product: school/holiday_rates
   extension: h5

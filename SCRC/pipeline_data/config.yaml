@@ -8,6 +8,8 @@ read:
   - where:
       data_product: school/holiday_rates
   - where:
+      data_product: school/school_terms
+  - where:
       data_product: contact_matrices/subregion
   - where:
       data_product: contact_matrices/national
