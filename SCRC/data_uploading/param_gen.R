@@ -20,12 +20,17 @@
 
 library(SCRCdataAPI)    # Requires the latest SCRCdataAPI library
 library(progress)
+library(magrittr)
 
 # Start constructing address locations:
 #   - LSHTM/fixed-parameters
 
 namespace <- "LSHTM"
-prefix <- list(fixed="fixed-parameters", dist="distributions")
+prefix <- list(fixed="fixed-parameters",
+               dist="distributions",
+               run_config="run-configuration",
+               lockdown="lockdown"
+            )
 
 key <- read.table(token_file)
 
@@ -47,6 +52,54 @@ params <- list(
     list(name="rho",       value=1,      version=global_version)
 )
 
+# Parameter set object for TOML files containing more than one parameter each
+
+parameter_set <- function(prefix, set_name, param_names, values, version=global_version)
+{
+    return(
+        list(
+            prefix=prefix,
+            set_name = set_name,
+            param_names=param_names,
+            values = values,
+            version = version
+        )
+    )
+}
+
+param_sets <- list(
+    parameter_set(prefix$run_config,
+        "time",
+        c("start_day", "end_day", "start_date_posix"),
+        c(0, 365, 18290)
+    ),
+    parameter_set(prefix$run_config,
+        "seeding",
+        c("seed", "min_age", "max_age", "seeding_min_start_day", "seeding_max_start_day"),
+        c(-1, 25, 50, 0, 20)
+    ),
+    parameter_set(prefix$fixed,
+        "relative_infectiousness",
+        c("rel_preclinical", "rel_symptomatic", "rel_subclinical"),
+        c(1, 1, 0.5)
+    ),
+    parameter_set(prefix$fixed,
+        "delay_gamma",
+        c("max_delay_gamma", "time_step_delay_gamma"),
+        c(60, 0.25)
+    ),
+    parameter_set(prefix$lockdown,
+        "triggers",
+        c("intervention_shift", "icu_bed_usage"),
+        c(0, -1)
+    ),
+    parameter_set(prefix$lockdown,
+        "config",
+        c("isnational", "duration"),
+        c(1, 84)
+    )
+)
+
 # List of prior distributions and their parameters, if a single distribution is
 # updated without changing the others the version number should also be set
 distributions <- list(
@@ -63,54 +116,79 @@ distributions <- list(
 
 # Iterate through fixed parameters creating TOML objects and adding them
 # as statements within the DataRegistry
-pb <- progress_bar$new(total = length(params))
-for(param in params)
-{
-    name <- file.path(prefix$fixed, param$name)
-    path <- paste("master", namespace, name, sep = "/")
-    filename <- paste0(param$version, ".toml")
-    component_name <- gsub("^.*/([^/]*)$", "\\1", name)
+# pb <- progress_bar$new(total = length(params))
+# for(param in params)
+# {
+#     name <- file.path(prefix$fixed, param$name)
+#     path <- paste("master", namespace, name, sep = "/")
+#     filename <- paste0(param$version, ".toml")
+#     component_name <- gsub("^.*/([^/]*)$", "\\1", name)
 
+#     create_estimate(filename = filename,
+#         path = file.path("data-raw", path),
+#         parameters = as.list(setNames(param$value, component_name)))
+
+#     upload_data_product(storage_root_id = storage_rootId,
+#                     name = name,
+#                    component_name = component_name,
+#                    processed_path = file.path("data-raw", path, filename),
+#                     product_path = file.path(path, filename),
+#                    version = param$version,
+#                     namespace_id = namespaceId,
+#                     key = key)
+#     pb$tick()
+# }
+
+# Iterate through parameter sets creating TOML files with multiple items
+# and adding them as statements within the DataRegistry
+pb <- progress_bar$new(total = length(param_sets))
+for(set in param_sets)
+{
+    name <- file.path(set$prefix, set$set_name)
+    path <- paste("master", namespace, name, sep = "/")
+    filename <- paste0(set$version, ".toml")
+    component_name <- set$set_name %>% gsub("^.*/([^/]*)$", "\\1", .)
+    args <- mapply(setNames, set$values, set$param_names)
     create_estimate(filename = filename,
         path = file.path("data-raw", path),
-        parameters = as.list(setNames(param$value, component_name)))
-
+        parameters = as.list(args)
+    )
     upload_data_product(storage_root_id = storage_rootId,
                     name = name,
                    component_name = component_name,
                    processed_path = file.path("data-raw", path, filename),
                     product_path = file.path(path, filename),
-                   version = param$version,
+                   version = set$version,
                     namespace_id = namespaceId,
                     key = key)
     pb$tick()
 }
 
-# Iterate through prior distibutions creating TOML objects and adding them
+# Iterate through distibutions creating TOML objects and adding them
 # as statements within the DataRegistry
-pb <- progress_bar$new(total = length(distributions))
-for(dis in distributions)
-{
-    name <- file.path(prefix$dist, dis$name)
-    path <- paste("master", namespace, name, sep = "/")
-    filename <- paste0(dis$version, ".toml")
-    component_name <- gsub("^.*/([^/]*)$", "\\1", name)
+# pb <- progress_bar$new(total = length(distributions))
+# for(dis in distributions)
+# {
+#     name <- file.path(prefix$dist, dis$name)
+#     path <- paste("master", namespace, name, sep = "/")
+#     filename <- paste0(dis$version, ".toml")
+#     component_name <- gsub("^.*/([^/]*)$", "\\1", name)
 
-    create_distribution(
-        filename = filename,
-        file.path("data-raw", path),
-        name = dis$name,
-        distribution = dis$type,
-        parameters = dis$params
-    )
+#     create_distribution(
+#         filename = filename,
+#         file.path("data-raw", path),
+#         name = dis$name,
+#         distribution = dis$type,
+#         parameters = dis$params
+#     )
     
-    upload_data_product(storage_root_id = storage_rootId,
-                    name = name,
-                    component_name = component_name,
-                    processed_path = file.path("data-raw", path, filename),
-                    product_path = file.path(path, filename),
-                    version = dis$version,
-                    namespace_id = namespaceId,
-                    key = key)
-    pb$tick()
-}
+#     upload_data_product(storage_root_id = storage_rootId,
+#                     name = name,
+#                     component_name = component_name,
+#                     processed_path = file.path("data-raw", path, filename),
+#                     product_path = file.path(path, filename),
+#                     version = dis$version,
+#                     namespace_id = namespaceId,
+#                     key = key)
+#     pb$tick()
+# }

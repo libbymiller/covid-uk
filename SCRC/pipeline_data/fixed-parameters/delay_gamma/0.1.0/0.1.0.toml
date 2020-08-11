@@ -1,4 +1,4 @@
-[max_day_delay_gamma]
+[max_delay_gamma]
 type = "point-estimate"
 value = 60
 

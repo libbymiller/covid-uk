@@ -82,11 +82,11 @@ unpack_seeding = function(config_loc)
 
     return(
         list(
-            value = read_estimate("seed", "seed"),
-            min_age = read_estimate("min_age", "min_age"),
-            max_age = read_estimate("max_age", "max_age"),
-            seeding_start_range = read_estimate("seeding_min_start_day", "seeding_min_start_day") : 
-                                  read_estimate("seeding_max_start_day", "seeding_max_start_day")
+            value = read_estimate("run-configuration/seeding", "seed"),
+            min_age = read_estimate("run-configuration/seeding", "min_age"),
+            max_age = read_estimate("run-configuration/seeding", "max_age"),
+            seeding_start_range = read_estimate("run-configuration/seeding", "seeding_min_start_day") : 
+                                  read_estimate("run-configuration/seeding", "seeding_max_start_day")
         )
     ) 
 }
@@ -160,11 +160,11 @@ unpack_times = function(config_loc)
 
     return(
         list(
-            max = read_estimate("delay_gamma", "max_day_delay_gamma"),
-            step = read_estimate("delay_gamma", "time_step_delay_gamma"),
-            end = read_estimate("end_day", "end_day"),
-            start = read_estimate("start_day", "start_day"),
-            start_date = as.Date(read_estimate("start_date_posix", "start_date_posix"), "1970-01-01")
+            max = read_estimate("fixed-parameters/delay_gamma", "max_day_delay_gamma"),
+            step = read_estimate("fixed-parameters/delay_gamma", "time_step_delay_gamma"),
+            end = read_estimate("run-configuration/time", "end_day"),
+            start = read_estimate("run-configuration/time", "start_day"),
+            start_date = as.Date(read_estimate("run-configuration/time", "start_date_posix"), "1970-01-01")
         )
     )
 }
@@ -212,19 +212,19 @@ unpack_dis_params = function(config_loc)
 
     }
 
-    args <- fetch_gamma_components(file.path("distributions", "ip_to_hosp"), config_loc)
+    args <- fetch_gamma_components("distributions/ip_to_hosp", config_loc)
     params[["delay_Ip_to_hosp"]] = list(mu=args$k,
                                         shape=args$theta)
 
-    args <- fetch_gamma_components(file.path("distributions", "to_icu"), config_loc)
+    args <- fetch_gamma_components("distributions/to_icu", config_loc)
     params[["delay_to_icu"]] = list(mu=args$k,
                                     shape=args$theta)
     
-    args <- fetch_gamma_components(file.path("distributions", "to_non_icu"), config_loc)
+    args <- fetch_gamma_components("distributions/to_non_icu", config_loc)
     params[["delay_to_non_icu"]] = list(mu=args$k,
                                         shape=args$theta)
     
-    args <- fetch_gamma_components(file.path("distributions", "ip_to_death"), config_loc)
+    args <- fetch_gamma_components("distributions/ip_to_death", config_loc)
     params[["delay_Ip_to_death"]] = list(mu=args$k,
                                         shape=args$theta)
 
@@ -244,10 +244,10 @@ unpack_trigger = function(config_loc)
 
     return(
         list(
-            trigger = ifelse(read_estimate("isnational", "isnational") == 0, "national", "local"),
-            duration = read_estimate("duration", "duration"),
-            icu_bed_usage = read_estimate("icu_bed_usage", "icu_bed_usage"),
-            intervention_shift = read_estimate("intervention_shift", "intervention_shift")
+            trigger = ifelse(read_estimate("lockdown/config", "isnational") == 0, "national", "local"),
+            duration = read_estimate("lockdown/config", "duration"),
+            icu_bed_usage = read_estimate("lockdown/triggers", "icu_bed_usage"),
+            intervention_shift = read_estimate("lockdown/triggers", "intervention_shift")
         )
     )
 }
@@ -288,9 +288,11 @@ objects = function(config_loc)
     read_estimate = StandardAPI(config_loc)$read_estimate
     read_table = StandardAPI(config_loc)$read_table
 
-    health_burden_probabilities = read_table("health_burden_processes", "health_burden_processes")
+    #health_burden_probabilities = read_table("health_burden_processes", "health_burden_processes")
 
     matrix_data = unpack_matrices(config_loc)
+    print("DAMNS")
+
 
     params = list(
             age_var_symptom_rates = data.table(read_table("age_var_symptomatic_rates", "age_varying_symptomatic_rates")),
@@ -302,9 +304,9 @@ objects = function(config_loc)
             size = unpack_populations(config_loc),
             school_terms = unpack_terms(config_loc),
             seed = unpack_seeding(config_loc),
-            fIs = read_estimate("rel_symptomatic", "rel_symptomatic"),
-            fIp = read_estimate("rel_preclinical", "rel_preclinical"),
-            fIa = read_estimate("rel_subclinical", "rel_subclinical"),
+            fIs = read_estimate("fixed-parameters/relative_infectiousness", "rel_symptomatic"),
+            fIp = read_estimate("fixed-parameters/relative_infectiousness", "rel_preclinical"),
+            fIa = read_estimate("fixed-parameters/relative_infectiousness", "rel_subclinical"),
             time = unpack_times(config_loc),
             lockdown_trigger = unpack_trigger(config_loc),
             tau = read_estimate("fixed-parameters/tau", "tau"),

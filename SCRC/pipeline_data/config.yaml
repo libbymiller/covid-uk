@@ -6,6 +6,20 @@ run_metadata:
   default_input_namespace: LSHTM
 read:
   - where:
+      data_product: contact_matrices/subregion
+  - where:
+      data_product: contact_matrices/national
+  - where:
+      data_product: population/population_sizes
+  - where:
+      data_product: lockdown/triggers
+  - where:
+      data_product: run-configuration/time
+  - where:
+      data_product: run-configuration/seeding
+  - where:
+      data_product: lockdown/config
+  - where:
       data_product: distributions/R0
   - where:
       data_product: distributions/to_icu
@@ -27,3 +41,7 @@ read:
       data_product: fixed-parameters/tau
   - where:
       data_product: fixed-parameters/rho
+  - where:
+      data_product: fixed-parameters/relative_infectiousness
+  - where:
+      data_product: fixed-parameters/delay_gamma
