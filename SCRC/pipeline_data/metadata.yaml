@@ -262,3 +262,11 @@
   namespace: LSHTM
   verified_hash: a102f18b6fc1a4c2be3e2f007f36263f6e1ee840
   version: 0.20200812.0
+- accessibility: 0
+  component: intervention_rates
+  data_product: interventions/intervention_rates
+  extension: h5
+  filename: interventions/intervention_rates/0.20200812.0/0.20200812.0.h5
+  namespace: LSHTM
+  verified_hash: bba1411fabb80eafbd06ee452159495c53edaf4c
+  version: 0.20200812.0

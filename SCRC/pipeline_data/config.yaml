@@ -4,7 +4,9 @@ access_log: access-{run_id}.yaml
 fail_on_hash_mismatch: True
 run_metadata:
   default_input_namespace: LSHTM
-read: 
+read:
+  - where:
+      data_product: interventions/intervention_rates
   - where:
       data_product: symptomatic_rates/rates_per_age
   - where:

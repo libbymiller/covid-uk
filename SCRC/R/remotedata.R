@@ -38,7 +38,7 @@ StandardAPI <- function(config_loc)
 unpack_intervention = function(config_loc, ngroups)
 {
     read_table = StandardAPI(config_loc)$read_table
-    intervention = read_table("intervention_rates", "intervention_rates")
+    intervention = read_table("interventions/intervention_rates", "intervention_rates")
 
     # Rates associated with the given intervention are defined as
     # 9 contact rates for the contact matrix types and a factor on the
