@@ -10,6 +10,9 @@
 #   set/matrices etc could be held constant for every model run, replace     #
 #   these at your own risk.                                                  #
 #                                                                            #
+#   @author : K. Zarebski                                                    #
+#   @date   : last modified 2020-08-11                                       #
+#                                                                            #
 ##############################################################################
 
 library(tidyverse)
@@ -32,11 +35,22 @@ dataset_version <- 0
 tmp <- as.Date(date_accessed, format = "%Y-%m-%d")
 
 version_number <- paste(struct_version, gsub("-", "", tmp), dataset_version , sep = ".")
+namespace <- "LSHTM"
+product_name <- file.path("contact_matrices", "national")
+
+token_file <- file.path("SCRC", "data_uploading", "token.txt")
+if(!file.exists(token_file))
+{
+    stop(paste("Failed to find file API token file at", token_file))
+}
+key <- read.table(token_file)
+
+# where is the data product saved? (locally, before being stored)
+product_filename <- paste(version_number,"h5",sep=".")
 
 download.file(file.path(source_root, file_addr), (tf1 <- tempfile(fileext = ".zip")))
 unzip(tf1, exdir=(tf2 <- tempdir()))
 data_root <- file.path(tf2, "contact_matrices_152_countries")
-
 
 sources = list(
     matrices = list(
@@ -100,8 +114,29 @@ uk_matrices <- fetch_all_matrices_for_UK()
 
 for(matrix in names(uk_matrices))
 {
-    create_array(file=paste(version_number,"h5",sep="."),
-                 path="SCRC/pipeline_data/national_contact_matrices",
+    create_array(file=product_filename,
+                 path=product_name,
                  array=uk_matrices[[matrix]], component=file.path("contact_matrices", matrix), 
                  dimension_names=list(rowvalue=rownames(uk_matrices[[matrix]]), colvalue=colnames(uk_matrices[[matrix]])))
 }
+
+# where is the data product stored?
+product_storageRoot <- "boydorr"
+product_path <- product_name
+
+# data product storage root
+product_storageRootId <- new_storage_root(name = product_storageRoot,
+                                          root = "ftp://boydorr.gla.ac.uk/scrc/",
+                                          key = key)
+# namespace
+namespaceId <- new_namespace(name = namespace,
+                             key = key)
+
+dataProductURIs <- upload_data_product(
+  storage_root_id = product_storageRootId,
+  name = product_name,
+  processed_path = file.path(product_name, product_filename),
+  product_path = paste(namespace, product_name, product_filename, sep = "/"),
+  version = version_number,
+  namespace_id = namespaceId,
+  key = key)
