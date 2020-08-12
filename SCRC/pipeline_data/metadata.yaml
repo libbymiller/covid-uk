@@ -223,6 +223,14 @@
   verified_hash: 15de9a69d23219da7bed6ba01d605e5651768803
   version: 0.20200811.0
 - accessibility: 0
+  component: health_burden_processes
+  data_product: health_burden_processes/probabilities
+  extension: h5
+  filename: health_burden_processes/probabilities/0.20200812.0/0.20200812.0.h5
+  namespace: LSHTM
+  verified_hash: 4915f30254044b2354356ffe0cbe91a38f4c3baf
+  version: 0.20200812.0
+- accessibility: 0
   component: school_terms
   data_product: school/school_terms
   extension: h5

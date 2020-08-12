@@ -288,8 +288,6 @@ objects = function(config_loc)
     read_estimate = StandardAPI(config_loc)$read_estimate
     read_table = StandardAPI(config_loc)$read_table
 
-    #health_burden_probabilities = read_table("health_burden_processes", "health_burden_processes")
-
     matrix_data = unpack_matrices(config_loc)
 
     params = list(

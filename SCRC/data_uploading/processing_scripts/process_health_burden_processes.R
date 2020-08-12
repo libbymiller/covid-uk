@@ -1,67 +1,48 @@
 ##############################################################################
 #                                                                            #
-#                           SCHOOL HOLIDAY RATES                             #
+#                   HEALTH BURDEN PROCESS PROBABILITIES                      #
 #                                                                            #
-#   The following script is used to generate an array of school holiday      #
-#   rates, these are pre-factors to the 9 matrices defined during the        #
-#   model run for work, school, home, other (young/elderly) etc              #
+#   The following script is used to generate a table to represent the        #
+#   probabilities for various health burden processes in different age       #
+#   groups, e.g. probability of a symptomatic individual becoming            #
+#   hospitalised. The original data source has yet to be identified.         #
+#   Currently values are read from the included CSV file.                    #
 #                                                                            #
 #   @author : K. Zarebski                                                    #
-#   @date   : last modified 2020-08-11                                       #
+#   @date   : last modified 2020-08-12                                       #
 #                                                                            #
 ##############################################################################
 
-library(socialmixr)
 library(SCRCdataAPI)
 library(data.table)
-library(tidyverse)
 library(magrittr)
 
 date_accessed <- Sys.Date()
 struct_version <- 0
 dataset_version <- 0
 
-##############################################################
-#                       RATE VALUES                          #
-
-rates <- list(
-    home = 1,
-    work = 1,
-    schools = 0,
-    other = 1,
-    home_elderly = 1,
-    work_elderly = 1,
-    schools_elderly = 0,
-    other_elderly = 1,
-    child_elderly = 1
-)
-
-mat_rates <- data.frame(rates)
-rownames(mat_rates) <- c("rate")
-colnames(mat_rates) <- names(rates)
-##############################################################
+input_file <- file.path("data", "health_burden_processes.csv")
+input_table <- data.table(read.csv(input_file))
 
 token_file <- file.path("SCRC", "data_uploading", "token.txt")
-if(!file.exists(token_file))
-{
-    stop(paste("Failed to find file API token file at", token_file))
+if (!file.exists(token_file)) {
+  stop(paste("Failed to find file API token file at", token_file))
 }
-
 key <- read.table(token_file)
 
 tmp <- as.Date(date_accessed, format = "%Y-%m-%d")
 
-version_number <- paste(struct_version, gsub("-", "", tmp), dataset_version , sep = ".")
+version_number <- paste(struct_version, gsub("-", "", tmp), dataset_version, sep = ".")
 namespace <- "LSHTM"
-product_name <- file.path("school", "holiday_rates")
+product_name <- file.path("health_burden_processes", "probabilities")
 
 # where is the data product saved? (locally, before being stored)
-product_filename <- paste(version_number,"h5",sep=".")
+product_filename <- paste(version_number, "h5", sep = ".")
 
 create_table(filename = product_filename,
              path = product_name,
-             component = "school_holiday_rates",
-             df = mat_rates)
+             component = "health_burden_processes",
+             df = input_table)
 
 # where is the data product stored?
 product_storageRoot <- "boydorr"
@@ -83,4 +64,4 @@ dataProductURIs <- upload_data_product(
   product_path = paste(namespace, product_name, product_filename, sep = "/"),
   version = version_number,
   namespace_id = namespaceId,
-  key = key)    
+  key = key)
