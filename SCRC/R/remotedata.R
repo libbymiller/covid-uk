@@ -291,7 +291,7 @@ objects = function(config_loc)
     matrix_data = unpack_matrices(config_loc)
 
     params = list(
-            age_var_symptom_rates = data.table(read_table("age_var_symptomatic_rates", "age_varying_symptomatic_rates")),
+            age_var_symptom_rates = data.table(read_table("symptomatic_rates/rates_per_age", "age_varying_symptomatic_rates")),
             health_burden_probabilities = data.table(read_table("health_burden_processes/probabilities", "health_burden_processes")),
             contact_matrices = matrix_data$matrices,
             group_names = matrix_data$group_names,

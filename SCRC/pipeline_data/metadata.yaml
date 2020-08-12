@@ -254,3 +254,11 @@
   namespace: LSHTM
   verified_hash: 136dc93f88737391d0883cf9d887830d5f5ef1f6
   version: 0.20200812.0
+- accessibility: 0
+  component: age_varying_symptomatic_rates
+  data_product: symptomatic_rates/rates_per_age
+  extension: h5
+  filename: symptomatic_rates/rates_per_age/0.20200812.0/0.20200812.0.h5
+  namespace: LSHTM
+  verified_hash: a102f18b6fc1a4c2be3e2f007f36263f6e1ee840
+  version: 0.20200812.0
