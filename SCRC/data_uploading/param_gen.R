@@ -22,9 +22,6 @@ library(SCRCdataAPI)    # Requires the latest SCRCdataAPI library
 library(progress)
 library(magrittr)
 
-# Start constructing address locations:
-#   - LSHTM/fixed-parameters
-
 namespace <- "LSHTM"
 prefix <- list(fixed="fixed-parameters",
                dist="distributions",
@@ -116,28 +113,28 @@ distributions <- list(
 
 # Iterate through fixed parameters creating TOML objects and adding them
 # as statements within the DataRegistry
-# pb <- progress_bar$new(total = length(params))
-# for(param in params)
-# {
-#     name <- file.path(prefix$fixed, param$name)
-#     path <- paste("master", namespace, name, sep = "/")
-#     filename <- paste0(param$version, ".toml")
-#     component_name <- gsub("^.*/([^/]*)$", "\\1", name)
+pb <- progress_bar$new(total = length(params))
+for(param in params)
+{
+    name <- file.path(prefix$fixed, param$name)
+    path <- paste("master", namespace, name, sep = "/")
+    filename <- paste0(param$version, ".toml")
+    component_name <- gsub("^.*/([^/]*)$", "\\1", name)
 
-#     create_estimate(filename = filename,
-#         path = file.path("data-raw", path),
-#         parameters = as.list(setNames(param$value, component_name)))
+    create_estimate(filename = filename,
+        path = file.path("data-raw", path),
+        parameters = as.list(setNames(param$value, component_name)))
 
-#     upload_data_product(storage_root_id = storage_rootId,
-#                     name = name,
-#                    component_name = component_name,
-#                    processed_path = file.path("data-raw", path, filename),
-#                     product_path = file.path(path, filename),
-#                    version = param$version,
-#                     namespace_id = namespaceId,
-#                     key = key)
-#     pb$tick()
-# }
+    upload_data_product(storage_root_id = storage_rootId,
+                    name = name,
+                   component_name = component_name,
+                   processed_path = file.path("data-raw", path, filename),
+                    product_path = file.path(path, filename),
+                   version = param$version,
+                    namespace_id = namespaceId,
+                    key = key)
+    pb$tick()
+}
 
 # Iterate through parameter sets creating TOML files with multiple items
 # and adding them as statements within the DataRegistry
@@ -147,7 +144,7 @@ for(set in param_sets)
     name <- file.path(set$prefix, set$set_name)
     path <- paste("master", namespace, name, sep = "/")
     filename <- paste0(set$version, ".toml")
-    component_name <- set$set_name %>% gsub("^.*/([^/]*)$", "\\1", .)
+    component_names <- set$param_names %>% gsub("^.*/([^/]*)$", "\\1", .)
     args <- mapply(setNames, set$values, set$param_names)
     create_estimate(filename = filename,
         path = file.path("data-raw", path),
@@ -155,7 +152,7 @@ for(set in param_sets)
     )
     upload_data_product(storage_root_id = storage_rootId,
                     name = name,
-                   component_name = component_name,
+                   component_name = component_names,
                    processed_path = file.path("data-raw", path, filename),
                     product_path = file.path(path, filename),
                    version = set$version,
@@ -166,29 +163,29 @@ for(set in param_sets)
 
 # Iterate through distibutions creating TOML objects and adding them
 # as statements within the DataRegistry
-# pb <- progress_bar$new(total = length(distributions))
-# for(dis in distributions)
-# {
-#     name <- file.path(prefix$dist, dis$name)
-#     path <- paste("master", namespace, name, sep = "/")
-#     filename <- paste0(dis$version, ".toml")
-#     component_name <- gsub("^.*/([^/]*)$", "\\1", name)
+pb <- progress_bar$new(total = length(distributions))
+for(dis in distributions)
+{
+    name <- file.path(prefix$dist, dis$name)
+    path <- paste("master", namespace, name, sep = "/")
+    filename <- paste0(dis$version, ".toml")
+    component_name <- gsub("^.*/([^/]*)$", "\\1", name)
 
-#     create_distribution(
-#         filename = filename,
-#         file.path("data-raw", path),
-#         name = dis$name,
-#         distribution = dis$type,
-#         parameters = dis$params
-#     )
+    create_distribution(
+        filename = filename,
+        file.path("data-raw", path),
+        name = dis$name,
+        distribution = dis$type,
+        parameters = dis$params
+    )
     
-#     upload_data_product(storage_root_id = storage_rootId,
-#                     name = name,
-#                     component_name = component_name,
-#                     processed_path = file.path("data-raw", path, filename),
-#                     product_path = file.path(path, filename),
-#                     version = dis$version,
-#                     namespace_id = namespaceId,
-#                     key = key)
-#     pb$tick()
-# }
+    upload_data_product(storage_root_id = storage_rootId,
+                    name = name,
+                    component_name = component_name,
+                    processed_path = file.path("data-raw", path, filename),
+                    product_path = file.path(path, filename),
+                    version = dis$version,
+                    namespace_id = namespaceId,
+                    key = key)
+    pb$tick()
+}

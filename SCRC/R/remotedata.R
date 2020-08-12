@@ -45,8 +45,8 @@ unpack_intervention = function(config_loc, ngroups)
     # symptomatic infectiousness
     return(
         list(
-            contact = intervention[[1]][1:9],
-            fIs = rep(intervention[[1]][10], ngroups)
+            contact = intervention[1:9] %>% unlist,
+            fIs = rep(intervention[[10]], ngroups)
         )
     )
 }
@@ -59,7 +59,7 @@ unpack_intervention = function(config_loc, ngroups)
 unpack_terms = function(config_loc)
 {
     read_table = StandardAPI(config_loc)$read_table
-    school_terms = read_table("school_terms", "school_terms")
+    school_terms = read_table("school/school_terms", "school_terms")
 
     return(
         list(
@@ -103,8 +103,9 @@ unpack_seeding = function(config_loc)
 #' @param region Name of the subset region, default is the demo of Glasgow City
 unpack_populations = function(config_loc, region="Glasgow City")
 {
+
     read_table = StandardAPI(config_loc)$read_table
-    pop_size = read_table("population_size/persons", "population_size/persons")
+    pop_size = read_table("population/population_sizes", "population_size/persons")
 
     return(
         list(
@@ -135,17 +136,16 @@ unpack_matrices = function(config_loc)
     contact_matrices[["subset"]] = list()
     for(name in matrix_names)
     {
-        Array = read_array("subregion_matrices", file.path("contact_matrices", name))
+        Array = read_array("contact_matrices/subregion", file.path("contact_matrices", name))
         contact_matrices[["subset"]][[name]] = Array$data
     }
 
     contact_matrices[["region"]] = list()
     for(name in matrix_names)
     {
-        Array = read_array("national_contact_matrices", file.path("contact_matrices", name))
+        Array = read_array("contact_matrices/national", file.path("contact_matrices", name))
         contact_matrices[["region"]][[name]] = Array$data
     }
-
     return(list(matrices=contact_matrices, group_names=Array$dimensions[[1]]$names))
 }
 
@@ -160,7 +160,7 @@ unpack_times = function(config_loc)
 
     return(
         list(
-            max = read_estimate("fixed-parameters/delay_gamma", "max_day_delay_gamma"),
+            max = read_estimate("fixed-parameters/delay_gamma", "max_delay_gamma"),
             step = read_estimate("fixed-parameters/delay_gamma", "time_step_delay_gamma"),
             end = read_estimate("run-configuration/time", "end_day"),
             start = read_estimate("run-configuration/time", "start_day"),
@@ -177,14 +177,15 @@ unpack_times = function(config_loc)
 #' 
 #' @param dis_label Name of the distribution in the API
 #' @param config_loc Location of the config.yaml API file
+
 fetch_gamma_components <- function(dis_label, config_loc)
 {
-    distribution = StandardAPI(config_loc)$read_distribution(dis_label, dis_label)
+    distribution = StandardAPI(config_loc)$read_distribution(file.path("distributions", dis_label), dis_label)
     
     return(
         list(
-            loc = distribution$args[[1]],
-            scale = distribution$kwds[["scale"]]
+            distribution$args[[1]],
+            distribution$kwds[["scale"]]
         )
     )
 }
@@ -205,28 +206,28 @@ unpack_dis_params = function(config_loc)
 
     for(comp in compartments)
     {
-        args <- fetch_gamma_components(file.path("distributions", comp), config_loc)
+        args <- fetch_gamma_components(comp, config_loc)
 
-        params[[comp]] = list(mu=args$k,
-                             shape=args$theta)
+        params[[comp]] = list(mu=args[[1]],
+                             shape=args[[2]])
 
     }
 
-    args <- fetch_gamma_components("distributions/ip_to_hosp", config_loc)
-    params[["delay_Ip_to_hosp"]] = list(mu=args$k,
-                                        shape=args$theta)
+    args <- fetch_gamma_components("ip_to_hosp", config_loc)
+    params[["delay_Ip_to_hosp"]] = list(mu=args[[1]],
+                             shape=args[[2]])
 
-    args <- fetch_gamma_components("distributions/to_icu", config_loc)
-    params[["delay_to_icu"]] = list(mu=args$k,
-                                    shape=args$theta)
+    args <- fetch_gamma_components("to_icu", config_loc)
+    params[["delay_to_icu"]] = list(mu=args[[1]],
+                                    shape=args[[2]])
     
-    args <- fetch_gamma_components("distributions/to_non_icu", config_loc)
-    params[["delay_to_non_icu"]] = list(mu=args$k,
-                                        shape=args$theta)
+    args <- fetch_gamma_components("to_non_icu", config_loc)
+    params[["delay_to_non_icu"]] = list(mu=args[[1]],
+                                        shape=args[[2]])
     
-    args <- fetch_gamma_components("distributions/ip_to_death", config_loc)
-    params[["delay_Ip_to_death"]] = list(mu=args$k,
-                                        shape=args$theta)
+    args <- fetch_gamma_components("ip_to_death", config_loc)
+    params[["delay_Ip_to_death"]] = list(mu=args[[1]],
+                                        shape=args[[2]])
 
     return(params)
 }
@@ -311,7 +312,6 @@ objects = function(config_loc)
     params = append(params, unpack_dis_params(config_loc))
     params$ngroups = params$contact_matrices$region$other %>% length %>% sqrt(.)
     params$intervention = unpack_intervention(config_loc, params$ngroups)
-
     return(params)
 }
 
