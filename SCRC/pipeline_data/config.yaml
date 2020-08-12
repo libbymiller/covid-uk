@@ -6,6 +6,8 @@ run_metadata:
   default_input_namespace: LSHTM
 read:
   - where:
+      data_product: lockdown/lockdown_rates
+  - where:
       data_product: school/holiday_rates
   - where:
       data_product: school/school_terms

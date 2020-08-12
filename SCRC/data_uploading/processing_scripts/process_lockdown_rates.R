@@ -1,13 +1,13 @@
 ##############################################################################
 #                                                                            #
-#                           SCHOOL HOLIDAY RATES                             #
+#                             LOCKDOWN RATES                                 #
 #                                                                            #
-#   The following script is used to generate an array of school holiday      #
+#   The following script is used to generate an array of lockdown            #
 #   rates, these are pre-factors to the 9 matrices defined during the        #
 #   model run for work, school, home, other (young/elderly) etc              #
 #                                                                            #
 #   @author : K. Zarebski                                                    #
-#   @date   : last modified 2020-08-11                                       #
+#   @date   : last modified 2020-08-12                                       #
 #                                                                            #
 ##############################################################################
 
@@ -24,13 +24,13 @@ dataset_version <- 0
 
 rates <- list(
     home = 1,
-    work = 1,
-    schools = 0,
-    other = 1,
+    work = 0.1,
+    schools = 0.1,
+    other = 0.1,
     home_elderly = 1,
-    work_elderly = 1,
-    schools_elderly = 0,
-    other_elderly = 1,
+    work_elderly = 0.1,
+    schools_elderly = 0.1,
+    other_elderly = 0.1,
     child_elderly = 1
 )
 
@@ -51,14 +51,14 @@ tmp <- as.Date(date_accessed, format = "%Y-%m-%d")
 
 version_number <- paste(struct_version, gsub("-", "", tmp), dataset_version , sep = ".")
 namespace <- "LSHTM"
-product_name <- file.path("school", "holiday_rates")
+product_name <- file.path("lockdown", "lockdown_rates")
 
 # where is the data product saved? (locally, before being stored)
 product_filename <- paste(version_number,"h5",sep=".")
 
 create_table(filename = product_filename,
              path = product_name,
-             component = "school_holiday_rates",
+             component = "lockdown_rates",
              df = mat_rates)
 
 # where is the data product stored?

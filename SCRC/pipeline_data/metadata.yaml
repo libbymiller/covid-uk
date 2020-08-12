@@ -246,3 +246,11 @@
   namespace: LSHTM
   verified_hash: a3dfe177436f0d5a226cea49eeb635efd1c75776
   version: 0.20200811.0
+- accessibility: 0
+  component: lockdown_rates
+  data_product: lockdown/lockdown_rates
+  extension: h5
+  filename: lockdown/lockdown_rates/0.20200812.0/0.20200812.0.h5
+  namespace: LSHTM
+  verified_hash: 136dc93f88737391d0883cf9d887830d5f5ef1f6
+  version: 0.20200812.0
