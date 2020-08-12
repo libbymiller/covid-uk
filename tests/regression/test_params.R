@@ -13,6 +13,12 @@ library(testit) # For 'assert' function
 # Retrieve the base parameters from the testing directory
 covid_uk_path = getwd()
 
+if(!file.exists(file.path(covid_uk_path, "tests", "test_data",
+                            "baseline", "params-Regional-stage1.pars")))
+{
+	stop("Failed to find test data.")
+}
+
 base_params1 = dget(file.path(covid_uk_path, "tests", "test_data",
                             "baseline", "params-Regional-stage1.pars"))
 base_params2 = dget(file.path(covid_uk_path, "tests", "test_data",
@@ -32,7 +38,6 @@ cat(paste("Opening: ", file_stage1, "\n"))
 cat(paste("Opening: ", file_stage2, "\n"))
 
 new_params1 = dget(file_stage1)
-new_params2 = dget(file_stage2)
 
 # Check that the column names are identical
 message("STAGE 1: ")
@@ -64,6 +69,7 @@ for(col in names(base_params1))
 message("Passed Stage 1")
 # Check that the column names are identical
 message("STAGE 2: ")
+new_params2 = dget(file_stage2)
 message("Testing Column Names Match: ")
 print(names(base_params2))
 assert(paste("\nColumn names do not match", "\n"),length(setdiff(names(base_params2),names(new_params2))) == 0)

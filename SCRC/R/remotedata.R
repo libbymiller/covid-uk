@@ -38,15 +38,15 @@ StandardAPI <- function(config_loc)
 unpack_intervention = function(config_loc, ngroups)
 {
     read_table = StandardAPI(config_loc)$read_table
-    intervention = read_table("intervention_rates", "intervention_rates")
+    intervention = read_table("interventions/intervention_rates", "intervention_rates")
 
     # Rates associated with the given intervention are defined as
     # 9 contact rates for the contact matrix types and a factor on the
     # symptomatic infectiousness
     return(
         list(
-            contact = intervention[[1]][1:9],
-            fIs = rep(intervention[[1]][10], ngroups)
+            contact = intervention[1:9] %>% unlist,
+            fIs = rep(intervention[[10]], ngroups)
         )
     )
 }
@@ -59,7 +59,7 @@ unpack_intervention = function(config_loc, ngroups)
 unpack_terms = function(config_loc)
 {
     read_table = StandardAPI(config_loc)$read_table
-    school_terms = read_table("school_terms", "school_terms")
+    school_terms = read_table("school/school_terms", "school_terms")
 
     return(
         list(
@@ -82,11 +82,11 @@ unpack_seeding = function(config_loc)
 
     return(
         list(
-            value = read_estimate("seed", "seed"),
-            min_age = read_estimate("min_age", "min_age"),
-            max_age = read_estimate("max_age", "max_age"),
-            seeding_start_range = read_estimate("seeding_min_start_day", "seeding_min_start_day") : 
-                                  read_estimate("seeding_max_start_day", "seeding_max_start_day")
+            value = read_estimate("run-configuration/seeding", "seed"),
+            min_age = read_estimate("run-configuration/seeding", "min_age"),
+            max_age = read_estimate("run-configuration/seeding", "max_age"),
+            seeding_start_range = read_estimate("run-configuration/seeding", "seeding_min_start_day") : 
+                                  read_estimate("run-configuration/seeding", "seeding_max_start_day")
         )
     ) 
 }
@@ -103,8 +103,9 @@ unpack_seeding = function(config_loc)
 #' @param region Name of the subset region, default is the demo of Glasgow City
 unpack_populations = function(config_loc, region="Glasgow City")
 {
+
     read_table = StandardAPI(config_loc)$read_table
-    pop_size = read_table("population_size/persons", "population_size/persons")
+    pop_size = read_table("population/population_sizes", "population_size/persons")
 
     return(
         list(
@@ -135,17 +136,16 @@ unpack_matrices = function(config_loc)
     contact_matrices[["subset"]] = list()
     for(name in matrix_names)
     {
-        Array = read_array("subregion_matrices", file.path("contact_matrices", name))
+        Array = read_array("contact_matrices/subregion", file.path("contact_matrices", name))
         contact_matrices[["subset"]][[name]] = Array$data
     }
 
     contact_matrices[["region"]] = list()
     for(name in matrix_names)
     {
-        Array = read_array("national_contact_matrices", file.path("contact_matrices", name))
+        Array = read_array("contact_matrices/national", file.path("contact_matrices", name))
         contact_matrices[["region"]][[name]] = Array$data
     }
-
     return(list(matrices=contact_matrices, group_names=Array$dimensions[[1]]$names))
 }
 
@@ -160,11 +160,11 @@ unpack_times = function(config_loc)
 
     return(
         list(
-            max = read_estimate("delay_gamma", "max_day_delay_gamma"),
-            step = read_estimate("delay_gamma", "time_step_delay_gamma"),
-            end = read_estimate("end_day", "end_day"),
-            start = read_estimate("start_day", "start_day"),
-            start_date = as.Date(read_estimate("start_date_posix", "start_date_posix"), "1970-01-01")
+            max = read_estimate("fixed-parameters/delay_gamma", "max_delay_gamma"),
+            step = read_estimate("fixed-parameters/delay_gamma", "time_step_delay_gamma"),
+            end = read_estimate("run-configuration/time", "end_day"),
+            start = read_estimate("run-configuration/time", "start_day"),
+            start_date = as.Date(read_estimate("run-configuration/time", "start_date_posix"), "1970-01-01")
         )
     )
 }
@@ -177,14 +177,15 @@ unpack_times = function(config_loc)
 #' 
 #' @param dis_label Name of the distribution in the API
 #' @param config_loc Location of the config.yaml API file
+
 fetch_gamma_components <- function(dis_label, config_loc)
 {
-    distribution = StandardAPI(config_loc)$read_distribution(dis_label, dis_label)
+    distribution = StandardAPI(config_loc)$read_distribution(file.path("distributions", dis_label), dis_label)
     
     return(
         list(
-            loc = distribution$args[[1]],
-            scale = distribution$kwds[["scale"]]
+            distribution$args[[1]],
+            distribution$kwds[["scale"]]
         )
     )
 }
@@ -207,26 +208,26 @@ unpack_dis_params = function(config_loc)
     {
         args <- fetch_gamma_components(comp, config_loc)
 
-        params[[comp]] = list(mu=args$loc,
-                             shape=args$scale)
+        params[[comp]] = list(mu=args[[1]],
+                             shape=args[[2]])
 
     }
 
     args <- fetch_gamma_components("ip_to_hosp", config_loc)
-    params[["delay_Ip_to_hosp"]] = list(mu=args$loc,
-                                        shape=args$scale)
+    params[["delay_Ip_to_hosp"]] = list(mu=args[[1]],
+                             shape=args[[2]])
 
     args <- fetch_gamma_components("to_icu", config_loc)
-    params[["delay_to_icu"]] = list(mu=args$loc,
-                                    shape=args$scale)
+    params[["delay_to_icu"]] = list(mu=args[[1]],
+                                    shape=args[[2]])
     
     args <- fetch_gamma_components("to_non_icu", config_loc)
-    params[["delay_to_non_icu"]] = list(mu=args$loc,
-                                        shape=args$scale)
+    params[["delay_to_non_icu"]] = list(mu=args[[1]],
+                                        shape=args[[2]])
     
     args <- fetch_gamma_components("ip_to_death", config_loc)
-    params[["delay_Ip_to_death"]] = list(mu=args$loc,
-                                        shape=args$scale)
+    params[["delay_Ip_to_death"]] = list(mu=args[[1]],
+                                        shape=args[[2]])
 
     return(params)
 }
@@ -244,10 +245,10 @@ unpack_trigger = function(config_loc)
 
     return(
         list(
-            trigger = ifelse(read_estimate("isnational", "isnational") == 0, "national", "local"),
-            duration = read_estimate("duration", "duration"),
-            icu_bed_usage = read_estimate("icu_bed_usage", "icu_bed_usage"),
-            intervention_shift = read_estimate("intervention_shift", "intervention_shift")
+            trigger = ifelse(read_estimate("lockdown/config", "isnational") == 0, "national", "local"),
+            duration = read_estimate("lockdown/config", "duration"),
+            icu_bed_usage = read_estimate("lockdown/triggers", "icu_bed_usage"),
+            intervention_shift = read_estimate("lockdown/triggers", "intervention_shift")
         )
     )
 }
@@ -269,7 +270,7 @@ create_R0s = function(config_loc, seed, n)
 
     read_distribution = StandardAPI(config_loc)$read_distribution
 
-    norm = read_distribution("r0_distribution", "r0_distribution")
+    norm = read_distribution("distributions/R0", "R0")
 
     return(norm$rvs(as.integer(n)))
 }
@@ -288,32 +289,29 @@ objects = function(config_loc)
     read_estimate = StandardAPI(config_loc)$read_estimate
     read_table = StandardAPI(config_loc)$read_table
 
-    health_burden_probabilities = read_table("health_burden_processes", "health_burden_processes")
-
     matrix_data = unpack_matrices(config_loc)
 
     params = list(
-            age_var_symptom_rates = data.table(read_table("age_var_symptomatic_rates", "age_varying_symptomatic_rates")),
-            health_burden_probabilities = data.table(read_table("health_burden_processes", "health_burden_processes")),
+            age_var_symptom_rates = data.table(read_table("symptomatic_rates/rates_per_age", "age_varying_symptomatic_rates")),
+            health_burden_probabilities = data.table(read_table("health_burden_processes/probabilities", "health_burden_processes")),
             contact_matrices = matrix_data$matrices,
             group_names = matrix_data$group_names,
-            lockdown_rates = read_table("lockdown_rates", "lockdown_rates"),
-            school_holiday_rates = read_table("school_holiday_rates", "school_holiday_rates")[,1],
+            lockdown_rates = read_table("lockdown/lockdown_rates", "lockdown_rates") %>% as.integer,
+            school_holiday_rates = read_table("school/holiday_rates", "school_holiday_rates") %>% as.integer,
             size = unpack_populations(config_loc),
             school_terms = unpack_terms(config_loc),
             seed = unpack_seeding(config_loc),
-            fIs = read_estimate("rel_symptomatic", "rel_symptomatic"),
-            fIp = read_estimate("rel_preclinical", "rel_preclinical"),
-            fIa = read_estimate("rel_subclinical", "rel_subclinical"),
+            fIs = read_estimate("fixed-parameters/relative_infectiousness", "rel_symptomatic"),
+            fIp = read_estimate("fixed-parameters/relative_infectiousness", "rel_preclinical"),
+            fIa = read_estimate("fixed-parameters/relative_infectiousness", "rel_subclinical"),
             time = unpack_times(config_loc),
             lockdown_trigger = unpack_trigger(config_loc),
-            tau = read_estimate("tau", "tau"),
-            rho = read_estimate("rho", "rho")
+            tau = read_estimate("fixed-parameters/tau", "tau"),
+            rho = read_estimate("fixed-parameters/rho", "rho")
         )
     params = append(params, unpack_dis_params(config_loc))
     params$ngroups = params$contact_matrices$region$other %>% length %>% sqrt(.)
     params$intervention = unpack_intervention(config_loc, params$ngroups)
-
     return(params)
 }
 

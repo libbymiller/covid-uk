@@ -1,5 +1,0 @@
-[to_icu]
-type = "distribution"
-distribution = "gamma"
-k = 10
-theta = 10

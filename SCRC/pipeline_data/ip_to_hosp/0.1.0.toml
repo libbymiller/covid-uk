@@ -1,5 +1,0 @@
-[ip_to_hosp]
-type = "distribution"
-distribution = "gamma"
-k = 7
-theta = 7
