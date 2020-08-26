@@ -128,8 +128,12 @@ if(local)
   source(try_loc(file.path(scrc, "R", "pushdata.R")))
   if(!file.exists(gsub("config.yaml", "metadata.yaml", config_path)))
   {
+    cat(paste0("\n[Data Download]:\n\tNo 'metadata.yaml' at location '", 
+               gsub("config.yaml", "", config_path),
+               "' downloading data from API...\n\n"))
     python_version <- system("which python", intern=TRUE)
     system(paste(python_version, "-m data_pipeline_api.registry.download --config", config_path))
+    cat("\n\tData download complete.\n")
   }
   configuration = remote_data(covid_uk_path, config_path, n_runs)
 }
