@@ -27,14 +27,38 @@ and ensure your python environment has installed the libraries within `SCRC/Pyth
 
 ### Model Run
 
-To run the model using this method use the new `run_model.R` script included. The script takes a single required argument which is the number of stochastic realisations. To run locally (currently the only option available):
+To run the model using this method use the new `run_model.R` script included. The script takes a single required argument which is the number of stochastic realisations. The model can either be run using the SCRC API (included within the requirements above) or locally using the original datasets that came with it. A full list of available options is given by running:
 
+```bash
+Rscript run_model.R --help
 ```
+
+#### Local Running
+
+A local run in started by including the `--local` flag:
+
+```bash
 Rscript run_model.R <n-realisations> --local
 ```
 this will produce outputs in the `output` folder. The model will read parameters locally from the `configuration/parameters.ini` file and from the sources contained within the `data` folder.
 
-The seeding parameter `seed/value` can be set to a value or left at `-1` to indicate time based seeding.
+The seeding parameter `seed/value` can be set within the parameters fileto a value or left at `-1` to indicate time based seeding.
+
+#### Running with the API
+
+Before running the model the API is called to download the data directories to the local system. This requires a single argument pointing to the location of a `config.yaml` file (an example is included in the `SCRC/pipeline_data` directory):
+
+```
+python -m data_pipeline_api.registry.download --config <path-to-config-file>
+```
+
+The model is run as:
+
+```bash
+Rscript run_model.R <n-realisations>
+```
+
+Note if the default `config.yaml` file is not being used the argument `--config <path-to-config-file>` can be included.
 
 ### Plotting
 
