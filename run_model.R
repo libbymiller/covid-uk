@@ -30,10 +30,49 @@ out_file = file("current_params.txt")
 local_run = grep('--local', argv, value = FALSE)
 dump_params = grep('--dump', argv, value = FALSE) # Dump parameters prior to run and exit (for testing)
 rebuild = grep('--rebuild', argv, value = FALSE)
+help_req = grep('--help', argv, value = FALSE)
 
+help = length(help_req) > 0
 local = length(local_run) > 0
 dump_params = length(dump_params) > 0
 rebuild = length(rebuild) > 0
+
+if(help)
+{
+  help_str="
+USAGE: 
+
+  Rscript run_model.R  <n-runs> [--dump] [--local] [--rebuild] [--help]
+                       [--covid-uk-path <path-to-repo>]
+                       [--config <path-to-config-file>]
+
+Where: 
+
+  n-runs <int>
+    Number of stochastic realisations (model runs) to perform
+  
+  --dump
+    Run model in dump mode, creating parameters then exitting (for debugging purposes)
+
+  --local
+    Run model in 'vanilla' mode using the local datasets in a manner closer to the original
+    execution method
+
+  --rebuild
+    Rebuild the Rcpp source code before running
+
+  --help
+    Print this help string
+
+  --covid-uk-path <string>
+    Location of the covid-uk repository (if running from an external location)
+
+  --config <string>
+    Path to the 'config.yaml' file for data retrieval and creation via the SCRC API 
+"
+  cat(help_str)
+  quit(status=0)
+}
 
 n_runs = as.numeric(argv[1]);
 
