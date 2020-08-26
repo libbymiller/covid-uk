@@ -63,7 +63,9 @@ Note if the default `config.yaml` file is not being used the argument `--config 
 
 ### Outputs
 
-Depending on the run mode
+Outputs vary depending on the mode of execution. For API based and local runs two files are produced in the directory `output` which contain R objects describing totals and dynamics identical to the original LSHTM version.
+
+In the case of an API run an additional folder `lshtm_outputs` is created in the API data directory (the directory as stated in the input `config.yaml`, in the case of the default file, this is found in `SCRC/pipeline_data`). Within this directory are subdirectories with HDF5 files which contain tables summarising the data within the `.qs` files in a more easily interprettable form. `cases_deaths` containing a summary of the total number of cases and deaths, `dynamics_summary` summarising the flow of individuals between epidemiological states and `dynamics_time_series` showing how these states change after each time step.
 
 ### Plotting
 
