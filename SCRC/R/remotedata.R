@@ -21,12 +21,16 @@ use_python(python_version)
 api_py <- import("data_pipeline_api.standard_api")$StandardAPI
 py_time <- import("time")$time
 
+# Fetch Git Metadata
+scrc = file.path(covid_uk_path, "SCRC")
+source(try_loc(file.path(scrc, "R", "Git.R")))
+
 # Create a function as a wrapper allowing direct usage of the API
 # FIXME: The details under the from_config method will need to be set
 # eventually to the real repository
 StandardAPI <- function(config_loc)
 {
-    return(api_py$from_config(config_loc, "test_repo", "test_git_sha"))
+    return(api_py$from_config(config_loc, GitMetadata$URL, GitMetadata$CommitSHA1))
 }
 
 #' Get the intervention

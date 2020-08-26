@@ -20,9 +20,14 @@ use_python(python_version)
 
 # Import the StandardAPI from the SCRC data pipeline API
 api_py <- import("data_pipeline_api.standard_api")$StandardAPI$from_config
+
+# Fetch Git Metadata
+scrc = file.path(covid_uk_path, "SCRC")
+source(try_loc(file.path(scrc, "R", "Git.R")))
+
 StandardAPI <- function(config_loc)
 {
-    return(api_py(config_loc, "test_uri", "test_git_sha"))
+    return(api_py(config_loc, GitMetadata$URL, GitMetadata$CommitSHA1))
 }
 
 # DataFrame class for conversion to Python-friendly type
@@ -30,8 +35,8 @@ pandas_df <- import("pandas")$DataFrame
 
 # Import utility and plotting functions 
 scrc = file.path(covid_uk_path, "SCRC")
-source(file.path(scrc, "R", "plotting_utils_adapted.R"))
-source(file.path(scrc, "R", "plotting_utils_basic.R"))
+source(try_loc(file.path(scrc, "R", "plotting_utils_adapted.R")))
+source(try_loc(file.path(scrc, "R", "plotting_utils_basic.R")))
 
 # Table specification for formatting outputs
 table_spec = fread(
