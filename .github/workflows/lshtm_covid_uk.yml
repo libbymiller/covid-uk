@@ -65,9 +65,6 @@ jobs:
               sudo pip3 install -r SCRC/Python/requirements.txt
         if: matrix.os == 'ubuntu-latest'
 
-      - name: Fetch Data via API
-        run: python -m data_pipeline_api.registry.download --config SCRC/pipeline_data/config.yaml
-
       - name: Test Remote Vanilla Model Run (Region = Glasgow City, 10 realisations)
         run: Rscript run_model.R 10
 

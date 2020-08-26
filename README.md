@@ -46,7 +46,7 @@ The seeding parameter `seed/value` can be set within the parameters fileto a val
 
 #### Running with the API
 
-Before running the model the API is called to download the data directories to the local system. This requires a single argument pointing to the location of a `config.yaml` file (an example is included in the `SCRC/pipeline_data` directory):
+Before running the model the API is called to download the data directories to the local system. If a `metadata.yaml` file is not found in the config file path then this process is performed automatically prior to a model run. However if you wish to do this manually the python command requires a single argument pointing to the location of a `config.yaml` file (an example is included in the `SCRC/pipeline_data` directory):
 
 ```
 python -m data_pipeline_api.registry.download --config <path-to-config-file>
@@ -59,6 +59,11 @@ Rscript run_model.R <n-realisations>
 ```
 
 Note if the default `config.yaml` file is not being used the argument `--config <path-to-config-file>` can be included.
+
+
+### Outputs
+
+Depending on the run mode
 
 ### Plotting
 

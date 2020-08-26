@@ -87,6 +87,11 @@ if(local)
   options_print_str = c(options_print_str, paste("\tPython Path :", python_version))
   source(try_loc(file.path(scrc, "R", "remotedata.R")))
   source(try_loc(file.path(scrc, "R", "pushdata.R")))
+  if(!file.exists(gsub("config.yaml", "metadata.yaml", config_path)))
+  {
+    python_version <- system("which python", intern=TRUE)
+    system(paste(python_version, "-m data_pipeline_api.registry.download --config", config_path))
+  }
   configuration = remote_data(covid_uk_path, config_path, n_runs)
 }
 
