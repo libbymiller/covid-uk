@@ -33,6 +33,8 @@ To run the model using this method use the new `run_model.R` script included. Th
 Rscript run_model.R --help
 ```
 
+Note that for all model runs the compulsory argument `<n-runs>` must come first, this is due to the limitations of command arguments parsed via R.
+
 #### Local Running
 
 A local run in started by including the `--local` flag:
