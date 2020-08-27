@@ -139,10 +139,6 @@ The repository contains a Dockerfile which can be used to build an image, from w
 
 `docker build -t coviduk .`
 
-a container can then be created in which you should mount this repository:
-
-`docker run --name coviduk --mount type=bind,source=/path/to/this/repository,target=/home/coviduk/covid-uk -ti coviduk:latest`
-
 This will create a new container called `coviduk` which can be started and stopped using:
 
 `docker start coviduk`
@@ -152,9 +148,7 @@ Open a terminal within the container by using:
 
 `docker attach coviduk`
 
-you can then use the `bash run_all.sh` command.
-
-Using a Docker allows you to make changes in the repository on your local machine, then test them by launching the container and running the scripts within the already prepared environment.
+you can then run all the commands listed above from within the `/home/coviduk/covid-uk` folder.
 
 ### Reference
 

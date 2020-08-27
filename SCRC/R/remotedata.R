@@ -249,7 +249,7 @@ unpack_trigger = function(config_loc)
 
     return(
         list(
-            trigger = ifelse(read_estimate("lockdown/config", "isnational") == 0, "national", "local"),
+            trigger = ifelse(read_estimate("lockdown/config", "isnational") == 1, "national", "local"),
             duration = read_estimate("lockdown/config", "duration"),
             icu_bed_usage = read_estimate("lockdown/triggers", "icu_bed_usage"),
             intervention_shift = read_estimate("lockdown/triggers", "intervention_shift")
