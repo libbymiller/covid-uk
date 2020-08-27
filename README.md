@@ -58,7 +58,7 @@ The model is run as:
 Rscript run_model.R <n-realisations>
 ```
 
-Note if the default `config.yaml` file is not being used the argument `--config <path-to-config-file>` can be included.
+Note if the default `config.yaml` file is not being used the argument `--config=<path-to-config-file>` can be included.
 
 
 ### Outputs
