@@ -120,7 +120,11 @@ if(local)
   source(try_loc(file.path(scrc, "R", "localdata.R")))
   configuration = local_data(covid_uk_path, n_runs)
 } else {
-  python_version <- system("which python", intern=TRUE)
+  python_version <- system("which python3", intern=TRUE)
+  if(python_version == 1)
+  {
+    stop("No Python3 installation detected via BASH command 'which python3'")
+  }
   options_print_str = c(options_print_str, "\tSource : API\n")
   options_print_str = c(options_print_str, paste("\tConfig Path :", config_path, "\n"))
   options_print_str = c(options_print_str, paste("\tPython Path :", python_version))
@@ -131,7 +135,6 @@ if(local)
     cat(paste0("\n[Data Download]:\n\tNo 'metadata.yaml' at location '", 
                gsub("config.yaml", "", config_path),
                "' downloading data from API...\n\n"))
-    python_version <- system("which python", intern=TRUE)
     system(paste(python_version, "-m data_pipeline_api.registry.download --config", config_path))
     cat("\n\tData download complete.\n")
   }

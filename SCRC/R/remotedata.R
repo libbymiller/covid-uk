@@ -13,8 +13,8 @@
 
 library(reticulate) # Run Python commands within R
 
-# Determine Python binary from the current 'which python' command result
-python_version <- system("which python", intern=TRUE)
+# Determine Python binary from the current 'which python3' command result
+python_version <- system("which python3", intern=TRUE)
 use_python(python_version)
 
 # Import the StandardAPI from the SCRC data pipeline API
