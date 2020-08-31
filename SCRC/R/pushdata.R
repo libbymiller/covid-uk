@@ -10,25 +10,12 @@
 ##############################################################################
 
 library(reticulate)  # Run Python commands within R
-library(SCRCdataAPI) # For storage of outputs
 library(magrittr)    # For special two way pipes
 library(progress)    # For progress bar
 
 # Determine Python binary from the current 'which python3' command result
 python_version <- system("which python3", intern=TRUE)
 use_python(python_version)
-
-# Import the StandardAPI from the SCRC data pipeline API
-api_py <- import("data_pipeline_api.standard_api")$StandardAPI$from_config
-
-# Fetch Git Metadata
-scrc = file.path(covid_uk_path, "SCRC")
-source(try_loc(file.path(scrc, "R", "Git.R")))
-
-StandardAPI <- function(config_loc)
-{
-    return(api_py(config_loc, GitMetadata$URL, GitMetadata$CommitSHA1))
-}
 
 # DataFrame class for conversion to Python-friendly type
 pandas_df <- import("pandas")$DataFrame
@@ -159,8 +146,9 @@ prepare_totals <- function(t_total)
 #' 
 #' @param data_path Location of output qs files
 #' @param config_path Location of config.yaml API file
+#' @param standard_api Instance of standard API object
 #' @param make_csv Option to create CSV files also (Default: FALSE)
-push_data <- function(data_path, config_path, make_csv=FALSE)
+push_data <- function(data_path, config_path, standard_api, make_csv=FALSE)
 {
     output_location <- config_path %>%
                        gsub("/config.yaml", "", .)
@@ -196,7 +184,7 @@ push_data <- function(data_path, config_path, make_csv=FALSE)
         total_tables[[category]][[table]]$age_group %<>% sapply(., as.character)
         pd_table <- pandas_df(total_tables[[category]][[table]])
 
-        StandardAPI(config_path)$write_table("lshtm_outputs/cases_deaths", paste0(category,"_",table), pd_table)
+        standard_api$write_table("lshtm_outputs/cases_deaths", paste0(category,"_",table), pd_table)
 
         if(make_csv)
         {
@@ -215,7 +203,7 @@ push_data <- function(data_path, config_path, make_csv=FALSE)
       prog_dyn_sum$tick()
       dynamics_tables[[category]]$statistic %<>% sapply(., as.character)
       pd_table <- pandas_df(dynamics_tables[[category]])
-      StandardAPI(config_path)$write_table("lshtm_outputs/dynamics_summary", 
+      standard_api$write_table("lshtm_outputs/dynamics_summary", 
                                            paste0(category), pd_table)
 
       if(make_csv)
@@ -236,7 +224,7 @@ push_data <- function(data_path, config_path, make_csv=FALSE)
         colnames(dynamics_time_series[[scenario]][[compartment]]) <- as.character(1:ncol(dynamics_time_series[[scenario]][[compartment]]))
 
         pd_table <- pandas_df(dynamics_time_series[[scenario]][[compartment]])
-        StandardAPI(config_path)$write_table("lshtm_outputs/dynamics_time_series", 
+        standard_api$write_table("lshtm_outputs/dynamics_time_series", 
                                            paste(scenario, compartment, 
                                                  "time", "series", sep="_"), 
                                               pd_table)

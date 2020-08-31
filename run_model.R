@@ -120,6 +120,23 @@ if(local)
   source(try_loc(file.path(scrc, "R", "localdata.R")))
   configuration = local_data(covid_uk_path, n_runs)
 } else {
+
+  library(reticulate) # Run Python commands within R
+
+  # Determine Python binary from the current 'which python3' command result
+  python_version <- system("which python3", intern=TRUE)
+  use_python(python_version)
+
+  # Import the StandardAPI from the SCRC data pipeline API
+  api_py <- import("data_pipeline_api.standard_api")$StandardAPI
+
+  # Fetch Git Metadata
+  scrc = file.path(covid_uk_path, "SCRC")
+  source(try_loc(file.path(scrc, "R", "Git.R")))
+
+  # Create a function as a wrapper allowing direct usage of the API
+  StandardAPI <- api_py$from_config(config_loc, GitMetadata$URL, GitMetadata$CommitSHA1)
+
   python_version <- system("which python3", intern=TRUE)
   if(python_version == 1)
   {
@@ -138,7 +155,7 @@ if(local)
     system(paste(python_version, "-m data_pipeline_api.registry.download --config", config_path))
     cat("\n\tData download complete.\n")
   }
-  configuration = remote_data(covid_uk_path, config_path, n_runs)
+  configuration = remote_data(StandardAPI, n_runs)
 }
 
 options_print_str = c(options_print_str, configuration$output_str)
@@ -187,7 +204,8 @@ if(!local)
 {
   push_data(file.path(covid_uk_path, "output", 
                       paste0("run-", sub(" ", "-", configuration$params$run_mode), "-", r)), 
-                      config_path)
+                      config_path, StandardAPI)
+  StandardAPI$file_api$close()
 }
 
 print(Sys.time())

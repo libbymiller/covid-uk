@@ -7,42 +7,24 @@
 #   using the API, these files can therefore be dynamically changed.         #
 #                                                                            #
 #   @author : K. Zarebski                                                    #
-#   @date   : last modified 2020-08-03                                       #
+#   @date   : last modified 2020-08-27                                       #
 #                                                                            #
 ##############################################################################
 
 library(reticulate) # Run Python commands within R
 
-# Determine Python binary from the current 'which python3' command result
-python_version <- system("which python3", intern=TRUE)
-use_python(python_version)
-
-# Import the StandardAPI from the SCRC data pipeline API
-api_py <- import("data_pipeline_api.standard_api")$StandardAPI
 py_time <- import("time")$time
-
-# Fetch Git Metadata
-scrc = file.path(covid_uk_path, "SCRC")
-source(try_loc(file.path(scrc, "R", "Git.R")))
-
-# Create a function as a wrapper allowing direct usage of the API
-# FIXME: The details under the from_config method will need to be set
-# eventually to the real repository
-StandardAPI <- function(config_loc)
-{
-    return(api_py$from_config(config_loc, GitMetadata$URL, GitMetadata$CommitSHA1))
-}
 
 #' Get the intervention
 #' 
 #' Retrieve the current intervention choice from the API
 #' 
-#' @param config_loc Location of the API config.yaml file
+#' @param standard_api Instance of standard API object
 #' @param ngroups Number of age groups
-unpack_intervention = function(config_loc, ngroups)
+unpack_intervention <- function(standard_api, ngroups)
 {
-    read_table = StandardAPI(config_loc)$read_table
-    intervention = read_table("interventions/intervention_rates", "intervention_rates")
+    read_table <- standard_api$read_table
+    intervention <- read_table("interventions/intervention_rates", "intervention_rates")
 
     # Rates associated with the given intervention are defined as
     # 9 contact rates for the contact matrix types and a factor on the
@@ -59,11 +41,11 @@ unpack_intervention = function(config_loc, ngroups)
 #' 
 #' Retrieve the school terms from the API
 #' 
-#' @param config_loc Location of config.yaml API file
-unpack_terms = function(config_loc)
+#' @param standard_api Instance of standard API object
+unpack_terms <- function(standard_api)
 {
-    read_table = StandardAPI(config_loc)$read_table
-    school_terms = read_table("school/school_terms", "school_terms")
+    read_table <- standard_api$read_table
+    school_terms <- read_table("school/school_terms", "school_terms")
 
     return(
         list(
@@ -79,10 +61,10 @@ unpack_terms = function(config_loc)
 #' Retrieves the seeding configuration from the relevant
 #' files via the API
 #' 
-#' @param config_loc Location of the config.yaml API file
-unpack_seeding = function(config_loc)
+#' @param standard_api Instance of standard API object
+unpack_seeding <- function(standard_api)
 {
-    read_estimate = StandardAPI(config_loc)$read_estimate
+    read_estimate <- standard_api$read_estimate
 
     return(
         list(
@@ -103,13 +85,13 @@ unpack_seeding = function(config_loc)
 #' any other data set in the same form (eg. health board in same binning)
 #' or specify a different region below
 #' 
-#' @param config_loc Location of the config.yaml API file
+#' @param standard_api Instance of standard API object
 #' @param region Name of the subset region, default is the demo of Glasgow City
-unpack_populations = function(config_loc, region="Glasgow City")
+unpack_populations <- function(standard_api, region="Glasgow City")
 {
 
-    read_table = StandardAPI(config_loc)$read_table
-    pop_size = read_table("population/population_sizes", "population_size/persons")
+    read_table <- standard_api$read_table
+    pop_size <- read_table("population/population_sizes", "population_size/persons")
 
     return(
         list(
@@ -124,30 +106,30 @@ unpack_populations = function(config_loc, region="Glasgow City")
 #' 
 #' Retrieve the contact matrices from the API
 #' 
-#' @param config_loc Location of the config.yaml API file
-unpack_matrices = function(config_loc)
+#' @param standard_api Instance of standard API object
+unpack_matrices <- function(standard_api)
 {
-    read_array = StandardAPI(config_loc)$read_array
+    read_array <- standard_api$read_array
 
     # Model relies on two sets of matrices, the 'region'
     # set e.g. [1] Scotland, [2] UK and the 'subset' set 
     # set of that region e.g. [1] Scot. Health Board, [2] Scotland
 
-    matrix_names = c("home", "other", "school", "work")
+    matrix_names <- c("home", "other", "school", "work")
 
-    contact_matrices = list()
+    contact_matrices <- list()
 
-    contact_matrices[["subset"]] = list()
+    contact_matrices[["subset"]] <- list()
     for(name in matrix_names)
     {
-        Array = read_array("contact_matrices/subregion", file.path("contact_matrices", name))
+        Array <- read_array("contact_matrices/subregion", file.path("contact_matrices", name))
         contact_matrices[["subset"]][[name]] = Array$data
     }
 
     contact_matrices[["region"]] = list()
     for(name in matrix_names)
     {
-        Array = read_array("contact_matrices/national", file.path("contact_matrices", name))
+        Array <- read_array("contact_matrices/national", file.path("contact_matrices", name))
         contact_matrices[["region"]][[name]] = Array$data
     }
     return(list(matrices=contact_matrices, group_names=Array$dimensions[[1]]$names))
@@ -157,10 +139,10 @@ unpack_matrices = function(config_loc)
 #' 
 #' Retrieves the time based settings from the API
 #'
-#' @param config_loc Location of the config.yaml API file
-unpack_times = function(config_loc)
+#' @param standard_api Instance of standard API object
+unpack_times <- function(standard_api)
 {
-    read_estimate = StandardAPI(config_loc)$read_estimate
+    read_estimate <- standard_api$read_estimate
 
     return(
         list(
@@ -180,11 +162,11 @@ unpack_times = function(config_loc)
 #' and kwds members of the scipy.stats object
 #' 
 #' @param dis_label Name of the distribution in the API
-#' @param config_loc Location of the config.yaml API file
+#' @param standard_api Instance of standard API object
 
-fetch_gamma_components <- function(dis_label, config_loc)
+fetch_gamma_components <- function(dis_label, standard_api)
 {
-    distribution = StandardAPI(config_loc)$read_distribution(file.path("distributions", dis_label), dis_label)
+    distribution <- standard_api$read_distribution(file.path("distributions", dis_label), dis_label)
     
     return(
         list(
@@ -200,36 +182,36 @@ fetch_gamma_components <- function(dis_label, config_loc)
 #' and stores them into a list matching the form
 #' of the local run arguments
 #' 
-#' @param config_loc Location of the config.yaml API file
-unpack_dis_params = function(config_loc)
+#' @param standard_api Instance of standard API object
+unpack_dis_params <- function(standard_api)
 {
 
-    compartments = c("dE", "dIp", "dIa", "dIs")
+    compartments <- c("dE", "dIp", "dIa", "dIs")
 
-    params = list()
+    params <- list()
 
     for(comp in compartments)
     {
-        args <- fetch_gamma_components(comp, config_loc)
+        args <- fetch_gamma_components(comp, standard_api)
 
         params[[comp]] = list(mu=args[[1]],
                              shape=args[[2]])
 
     }
 
-    args <- fetch_gamma_components("ip_to_hosp", config_loc)
+    args <- fetch_gamma_components("ip_to_hosp", standard_api)
     params[["delay_Ip_to_hosp"]] = list(mu=args[[1]],
                              shape=args[[2]])
 
-    args <- fetch_gamma_components("to_icu", config_loc)
+    args <- fetch_gamma_components("to_icu", standard_api)
     params[["delay_to_icu"]] = list(mu=args[[1]],
                                     shape=args[[2]])
     
-    args <- fetch_gamma_components("to_non_icu", config_loc)
+    args <- fetch_gamma_components("to_non_icu", standard_api)
     params[["delay_to_non_icu"]] = list(mu=args[[1]],
                                         shape=args[[2]])
     
-    args <- fetch_gamma_components("ip_to_death", config_loc)
+    args <- fetch_gamma_components("ip_to_death", standard_api)
     params[["delay_Ip_to_death"]] = list(mu=args[[1]],
                                         shape=args[[2]])
 
@@ -242,10 +224,10 @@ unpack_dis_params = function(config_loc)
 #' These include whether to lockdown based on an offset
 #' from the peak, or based on the ICU bed usage
 #' 
-#' @param config_loc Location of the config.yaml API file
-unpack_trigger = function(config_loc)
+#' @param standard_api Instance of standard API object
+unpack_trigger <- function(standard_api)
 {
-    read_estimate = StandardAPI(config_loc)$read_estimate
+    read_estimate <- standard_api$read_estimate
 
     return(
         list(
@@ -263,18 +245,18 @@ unpack_trigger = function(config_loc)
 #' the number of runs requested 'n'. The values are generated
 #' using the relevant normal distribution retrieved from the API.
 #' 
-#' @param config_loc Location of the config.yaml API file
+#' @param standard_api Instance of standard API object
 #' @param seed The generation seed
 #' @param n Number of values to generate
-create_R0s = function(config_loc, seed, n)
+create_R0s <- function(standard_api, seed, n)
 {
     np_rand <- import("numpy")$random
 
     np_rand$seed(ifelse(seed > 0, seed, as.integer(py_time())))
 
-    read_distribution = StandardAPI(config_loc)$read_distribution
+    read_distribution <- standard_api$read_distribution
 
-    norm = read_distribution("distributions/R0", "R0")
+    norm <- read_distribution("distributions/R0", "R0")
 
     return(norm$rvs(as.integer(n)))
 }
@@ -286,36 +268,38 @@ create_R0s = function(config_loc, seed, n)
 #' then assembling the results into a list that matches
 #' the form of a local arguments set
 #' 
-#' @param config_loc Location of the config.yaml API file
-objects = function(config_loc)
+#' @param standard_api Instance of standard API object
+objects <- function(standard_api)
 {
-    read_array = StandardAPI(config_loc)$read_array
-    read_estimate = StandardAPI(config_loc)$read_estimate
-    read_table = StandardAPI(config_loc)$read_table
+    print(standard_api)
+    read_array <- standard_api$read_array
 
-    matrix_data = unpack_matrices(config_loc)
+    read_estimate <- standard_api$read_estimate
+    read_table <- standard_api$read_table
 
-    params = list(
+    matrix_data <- unpack_matrices(standard_api)
+
+    params <- list(
             age_var_symptom_rates = data.table(read_table("symptomatic_rates/rates_per_age", "age_varying_symptomatic_rates")),
             health_burden_probabilities = data.table(read_table("health_burden_processes/probabilities", "health_burden_processes")),
             contact_matrices = matrix_data$matrices,
             group_names = matrix_data$group_names,
             lockdown_rates = read_table("lockdown/lockdown_rates", "lockdown_rates") %>% as.integer,
             school_holiday_rates = read_table("school/holiday_rates", "school_holiday_rates") %>% as.integer,
-            size = unpack_populations(config_loc),
-            school_terms = unpack_terms(config_loc),
-            seed = unpack_seeding(config_loc),
+            size = unpack_populations(standard_api),
+            school_terms = unpack_terms(standard_api),
+            seed = unpack_seeding(standard_api),
             fIs = read_estimate("fixed-parameters/relative_infectiousness", "rel_symptomatic"),
             fIp = read_estimate("fixed-parameters/relative_infectiousness", "rel_preclinical"),
             fIa = read_estimate("fixed-parameters/relative_infectiousness", "rel_subclinical"),
-            time = unpack_times(config_loc),
-            lockdown_trigger = unpack_trigger(config_loc),
+            time = unpack_times(standard_api),
+            lockdown_trigger = unpack_trigger(standard_api),
             tau = read_estimate("fixed-parameters/tau", "tau"),
             rho = read_estimate("fixed-parameters/rho", "rho")
         )
-    params = append(params, unpack_dis_params(config_loc))
+    params = append(params, unpack_dis_params(standard_api))
     params$ngroups = params$contact_matrices$region$other %>% length %>% sqrt(.)
-    params$intervention = unpack_intervention(config_loc, params$ngroups)
+    params$intervention = unpack_intervention(standard_api, params$ngroups)
     return(params)
 }
 
@@ -327,9 +311,9 @@ objects = function(config_loc)
 #' 
 #' @param age Lower age boundary
 #' @param names List of bin labels (0-4, 0 to 4, etc.)
-get_elderly_bin_for_age = function(age, names)
+get_elderly_bin_for_age <- function(age, names)
 {
-    x = NULL
+    x <- NULL
 
     if(any(names %>% str_detect(., "-")))
     {
@@ -358,20 +342,19 @@ get_elderly_bin_for_age = function(age, names)
 #' This function is called by the main model run to
 #' assemble all arguments from the API and retrieve them
 #' 
-#' @param covid_uk repository root location
-#' @param config_loc location of the config.yaml API file
+#' @param standard_api Instance of standard API object
 #' @param n_runs number of model runs this session
-remote_data = function(covid_uk, config_loc, n_runs)
+remote_data <- function(standard_api, n_runs)
 {
     # Assume same binning always provided to model
-    group_names = c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29",
+    group_names <- c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29",
     "30-34", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64",
     "65-69", "70-74", "75+")
 
-    options_print_str = ""
+    options_print_str <- ""
 
     # Define fixed parameter choices (those that do not need to be set by the API itself)
-    config_params = list(
+    config_params <- list(
         child_grandparent_contacts = FALSE, # This is analysis specific so should be switched off
                                             # to ensure flexibility
         fast_multinomial = FALSE,
@@ -384,13 +367,13 @@ remote_data = function(covid_uk, config_loc, n_runs)
         group_names = group_names           # Assume group names constant
     )
 
-    config_params = append(config_params, objects(config_loc))
+    config_params <- append(config_params, objects(standard_api))
 
     # Define an elderly individual as 70+
-    config_params$elderly_from_bin = get_elderly_bin_for_age(70, group_names)
+    config_params$elderly_from_bin <- get_elderly_bin_for_age(70, group_names)
 
     # Randomly generate some R0 values
-    config_params$R0s = create_R0s(config_loc, config_params$seed$value, n_runs) 
+    config_params$R0s <- create_R0s(standard_api, config_params$seed$value, n_runs)
 
     return(list(params=config_params, output_str=options_print_str))
 }
