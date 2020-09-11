@@ -127,6 +127,15 @@ if(local)
   python_version <- system("which python3", intern=TRUE)
   use_python(python_version)
 
+  if(!file.exists(gsub("config.yaml", "metadata.yaml", config_path)))
+  {
+    cat(paste0("\n[Data Download]:\n\tNo 'metadata.yaml' at location '", 
+               gsub("config.yaml", "", config_path),
+               "' downloading data from API...\n\n"))
+    system(paste(python_version, "-m data_pipeline_api.registry.download --config", config_path))
+    cat("\n\tData download complete.\n")
+  }
+
   # Import the StandardAPI from the SCRC data pipeline API
   api_py <- import("data_pipeline_api.standard_api")$StandardAPI
 
@@ -147,14 +156,6 @@ if(local)
   options_print_str = c(options_print_str, paste("\tPython Path :", python_version))
   source(try_loc(file.path(scrc, "R", "remotedata.R")))
   source(try_loc(file.path(scrc, "R", "pushdata.R")))
-  if(!file.exists(gsub("config.yaml", "metadata.yaml", config_path)))
-  {
-    cat(paste0("\n[Data Download]:\n\tNo 'metadata.yaml' at location '", 
-               gsub("config.yaml", "", config_path),
-               "' downloading data from API...\n\n"))
-    system(paste(python_version, "-m data_pipeline_api.registry.download --config", config_path))
-    cat("\n\tData download complete.\n")
-  }
   configuration = remote_data(StandardAPI, n_runs)
 }
 

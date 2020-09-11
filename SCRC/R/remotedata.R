@@ -271,7 +271,6 @@ create_R0s <- function(standard_api, seed, n)
 #' @param standard_api Instance of standard API object
 objects <- function(standard_api)
 {
-    print(standard_api)
     read_array <- standard_api$read_array
 
     read_estimate <- standard_api$read_estimate
