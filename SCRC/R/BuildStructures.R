@@ -104,7 +104,7 @@ build_child_elderly_matrix = function(population_parameters, child_grandparent_c
     mat = matrix(0, ncol = N, nrow = N);
 
     # Add child-grandparent contacts: under 15s to 55+s
-    if(child_grandparent_contacts == FALSE)
+    if(child_grandparent_contacts == TRUE)
     {
         cat("[Child-Elderly Contacts]:\n\tAdding Child (<15) - Grandparent (55+) Contacts Matrix\n")
         for (a in 1:3) {
