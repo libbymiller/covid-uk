@@ -6,7 +6,7 @@
 #   data API implementation. Parameter values and data are read from files   #
 #   using the API, these files can therefore be dynamically changed.         #
 #                                                                            #
-#   @author : K. Zarebski                                                    #
+#   @author : K. Zarebski (UKAEA)                                            #
 #   @date   : last modified 2020-08-27                                       #
 #                                                                            #
 ##############################################################################

@@ -8,7 +8,7 @@
 #   based on the arguments passed which will ultimately be read from the     #
 #   SCRC data pipeline API.                                                  #
 #                                                                            #
-#   @author : K. Zarebski                                                    #
+#   @author : K. Zarebski (UKAEA)                                            #
 #   @date   : last modified 2020-08-03                                       #
 #                                                                            #
 ##############################################################################

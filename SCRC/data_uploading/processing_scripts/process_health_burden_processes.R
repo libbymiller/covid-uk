@@ -8,7 +8,7 @@
 #   hospitalised. The original data source has yet to be identified.         #
 #   Currently values are read from the included CSV file.                    #
 #                                                                            #
-#   @author : K. Zarebski                                                    #
+#   @author : K. Zarebski (UKAEA)                                            #
 #   @date   : last modified 2020-08-12                                       #
 #                                                                            #
 ##############################################################################

@@ -7,7 +7,7 @@
 #   model run for work, school, home, other (young/elderly) etc              #
 #   Plus a tenth term being a prefactor of Is per age                        #
 #                                                                            #
-#   @author : K. Zarebski                                                    #
+#   @author : K. Zarebski (UKAEA)                                            #
 #   @date   : last modified 2020-08-12                                       #
 #                                                                            #
 ##############################################################################

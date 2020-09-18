@@ -4,7 +4,7 @@
 #                                                                            #
 #   Assembly and storage of results using the SCRC data pipeline.            #
 #                                                                            #
-#   @author : K. Zarebski                                                    #
+#   @author : K. Zarebski (UKAEA)                                            #
 #   @date : last modified 2020-08-03                                         #
 #                                                                            #
 ##############################################################################

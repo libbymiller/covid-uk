@@ -7,7 +7,7 @@
 #   these are used in the construction of the model parameter set (labelled  #
 #   "sample"/"subregion" set within code) used during a full model run.      #
 #                                                                            #
-#   @author : K. Zarebski                                                    #
+#   @author : K. Zarebski (UKAEA)                                            #
 #   @date   : last modified 2020-08-11                                       #
 #                                                                            #
 ##############################################################################

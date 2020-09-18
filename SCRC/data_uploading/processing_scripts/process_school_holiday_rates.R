@@ -6,7 +6,7 @@
 #   rates, these are pre-factors to the 9 matrices defined during the        #
 #   model run for work, school, home, other (young/elderly) etc              #
 #                                                                            #
-#   @author : K. Zarebski                                                    #
+#   @author : K. Zarebski (UKAEA)                                            #
 #   @date   : last modified 2020-08-11                                       #
 #                                                                            #
 ##############################################################################

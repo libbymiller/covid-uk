@@ -12,7 +12,7 @@
 #                                                                            #
 #   This script is based on the upload scripts by Sonia Mitchell.            #
 #                                                                            #
-#   @author K. Zarebski                                                      #
+#   @author K. Zarebski (UKAEA)                                              #
 #   @date   last modified 2020-08-10                                         #
     global_version <- "0.1.0"                                                #
 #                                                                            #

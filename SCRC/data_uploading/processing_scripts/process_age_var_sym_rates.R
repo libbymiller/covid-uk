@@ -10,7 +10,7 @@
 #   Currently the values are read from the qs file contained within the      #
 #   included model data.                                                     #
 #                                                                            #
-#   @author : K. Zarebski                                                    #
+#   @author : K. Zarebski (UKAEA)                                            #
 #   @date   : last modified 2020-08-12                                       #
 #                                                                            #
 ##############################################################################

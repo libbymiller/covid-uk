@@ -10,7 +10,7 @@
 #   set/matrices etc could be held constant for every model run, replace     #
 #   these at your own risk.                                                  #
 #                                                                            #
-#   @author : K. Zarebski                                                    #
+#   @author : K. Zarebski (UKAEA)                                            #
 #   @date   : last modified 2020-08-11                                       #
 #                                                                            #
 ##############################################################################

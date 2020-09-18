@@ -10,8 +10,8 @@
 #                                                                            #
 #   NOTE: This script should be run from the repository root directory       #
 #                                                                            #
+#   @author     :   K. Zarebski (UKAEA)                                      #
 #   @date       :   last modified 2020-05-11                                 #
-#   @authors    :   K. Zarebski,                                             #
 #                                                                            #
 ##############################################################################
 

@@ -15,8 +15,8 @@
 # data from running the original code is held within a pickle object file    #
 # read in before commencing testing.                                         #
 #                                                                            #
-# @date       :  last modified 2020-05-11                                    #
-# @authors    :  K. Zarebski,                                                #
+# @author    :  K. Zarebski (UKAEA)                                          #
+# @date      :  last modified 2020-05-11                                    #
 #                                                                            #
 ##############################################################################
 

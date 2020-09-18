@@ -6,7 +6,7 @@
 #   data as included within the LSHTM original model. This would be classed  #
 #   as a "local" run of the model. Script based on existing LSHTM scripts.   #
 #                                                                            #
-#   @authors : K. Zarebski, N. Davies                                        #
+#   @authors : K. Zarebski (UKAEA), N. Davies, et. al. (LSHTM)               #
 #   @date    : last modified 2020-08-03                                      #
 #                                                                            #
 ##############################################################################
