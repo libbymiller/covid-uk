@@ -172,7 +172,7 @@ push_data <- function(data_path, config_path, standard_api, make_csv=FALSE)
 
     cat("[Saving to HDF5]:\n")
     cat(c("\tSaving Totals to Folder : ",
-              file.path(output_location, "cases_deaths"), "\n"))
+              file.path(output_location,"lshtm_outputs", "cases_deaths"), "\n"))
     prog_totals = progress_bar$new(total=length(total_tables)*length(total_tables[[1]]))
     for(category in names(total_tables))
     {
@@ -196,7 +196,7 @@ push_data <- function(data_path, config_path, standard_api, make_csv=FALSE)
     }
 
     cat(paste("\n\tSaving Dynamics Summary to Folder : ", 
-              file.path(output_location, "dynamics_summary"), "\n"))
+              file.path(output_location,"lshtm_outputs", "dynamics_summary"), "\n"))
     prog_dyn_sum = progress_bar$new(total=length(dynamics_tables))
     for(category in names(dynamics_tables))
     {
