@@ -13,7 +13,7 @@ RUN apt install libxml2-dev libssl-dev libcurl4-openssl-dev libnlopt-dev curl li
 RUN apt install apt-transport-https software-properties-common -y
 RUN adduser coviduk
 RUN apt install git -y
-RUN apt install vim emacs -y
+RUN apt install vim emacs nano -y
 RUN apt install python3-pip -y
 RUN mkdir -p /home/coviduk
 RUN python3 -m pip install pandas rpy2 nose h5py
