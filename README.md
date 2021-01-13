@@ -29,6 +29,7 @@ and ensure your python environment has installed the libraries within `SCRC/Pyth
 
 To run the model using this method use the new `run_model.R` script included. The script takes a single required argument which is the number of stochastic realisations. The model can either be run using the SCRC API (included within the requirements above) or locally using the original datasets that came with it. A full list of available options is given by running:
 
+
 ```bash
 Rscript run_model.R --help
 ```
@@ -139,7 +140,15 @@ The repository contains a Dockerfile which can be used to build an image, from w
 
 `docker build -t coviduk .`
 
-This will create a new container called `coviduk` which can be started and stopped using:
+I had to add
+
+see `docker ps -a` to see available images
+
+This will create a new container called `coviduk` which can be run using
+
+`docker run -dit coviduk`
+
+and started and stopped using:
 
 `docker start coviduk`
 `docker stop coviduk`
@@ -147,6 +156,8 @@ This will create a new container called `coviduk` which can be started and stopp
 Open a terminal within the container by using:
 
 `docker attach coviduk`
+
+(you might need to do `docker attach CONTAINER ID` rather than coviduk - see `docker ps -a` to see available images).
 
 you can then run all the commands listed above from within the `/home/coviduk/covid-uk` folder.
 
