@@ -17,6 +17,7 @@ RUN apt install vim emacs -y
 RUN apt install python3-pip -y
 RUN mkdir -p /home/coviduk
 RUN python3 -m pip install pandas rpy2 nose h5py
+RUN apt install libgit2-dev -y
 RUN git clone https://github.com/ScottishCovidResponse/covid-uk.git /home/coviduk/covid-uk
 WORKDIR /home/coviduk
 WORKDIR /home/coviduk/covid-uk
