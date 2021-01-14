@@ -74,8 +74,8 @@ source(file.path(cm_path, "R", "covidm.R"))
 analysis = as.numeric(argv[1]);
 n_runs = as.numeric(argv[2]);
 
-analysis = 1
-n_runs = 1
+#analysis = 1
+#n_runs = 1
 
 # Set path
 # Set this path to the base directory of the repository.
