@@ -105,7 +105,7 @@ time steps.
 A full print out of the run options can be viewed by running:
 
 ```
-./script/run_model.sh --help
+./scripts/run_model.sh --help
 ```
 
 and include the ability to the location of these parameter file, as well as other data, and dump the parameters after initialisation for testing.
