@@ -334,6 +334,10 @@ if (analysis == 1) {
   interventions = list(
     `Combination`       = list(contact = c(1.0, 0.5, 0.0, 0.5,  1.0, 0.25, 0.0, 0.25,  0), fIs = rep(0.65, 16))
   );
+
+  # not sure if this is right not it fails unless these are set
+  school_close_i  = school_close_b
+  school_reopen_i = school_reopen_b
   
   # Set options
   option.trigger = "local";
