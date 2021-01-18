@@ -75,15 +75,15 @@ median_ci = function(x, conf = 0.95)
   return (y)
 }
 
-make_table = function(d, table_spec = table_spec)
+make_table = function(d, table_spec_ = table_spec)
 {
   d[, week := t %/% 7]
   results = NULL
-  for (spec in seq_len(nrow(table_spec)))
+  for (spec in seq_len(nrow(table_spec_)))
   {
-    comp = table_spec[spec, compartment];
-    stat = table_spec[spec, stat];
-    time = table_spec[spec, time];
+    comp = table_spec_[spec, compartment];
+    stat = table_spec_[spec, stat];
+    time = table_spec_[spec, time];
     
     if (stat == "total") {
       res = d[region == "United Kingdom" & compartment == comp, .(x = sum(value)), by = .(scenario, run, region)];
@@ -369,7 +369,7 @@ f = plot_grid(pla1, plb, pla2, plR,
               nrow = 2, ncol = 2, rel_widths = c(3, 2), labels = c("a", "b", "", "c"), label_size = 9, align = "hv", axis = "bottom")
 ggsave(file.path(covid_uk_path, "fig-12week.pdf"), f, width = 20, height = 12, units = "cm", useDingbats = F);
 
-gsave(file.path(covid_uk_path, "fig-12week-a.pdf"), plot_grid(pla1, pla2, ncol = 1, align = "hv", axis = "bottom"),
+ggsave(file.path(covid_uk_path, "fig-12week-a.pdf"), plot_grid(pla1, pla2, ncol = 1, align = "hv", axis = "bottom"),
   width = 12, height = 12, units = "cm", useDingbats = F);
 ggsave(file.path(covid_uk_path, "fig-12week-b.pdf"), plb, width = 8, height = 6, units = "cm", useDingbats = F);
 ggsave(file.path(covid_uk_path, "fig-12week-c.pdf"), plR, width = 8, height = 6, units = "cm", useDingbats = F);
@@ -429,7 +429,7 @@ f = plot_grid(pla, plb, plc,
               ncol = 3, labels = c("a", "b", "c"), label_size = 9, rel_widths = c(2, 1, .5))
 ggsave(file.path(covid_uk_path, "fig-triggers.pdf"), f, width = 20, height = 8, units = "cm", useDingbats = F);
 
-gsave(file.path(covid_uk_path, "fig-triggers-a.pdf"), pla, width = 20*4/7, height = 8, units = "cm", useDingbats = F);
+ggsave(file.path(covid_uk_path, "fig-triggers-a.pdf"), pla, width = 20*4/7, height = 8, units = "cm", useDingbats = F);
 ggsave(file.path(covid_uk_path, "fig-triggers-b.pdf"), plb, width = 20*2/7, height = 8, units = "cm", useDingbats = F);
 ggsave(file.path(covid_uk_path, "fig-triggers-c.pdf"), plc, width = 20*1/7, height = 8, units = "cm", useDingbats = F);
 
